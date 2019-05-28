@@ -131,15 +131,15 @@ public class MainRouteBuilder extends RouteBuilder {
                                 " message :: "+ data + "\n");
                     }
                 })
+                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .to("direct:download-from-S3");
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.validation.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
                 .id("kafka-validation-message")
-                .to("log:INFO?showBody=true&amp;showHeaders=true");
+                .to("log:INFO?showBody=true&showHeaders=true");
 
         from("direct:download-from-S3")
-                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .process( exchange -> {
                     FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);

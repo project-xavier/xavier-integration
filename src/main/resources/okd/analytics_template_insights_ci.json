@@ -519,7 +519,7 @@
                                         "memory": "2Gi"
                                     },
                                     "requests": {
-                                        "cpu": "600m",
+                                        "cpu": "400m",
                                         "memory": "2Gi"
                                     }
                                 },
@@ -876,7 +876,7 @@
                                         "cpu": "1"
                                     },
                                     "requests": {
-                                        "cpu": "600m",
+                                        "cpu": "400m",
                                         "memory": "2Gi"
                                     }
                                 },
