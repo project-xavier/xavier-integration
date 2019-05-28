@@ -94,6 +94,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("direct:insights");
 
         from("direct:insights")
+                .id("call-insights-upload-service")
                 .process(exchange -> {
                     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
                     multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
@@ -112,7 +113,8 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                 .end();
 
-        from("kafka:" + kafkaHost + "?topic={{insights.kafka.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
+        from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
+                .id("kafka-upload-message")
                 .process(exchange -> {
                     String messageKey = "";
                     if (exchange.getIn() != null) {
@@ -132,18 +134,21 @@ public class MainRouteBuilder extends RouteBuilder {
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .to("direct:download-from-S3");
 
+        from("kafka:" + kafkaHost + "?topic={{insights.kafka.validation.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
+                .id("kafka-validation-message")
+                .to("log:INFO?showBody=true&amp;showHeaders=true");
 
         from("direct:download-from-S3")
+                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .process( exchange -> {
-                    FilePersistedNotification notif_body = exchange.getIn().getBody(FilePersistedNotification.class);
-                    String identity_json = new String(Base64.getDecoder().decode(notif_body.getB64_identity()));
+                    FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
+                    String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
                     RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
                     exchange.getIn().setHeader("customerid", rhIdentity.getInternal().get("customerid"));
                     exchange.getIn().setHeader("filename", rhIdentity.getInternal().get("filename"));
                     exchange.getIn().setHeader("origin", rhIdentity.getInternal().get("origin"));
                 })
-                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
