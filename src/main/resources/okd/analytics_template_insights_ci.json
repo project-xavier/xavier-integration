@@ -1098,13 +1098,9 @@
             },
             "spec": {
                 "strategy": {
-                    "type": "Rolling",
-                    "rollingParams": {
-                        "updatePeriodSeconds": 1,
-                        "intervalSeconds": 1,
-                        "timeoutSeconds": 600,
-                        "maxUnavailable": "25%",
-                        "maxSurge": "25%"
+                    "type": "Recreate",
+                    "recreateParams": {
+                        "timeoutSeconds": 600
                     },
                     "resources": {},
                     "activeDeadlineSeconds": 21600
@@ -2029,7 +2025,28 @@
             "displayName": "AMQ Streams (Kafka) host",
             "description": "AMQ Streams (Kafka) host",
             "value": "platform-mq-ci-kafka-bootstrap.platform-mq-ci.svc:9092",
-            "required": true
+            "required": false
+        },
+        {
+            "name": "INSIGHTS_UPLOAD_HOST",
+            "displayName": "Insights Upload Service Endpoint",
+            "description": "Insights Upload Service Endpoint",
+            "value": "upload-service.platform-ci:8080",
+            "required": false
+        },
+        {
+            "name": "INSIGHTS_KAFKA_VALIDATION_TOPIC",
+            "displayName": "Kafka topic for upload payload validation",
+            "description": "Kafka topic for upload payload validation",
+            "value": "platform.upload.validation",
+            "required": false
+        },
+        {
+            "name": "INSIGHTS_KAFKA_UPLOAD_TOPIC",
+            "displayName": "Kafka topic for upload payload available",
+            "description": "Kafka topic for upload payload available",
+            "value": "platform.upload.testareno",
+            "required": false
         }
     ]
 }
