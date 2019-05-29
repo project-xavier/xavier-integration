@@ -111,6 +111,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
                 .removeHeaders("Camel*")
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
+                .to("log:INFO?showBody=true&showHeaders=true")
                 .end();
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
@@ -131,7 +132,6 @@ public class MainRouteBuilder extends RouteBuilder {
                                 " message :: "+ data + "\n");
                     }
                 })
-                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .to("direct:download-from-S3");
 
@@ -149,6 +149,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     exchange.getIn().setHeader("filename", rhIdentity.getInternal().get("filename"));
                     exchange.getIn().setHeader("origin", rhIdentity.getInternal().get("origin"));
                 })
+                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
