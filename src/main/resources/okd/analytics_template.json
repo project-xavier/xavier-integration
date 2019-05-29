@@ -33,6 +33,9 @@
                     "template.openshift.io/expose-username": "{.data['database-user']}",
                     "template.openshift.io/expose-password": "{.data['database-password']}",
                     "template.openshift.io/expose-database_name": "{.data['database-name']}"
+                },
+                "labels": {
+                    "application": "migration-analytics"
                 }
             },
             "stringData" : {
