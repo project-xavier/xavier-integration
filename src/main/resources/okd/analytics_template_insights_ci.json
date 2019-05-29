@@ -1224,6 +1224,22 @@
                                     {
                                         "name": "AMQ_SERVER",
                                         "value": "broker-amq-tcp"
+                                    },
+                                    {
+                                        "name": "INSIGHTS_KAFKA_HOST",
+                                        "value": "${INSIGHTS_KAFKA_HOST}"
+                                    },
+                                    {
+                                        "name": "INSIGHTS_UPLOAD_HOST",
+                                        "value": "${INSIGHTS_UPLOAD_HOST}"
+                                    },
+                                    {
+                                        "name": "INSIGHTS_KAFKA_VALIDATION_TOPIC",
+                                        "value": "${INSIGHTS_KAFKA_VALIDATION_TOPIC}"
+                                    },
+                                    {
+                                        "name": "INSIGHTS_KAFKA_UPLOAD_TOPIC",
+                                        "value": "${INSIGHTS_KAFKA_UPLOAD_TOPIC}"
                                     }
                                 ],
                                 "resources": {
