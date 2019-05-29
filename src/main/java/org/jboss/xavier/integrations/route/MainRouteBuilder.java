@@ -133,6 +133,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     }
                 })
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
+                .filter(simple("'ma-xavier' == ${body.getCategory}"))
                 .to("direct:download-from-S3");
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.validation.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
