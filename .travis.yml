@@ -1,0 +1,11 @@
+language: java
+notifications:
+  email: false
+jdk:
+  - openjdk8
+  - openjdk12
+install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+jobs:
+  include:
+    - stage: Test
+      script: mvn test
