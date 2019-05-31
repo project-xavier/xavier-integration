@@ -5,7 +5,7 @@ jdk:
   - openjdk8
 addons:
   sonarcloud:
-    organization: carlosthe19916
+    organization: project-xavier
     token:
       secure: $SONAR_TOKEN
 install:
