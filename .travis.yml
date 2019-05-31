@@ -3,6 +3,11 @@ notifications:
   email: false
 jdk:
   - openjdk8
+addons:
+  sonarcloud:
+    organization: carlosthe19916
+    token:
+      secure: $SONAR_TOKEN
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
   - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
@@ -10,3 +15,5 @@ jobs:
   include:
     - stage: Test
       script: mvn test
+    - stage: Scaner
+      script: sonar-scanner
