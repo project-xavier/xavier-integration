@@ -43,8 +43,6 @@ public class MainRouteBuilder extends RouteBuilder {
     @Value("${insights.kafka.host}")
     private String kafkaHost;
 
-    private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-
     @Value("${insights.upload.mimetype}")
     private String mimeType;
 
@@ -60,9 +58,9 @@ public class MainRouteBuilder extends RouteBuilder {
                     .bindingMode(RestBindingMode.off)
                     .consumes("multipart/form-data")
                     .produces("")
-                    .to("seda:upload");
+                    .to("direct:upload");
 
-        from("seda:upload")
+        from("direct:upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .split()
                     .attachments()
@@ -71,17 +69,17 @@ public class MainRouteBuilder extends RouteBuilder {
                         .when(isZippedFile())
                             .split(new ZipSplitter())
                             .streaming()
-                            .to("seda:store")
+                            .to("direct:store")
                         .endChoice()
                         .otherwise()
-                            .to("seda:store");
+                            .to("direct:store");
 
-        from("seda:store")
+        from("direct:store")
                 .convertBodyTo(String.class)
                 .to("file:./upload")
                 .to("direct:insights");
 
-        from("seda:insights")
+        from("direct:insights")
                 .id("call-insights-upload-service")
                 .process(exchange -> {
                     MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
@@ -106,9 +104,9 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
-                .to("seda:download-file");
+                .to("direct:download-file");
 
-        from("seda:download-file")
+        from("direct:download-file")
                 .id("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .process( exchange -> {
@@ -122,9 +120,9 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
                 .convertBodyTo(String.class)
-                .to("seda:calculate");
+                .to("direct:calculate");
 
-        from("seda:calculate")
+        from("direct:calculate")
                 .id("calculate")
                 .unmarshal().json(JsonLibrary.Jackson, CloudFormAnalysis.class)
                 .process(exchange -> new AnalyticsCalculator().calculate(exchange.getMessage().getBody(CloudFormAnalysis.class),exchange.getIn().getHeader("customerid", String.class),exchange.getIn().getHeader("filename", String.class)  ))
