@@ -3,7 +3,6 @@ notifications:
   email: false
 jdk:
   - openjdk8
-  - openjdk12
 install: mvn -gs ./configuration/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
