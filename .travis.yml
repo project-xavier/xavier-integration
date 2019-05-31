@@ -15,5 +15,5 @@ jobs:
   include:
     - stage: Test
       script:
-        - mvn test -P !docker
+        - mvn test
         - sonar-scanner
