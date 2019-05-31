@@ -3,7 +3,9 @@ notifications:
   email: false
 jdk:
   - openjdk8
-install: mvn -gs ./configuration/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+install:
+  - cp ./configuration/settings.xml $HOME/.m2/settings.xml
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
     - stage: Test
