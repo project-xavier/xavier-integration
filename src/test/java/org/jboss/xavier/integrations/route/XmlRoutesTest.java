@@ -33,5 +33,6 @@ public class XmlRoutesTest
     {
 //        mockResult.assertIsSatisfied();
 //        MockEndpoint.assertIsSatisfied(camelContext);
+        org.junit.Assert.assertEquals("hello".toUpperCase(), "HELLO");
     }
 }
