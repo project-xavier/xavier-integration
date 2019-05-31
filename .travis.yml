@@ -14,6 +14,6 @@ install:
 jobs:
   include:
     - stage: Test
-      script: mvn test
-    - stage: Scaner
-      script: sonar-scanner
+      script:
+        - mvn test
+        - sonar-scanner
