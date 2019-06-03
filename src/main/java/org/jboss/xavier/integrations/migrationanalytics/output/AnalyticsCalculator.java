@@ -2,7 +2,9 @@ package org.jboss.xavier.integrations.migrationanalytics.output;
 
 import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
 import org.jboss.xavier.integrations.route.model.cloudforms.CloudFormAnalysis;
+import org.springframework.stereotype.Component;
 
+@Component("analyticsCalculator")
 public class AnalyticsCalculator {
     public InputDataModel calculate(CloudFormAnalysis cloudFormAnalysis, String customerid, String filename) {
         int numberofhosts = cloudFormAnalysis.getDatacenters()

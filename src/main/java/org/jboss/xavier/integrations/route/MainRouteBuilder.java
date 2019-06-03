@@ -125,7 +125,7 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .unmarshal().json(JsonLibrary.Jackson, CloudFormAnalysis.class)
-                .process(exchange -> new AnalyticsCalculator().calculate(exchange.getMessage().getBody(CloudFormAnalysis.class),exchange.getIn().getHeader("customerid", String.class),exchange.getIn().getHeader("filename", String.class)  ))
+                .transform().method("analyticsCalculator", "calculate(${body}, ${header.customerid}, ${header.filename})")
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:inputDataModel");
     }
