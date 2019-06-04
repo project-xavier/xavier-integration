@@ -61,12 +61,12 @@
             <log id="route-log-message-sent" message="Message with sample InputDataModel sent" />
         </route>
 
-        <route id="test-route-ma" trace="false">
+        <route id="test-route-ma" trace="true">
             <from uri="jms:queue:inputDataModel" />
             <log message="Message received" />
             <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
             <bean method="createRandomMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
-            <to uri="direct:decisionserver"/>
+            <to id="decisionserver" uri="direct:decisionserver"/>
             <bean id="route-extract-reports" method="extractReports" ref="decisionServerHelper"/>
             <log id="route-log-totalPrice" message="totalPrice = ${body.totalPrice}"/>
             <to uri="jpa:org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel" />

@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.migrationanalytics.output;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.kie.api.definition.type.Label;
@@ -15,6 +16,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ReportDataModel implements java.io.Serializable {
 
     static final long serialVersionUID = 1L;
