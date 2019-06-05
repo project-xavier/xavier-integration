@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.route.model.cloudforms;
 
 import com.fasterxml.jackson.annotation.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 })
 @Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class CloudFormAnalysis {
 
     @JsonProperty("hostname")
