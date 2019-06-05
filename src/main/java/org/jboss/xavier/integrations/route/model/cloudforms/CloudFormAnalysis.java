@@ -1,11 +1,8 @@
 package org.jboss.xavier.integrations.route.model.cloudforms;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +15,8 @@ import java.util.Map;
     "api_version",
     "datacenters"
 })
+@Builder
+@NoArgsConstructor
 public class CloudFormAnalysis {
 
     @JsonProperty("hostname")
@@ -29,7 +28,7 @@ public class CloudFormAnalysis {
     @JsonProperty("datacenters")
     private List<Datacenter> datacenters = null;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonProperty("hostname")
     public String getHostname() {

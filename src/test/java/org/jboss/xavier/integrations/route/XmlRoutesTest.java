@@ -37,7 +37,7 @@ public class XmlRoutesTest
     CamelContext camelContext;
 
     @EndpointInject(uri = "mock:jpa:org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel")
-    MockEndpoint mockJPA;
+    private MockEndpoint mockJPA;
     
     @SpyBean
     DecisionServerHelper decisionServerHelper;
@@ -46,22 +46,14 @@ public class XmlRoutesTest
     public void setup() throws Exception {
         camelContext.getRouteDefinition("test-route-ma").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 replaceFromWith("direct:inputDataModel");
-                weaveById("decisionserver").after().process(exchange -> {
-                    System.out.println("ENTRANDO");
-                    exchange.getIn().setBody(new ServiceResponse<ExecutionResults>());
-                    System.out.println("SALIENDO");
-                });
+                weaveById("decisionserver").after().process(exchange -> exchange.getIn().setBody(new ServiceResponse<ExecutionResults>()));
             }
         });     
         doReturn(getReportModelSample()).when(decisionServerHelper).extractReports(any());
     }
 
-    private ReportDataModel getReportModelSample() {
-        return ReportDataModel.builder().numberOfHosts(10).totalDiskSpace(100L).totalPrice(1000).build();
-    }    
-    
     @Test
     public void test0() throws Exception
     {
@@ -79,6 +71,10 @@ public class XmlRoutesTest
         
         camelContext.stop();
     }
+
+    private ReportDataModel getReportModelSample() {
+        return ReportDataModel.builder().numberOfHosts(10).totalDiskSpace(100L).totalPrice(1000).build();
+    }    
 
     private InputDataModel getInputDataModelSample() {
         return InputDataModel.builder().customerId("CID7899").fileName("ficherito.json").numberOfHosts(100).totalDiskSpace(2000L).build();

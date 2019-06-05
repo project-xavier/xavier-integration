@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.Map;
     "ems_clusters",
     "datastores"
 })
+@Builder
+@NoArgsConstructor
 public class Datacenter {
 
     @JsonProperty("name")
@@ -27,7 +31,7 @@ public class Datacenter {
     @JsonProperty("datastores")
     private List<Datastore> datastores = null;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonProperty("name")
     public String getName() {

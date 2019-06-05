@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +28,8 @@ import java.util.Map;
     "v_total_vms",
     "v_total_miq_templates"
 })
+@Builder
+@NoArgsConstructor
 public class Host {
 
     @JsonProperty("name")
@@ -53,7 +57,7 @@ public class Host {
     @JsonProperty("v_total_miq_templates")
     private Long vTotalMiqTemplates;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonProperty("name")
     public String getName() {

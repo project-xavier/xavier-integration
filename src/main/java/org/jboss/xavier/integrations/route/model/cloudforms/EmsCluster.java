@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,8 @@ import java.util.Map;
     "v_ram_vr_ratio",
     "hosts"
 })
+@Builder
+@NoArgsConstructor
 public class EmsCluster {
 
     @JsonProperty("name")
@@ -78,7 +82,7 @@ public class EmsCluster {
     @JsonProperty("hosts")
     private List<Host> hosts = null;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonProperty("name")
     public String getName() {
