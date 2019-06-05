@@ -316,7 +316,6 @@
             <properties>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.organization>project-xavier</sonar.organization>
-                <sonar.login>49adb984603db9f2fb4d3c680ac50ff2740e4626</sonar.login>
                 <sonar.projectKey>project-xavier_xavier-integration</sonar.projectKey>
             </properties>
             <build>
