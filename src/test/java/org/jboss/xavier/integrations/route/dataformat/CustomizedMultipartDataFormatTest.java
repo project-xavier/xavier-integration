@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CustomizedMultipartDataFormatTest {
     
     @Test
-    public void testMultipart_positive_case() throws IOException, MessagingException {
+    public void customizedMultipartDataFormat_unmarshal_MultipartMessage5FilesGiven_ShouldReturn5Attachments() throws IOException, MessagingException {
         // Given
         CustomizedMultipartDataFormat customizedMultipartDataFormat = new CustomizedMultipartDataFormat();
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
@@ -32,11 +32,11 @@ class CustomizedMultipartDataFormatTest {
     }    
     
     @Test
-    public void testMultipart_negative_case() throws IOException, MessagingException {
+    public void customizedMultipartDataFormat_unmarshal_TextHtmlMessageGiven_ShouldReturnSameInput() throws IOException, MessagingException {
         // Given
         CustomizedMultipartDataFormat customizedMultipartDataFormat = new CustomizedMultipartDataFormat();
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-        exchange.getIn().setHeader("Content-Type", "image/jpg");
+        exchange.getIn().setHeader("Content-Type", "text/html");
         
         InputStream stream = new ByteArrayInputStream("This is a text".getBytes());
         
