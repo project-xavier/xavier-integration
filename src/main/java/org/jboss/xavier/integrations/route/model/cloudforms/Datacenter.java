@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class Datacenter {
 
     @JsonProperty("name")
@@ -34,45 +36,4 @@ public class Datacenter {
     private List<Datastore> datastores = null;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<>();
-
-    @JsonProperty("name")
-    public String getName() {
-        return name;
-    }
-
-    @JsonProperty("name")
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @JsonProperty("ems_clusters")
-    public List<EmsCluster> getEmsClusters() {
-        return emsClusters;
-    }
-
-    @JsonProperty("ems_clusters")
-    public void setEmsClusters(List<EmsCluster> emsClusters) {
-        this.emsClusters = emsClusters;
-    }
-
-    @JsonProperty("datastores")
-    public List<Datastore> getDatastores() {
-        return datastores;
-    }
-
-    @JsonProperty("datastores")
-    public void setDatastores(List<Datastore> datastores) {
-        this.datastores = datastores;
-    }
-
-    @JsonAnyGetter
-    public Map<String, Object> getAdditionalProperties() {
-        return this.additionalProperties;
-    }
-
-    @JsonAnySetter
-    public void setAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
-    }
-
 }

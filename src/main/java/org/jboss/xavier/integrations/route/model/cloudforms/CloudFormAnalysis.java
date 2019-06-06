@@ -3,6 +3,7 @@ package org.jboss.xavier.integrations.route.model.cloudforms;
 import com.fasterxml.jackson.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class CloudFormAnalysis {
 
     @JsonProperty("hostname")
@@ -31,55 +33,5 @@ public class CloudFormAnalysis {
     private List<Datacenter> datacenters = null;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<>();
-
-    @JsonProperty("hostname")
-    public String getHostname() {
-        return hostname;
-    }
-
-    @JsonProperty("hostname")
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-    @JsonProperty("emstype_description")
-    public String getEmstypeDescription() {
-        return emstypeDescription;
-    }
-
-    @JsonProperty("emstype_description")
-    public void setEmstypeDescription(String emstypeDescription) {
-        this.emstypeDescription = emstypeDescription;
-    }
-
-    @JsonProperty("api_version")
-    public String getApiVersion() {
-        return apiVersion;
-    }
-
-    @JsonProperty("api_version")
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
-    }
-
-    @JsonProperty("datacenters")
-    public List<Datacenter> getDatacenters() {
-        return datacenters;
-    }
-
-    @JsonProperty("datacenters")
-    public void setDatacenters(List<Datacenter> datacenters) {
-        this.datacenters = datacenters;
-    }
-
-    @JsonAnyGetter
-    public Map<String, Object> getAdditionalProperties() {
-        return this.additionalProperties;
-    }
-
-    @JsonAnySetter
-    public void setAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
-    }
 
 }
