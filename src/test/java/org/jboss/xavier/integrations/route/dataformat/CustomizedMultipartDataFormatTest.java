@@ -22,7 +22,7 @@ public class CustomizedMultipartDataFormatTest {
         Exchange exchange = new DefaultExchange(new DefaultCamelContext());
         exchange.getIn().setHeader("Content-Type", "multipart/text");
         
-        InputStream stream = this.getClass().getClassLoader().getResourceAsStream("mime-message-sample.txt");
+        InputStream stream = this.getClass().getClassLoader().getResourceAsStream("mime-message-several-files-sample.txt");
         
         // When
         Message message = (Message) customizedMultipartDataFormat.unmarshal(exchange, stream);

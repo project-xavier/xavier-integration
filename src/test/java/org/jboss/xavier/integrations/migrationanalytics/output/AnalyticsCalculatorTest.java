@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AnalyticsCalculatorTest {
 
     @Test
-    void analyticsCalculator_calculate_CloudFormsModelWith8HostsAnd8000OfSpaceGiven_ShouldReturn8HostsAnd8000TotalDiskSpace() {
+    public void analyticsCalculator_calculate_CloudFormsModelWith8HostsAnd8000OfSpaceGiven_ShouldReturn8HostsAnd8000TotalDiskSpace() {
         // Given
         String filename = "ficherito.json";
         String customerid = "CIDE9988";

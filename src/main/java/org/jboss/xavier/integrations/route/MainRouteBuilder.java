@@ -61,6 +61,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     .to("direct:upload");
 
         from("direct:upload")
+                .id("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .split()
                     .attachments()

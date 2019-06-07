@@ -20,17 +20,17 @@ import org.springframework.test.context.ActiveProfiles;
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
-public class MainRouteBuilderTest {
+public class MainRouteBuilder_DirectStoreTest {
     @Autowired
     CamelContext camelContext;
 
     @EndpointInject(uri = "mock:direct:insights")
     private MockEndpoint mockInsights;
-    
- 
+
     @Test
     public void mainRouteBuilder_routeDirectStore_ContentGiven_ShouldStoreinLocalFile() throws Exception {
         //Given
+                
         String body = "this is a test body";
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
@@ -46,5 +46,7 @@ public class MainRouteBuilderTest {
         
         camelContext.stop();
     }
+    
 
+    
 }
