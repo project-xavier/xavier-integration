@@ -1,17 +1,20 @@
 package org.jboss.xavier.integrations.migrationanalytics.output;
 
 import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
-import org.jboss.xavier.integrations.route.model.cloudforms.*;
-import org.junit.jupiter.api.Test;
+import org.jboss.xavier.integrations.route.model.cloudforms.CloudFormAnalysis;
+import org.jboss.xavier.integrations.route.model.cloudforms.Datacenter;
+import org.jboss.xavier.integrations.route.model.cloudforms.Datastore;
+import org.jboss.xavier.integrations.route.model.cloudforms.EmsCluster;
+import org.jboss.xavier.integrations.route.model.cloudforms.Host;
+import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AnalyticsCalculatorTest {
+public class AnalyticsCalculatorTest {
 
     @Test
     void analyticsCalculator_calculate_CloudFormsModelWith8HostsAnd8000OfSpaceGiven_ShouldReturn8HostsAnd8000TotalDiskSpace() {

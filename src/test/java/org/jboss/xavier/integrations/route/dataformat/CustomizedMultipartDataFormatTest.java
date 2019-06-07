@@ -4,7 +4,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultExchange;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import javax.mail.MessagingException;
 import java.io.ByteArrayInputStream;
@@ -13,7 +13,7 @@ import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CustomizedMultipartDataFormatTest {
+public class CustomizedMultipartDataFormatTest {
     
     @Test
     public void customizedMultipartDataFormat_unmarshal_MultipartMessage5FilesGiven_ShouldReturn5Attachments() throws IOException, MessagingException {

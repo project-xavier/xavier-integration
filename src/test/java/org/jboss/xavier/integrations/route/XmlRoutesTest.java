@@ -31,8 +31,7 @@ import static org.mockito.Mockito.doReturn;
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) //, properties = {"camel.springboot.java-routes-include-pattern=**/test-route-ma"}) Doesnt work if using UseAdviceWith
 @ActiveProfiles("test")
-public class XmlRoutesTest 
-{
+public class XmlRoutesTest {
     @Autowired
     CamelContext camelContext;
 
