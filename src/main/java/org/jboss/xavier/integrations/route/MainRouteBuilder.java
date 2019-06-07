@@ -75,6 +75,7 @@ public class MainRouteBuilder extends RouteBuilder {
                             .to("direct:store");
 
         from("direct:store")
+                .id("direct-store")
                 .convertBodyTo(String.class)
                 .to("file:./upload")
                 .to("direct:insights");
