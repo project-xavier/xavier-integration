@@ -16,4 +16,5 @@ jobs:
     - stage: Test
       script:
         - mvn test -Pcoverage
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
