@@ -29,7 +29,7 @@ import static org.mockito.Mockito.doReturn;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @MockEndpointsAndSkip("jpa:org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel|direct:decisionserver")  
 @UseAdviceWith // Disables automatic start of Camel context
-@SpringBootTest(classes = {Application.class}) //, properties = {"camel.springboot.java-routes-include-pattern=**/test-route-ma"}) Doesnt work if using UseAdviceWith
+@SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
 public class XmlRoutesTest {
     @Autowired
