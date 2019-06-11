@@ -83,17 +83,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:insights")
                 .id("call-insights-upload-service")
-                .process(exchange -> {
-                    MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-                    multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-                    multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
-                    String filename = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
-                    exchange.getIn().setHeader(Exchange.FILE_NAME, filename);
-
-                    String file = exchange.getIn().getBody(String.class);
-                    multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), filename));
-                    exchange.getIn().setBody(multipartEntityBuilder.build());
-                })
+                .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
@@ -130,6 +120,16 @@ public class MainRouteBuilder extends RouteBuilder {
                 .transform().method("analyticsCalculator", "calculate(${body}, ${header.customerid}, ${header.filename})")
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:inputDataModel");
+    }
+
+    private void createMultipartToSendToInsights(Exchange exchange) {
+        MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+        multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
+
+        String file = exchange.getIn().getBody(String.class);
+        multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
+        exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
     private String getRHInsightsRequestId() {

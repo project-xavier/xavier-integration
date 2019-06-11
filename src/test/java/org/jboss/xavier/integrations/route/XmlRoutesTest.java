@@ -54,7 +54,7 @@ public class XmlRoutesTest {
     }
 
     @Test
-    public void test0() throws Exception
+    public void xmlroutes_directInputDataModel_InputDataModelGiven_ShouldReportDecisionServerHelperValues() throws Exception
     {
       
         mockJPA.expectedBodiesReceived(getReportModelSample());
