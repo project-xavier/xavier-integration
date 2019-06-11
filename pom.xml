@@ -282,7 +282,7 @@
             </build>
         </profile>
         <profile>
-            <id>docker</id>
+            <id>fuse-fabric8-docker</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
