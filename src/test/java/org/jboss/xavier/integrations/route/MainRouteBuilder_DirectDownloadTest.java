@@ -31,7 +31,7 @@ import static org.mockito.Mockito.doReturn;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("http4://oldhost|direct:calculate")
+@MockEndpointsAndSkip("http4:oldhost|direct:calculate")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
@@ -42,22 +42,12 @@ public class MainRouteBuilder_DirectDownloadTest {
     @Autowired
     MainRouteBuilder mainRouteBuilder;
 
-    @EndpointInject(uri = "mock:http4://oldhost")
+    @EndpointInject(uri = "mock:http4:oldhost")
     private MockEndpoint mockOldHost;    
     
     @EndpointInject(uri = "mock:direct:calculate")
     private MockEndpoint mockCalculate;
 
-    @Before
-    public void setup() throws Exception {
-        camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() {
-                //weaveByToUri("http4://oldhost").after().process(exchange -> exchange.getIn().setBody("--file-from-insights--"));
-            }
-        });
-    }
-    
     @Test
     public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
@@ -65,8 +55,8 @@ public class MainRouteBuilder_DirectDownloadTest {
         camelContext.setAutoStartup(false);
         mockCalculate.expectedMessageCount(1);
         
-        mockOldHost.expectedHeaderReceived("customerid", "CIDXXXX1234");
-        //mockOldHost.expectedHeaderReceived("ExchangXXe.HTTP_URI", "http://dummxyurl.com");
+        mockOldHost.expectedHeaderReceived("customerid", "CID1234");
+        mockOldHost.expectedHeaderReceived("CamelHttpUri", "http://dummyurl.com");
 
         //When
         camelContext.start();
