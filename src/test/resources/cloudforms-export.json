@@ -1,0 +1,155 @@
+{
+  "hostname": "vcenter.dummy.com",
+  "emstype_description": "Dummy vCenter",
+  "api_version": "6.5",
+  "datacenters": [
+    {
+      "name": "V2V-DC",
+      "ems_clusters": [
+        {
+          "name": "V2V_Cluster",
+          "aggregate_physical_cpus": 4,
+          "aggregate_cpu_total_cores": 32,
+          "aggregate_cpu_speed": 76608,
+          "aggregate_memory": 261694,
+          "effective_cpu": 67126,
+          "effective_memory": 258797993984,
+          "aggregate_vm_cpus": 154,
+          "aggregate_vm_memory": 233728,
+          "drs_enabled": false,
+          "drs_automation_level": "fullyAutomated",
+          "drs_migration_threshold": 3,
+          "ha_enabled": false,
+          "ha_admit_control": true,
+          "ha_max_failures": 1,
+          "total_direct_vms": 132,
+          "total_direct_miq_templates": 6,
+          "v_cpu_vr_ratio": 4.800000000000001,
+          "v_ram_vr_ratio": 0.9,
+          "hosts": [
+            {
+              "name": "esx12.dummy.com",
+              "power_state": "on",
+              "vmm_product": "ESXi",
+              "vmm_version": "6.5.0",
+              "vmm_buildnumber": "5969303",
+              "num_cpu": 2,
+              "cpu_total_cores": 16,
+              "cpu_cores_per_socket": 8,
+              "hyperthreading": true,
+              "ram_size": 130847,
+              "v_total_vms": 110,
+              "v_total_miq_templates": 4
+            },
+            {
+              "name": "esx13.dummy.com",
+              "power_state": "on",
+              "vmm_product": "ESXi",
+              "vmm_version": "6.5.0",
+              "vmm_buildnumber": "5969303",
+              "num_cpu": 2,
+              "cpu_total_cores": 16,
+              "cpu_cores_per_socket": 8,
+              "hyperthreading": true,
+              "ram_size": 130847,
+              "v_total_vms": 22,
+              "v_total_miq_templates": 2
+            }
+          ]
+        }
+      ],
+      "datastores": [
+        {
+          "name": "datastore12",
+          "store_type": "VMFS",
+          "raw_disk_mappings_supported": true,
+          "thin_provisioning_supported": true,
+          "directory_hierarchy_supported": true,
+          "multiplehostaccess": 0,
+          "total_space": 591363309568,
+          "uncommitted": 505658936457,
+          "free_space": 148568539136,
+          "v_total_vms": 90,
+          "hosts": [
+            "esx12.dummy.com"
+          ],
+          "storage_profiles": [
+            "Default encryption properties",
+            "High IO shares allocation",
+            "Low IO shares allocation",
+            "VM Encryption Policy",
+            "Normal IO shares allocation"
+          ]
+        },
+        {
+          "name": "iSCSI_Datastore",
+          "store_type": "VMFS",
+          "raw_disk_mappings_supported": true,
+          "thin_provisioning_supported": true,
+          "directory_hierarchy_supported": true,
+          "multiplehostaccess": 1,
+          "total_space": 321854111744,
+          "uncommitted": 83710723383,
+          "free_space": 110919417856,
+          "v_total_vms": 7,
+          "hosts": [
+            "esx12.dummy.com",
+            "esx13.dummy.com"
+          ],
+          "storage_profiles": [
+            "Default encryption properties",
+            "High IO shares allocation",
+            "Low IO shares allocation",
+            "VM Encryption Policy",
+            "Normal IO shares allocation"
+          ]
+        },
+        {
+          "name": "NFS_Datastore",
+          "store_type": "NFS41",
+          "raw_disk_mappings_supported": false,
+          "thin_provisioning_supported": true,
+          "directory_hierarchy_supported": true,
+          "multiplehostaccess": 1,
+          "total_space": 322122547200,
+          "uncommitted": 643570790400,
+          "free_space": 205094305792,
+          "v_total_vms": 27,
+          "hosts": [
+            "esx12.dummy.com",
+            "esx13.dummy.com"
+          ],
+          "storage_profiles": [
+            "Default encryption properties",
+            "High IO shares allocation",
+            "Low IO shares allocation",
+            "VM Encryption Policy",
+            "Normal IO shares allocation"
+          ]
+        },
+        {
+          "name": "datastore13",
+          "store_type": "VMFS",
+          "raw_disk_mappings_supported": true,
+          "thin_provisioning_supported": true,
+          "directory_hierarchy_supported": true,
+          "multiplehostaccess": 0,
+          "total_space": 591363309568,
+          "uncommitted": 312370572724,
+          "free_space": 355097116672,
+          "v_total_vms": 8,
+          "hosts": [
+            "esx13.dummy.com"
+          ],
+          "storage_profiles": [
+            "Default encryption properties",
+            "High IO shares allocation",
+            "Low IO shares allocation",
+            "VM Encryption Policy",
+            "Normal IO shares allocation"
+          ]
+        }
+      ]
+    }
+  ]
+}
