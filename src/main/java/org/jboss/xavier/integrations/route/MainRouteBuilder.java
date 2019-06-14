@@ -51,9 +51,10 @@ public class MainRouteBuilder extends RouteBuilder {
         rest()
                     .post("/upload/{customerID}")
                     .bindingMode(RestBindingMode.off)
-                    .consumes("multipart/form-data")
-                    .produces("")
-                    .to("direct:upload");
+                .consumes("multipart/form-data")
+                .produces("")
+//                .route().id("rest-upload")
+                .to("direct:upload");
 
         from("direct:upload")
                 .id("direct-upload")

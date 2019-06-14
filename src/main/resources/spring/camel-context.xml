@@ -19,8 +19,8 @@
         <!-- specify connection factory on JMS component -->
         <property name="connectionFactory" ref="artemisConnectionFactory"/>
     </bean>
-
-    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+    
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring" trace="true">
 
         <restConfiguration contextPath="/camel-rest-jpa" apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
@@ -34,13 +34,14 @@
                 <description>Get the list of all the reports</description>
                 <param name="summary" type="query" defaultValue="true" required="false" description="Disable the output objects to have only the fields needed in the reports summary page setting the parameter 'summary=false'" />
                 <route id="reports-get-all">
+                    <log message="${headers} ${body}" />
                     <choice>
                         <when>
                             <simple>${header.summary} == 'false'</simple>
-                            <bean beanType="org.jboss.xavier.integrations.jpa.service.ReportService" method="findReports" />
+                            <bean ref="reportService" method="findReports" />
                         </when>
                         <otherwise>
-                            <bean beanType="org.jboss.xavier.integrations.jpa.service.ReportService" method="findReportSummary" />
+                            <bean ref="reportService" method="findReportSummary" />
                         </otherwise>
                     </choice>
                 </route>
