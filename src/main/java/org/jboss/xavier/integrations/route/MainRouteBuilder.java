@@ -14,8 +14,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
-import org.jboss.xavier.integrations.migrationanalytics.output.AnalyticsCalculator;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.RHIdentity;
 import org.jboss.xavier.integrations.route.model.cloudforms.CloudFormAnalysis;
@@ -24,9 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
-import java.text.SimpleDateFormat;
 import java.util.Base64;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -53,10 +49,10 @@ public class MainRouteBuilder extends RouteBuilder {
         getContext().setTracing(true);
 
         rest()
+                .id("rest")
                 .post("/upload/{customerID}")
-                    .id("uploadAction")
                     .bindingMode(RestBindingMode.off)
-                    .consumes("multipart/form-data")
+                    //.consumes("multipart/form-data")
                     .produces("")
                     .to("direct:upload");
 
