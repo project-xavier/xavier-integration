@@ -40,7 +40,7 @@ public class MainRouteBuilder_RestUploadTest {
 
         //When
         camelContext.start();
-        camelContext.startRoute("post1"); //TODO deserves investigation why adding an ID to the rest route makes it fail
+        camelContext.startRoute("rest-upload");
         ResponseEntity<String> answer = restTemplate.postForEntity("/camel/upload/CID12345", body, String.class);
 
         //Then

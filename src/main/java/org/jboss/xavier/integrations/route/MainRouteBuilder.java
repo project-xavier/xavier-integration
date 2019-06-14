@@ -48,12 +48,8 @@ public class MainRouteBuilder extends RouteBuilder {
     public void configure() {
         getContext().setTracing(true);
 
-        rest()
-                    .post("/upload/{customerID}")
-                    .bindingMode(RestBindingMode.off)
-                .consumes("multipart/form-data")
-                .produces("")
-//                .route().id("rest-upload")
+        from("rest:post:/upload/{customerID}?consumes=multipart/form-data")
+                .id("rest-upload")
                 .to("direct:upload");
 
         from("direct:upload")
