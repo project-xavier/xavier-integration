@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("http4:*")
+@MockEndpointsAndSkip("http:*")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
@@ -27,7 +27,7 @@ public class XmlRoutes_DirectDecisionServerTest {
     @Autowired
     CamelContext camelContext;
 
-    @EndpointInject(uri="mock:http4:{{kieserver.devel-service}}/{{kieserver.path}}")
+    @EndpointInject(uri="mock:http:{{kieserver.devel-service}}/{{kieserver.path}}")
     MockEndpoint kieServer;
     
     @Autowired
