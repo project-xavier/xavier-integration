@@ -37,28 +37,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DecisionServerHelper {
 
-    /** The random. */
-    private final Random random = new Random();
-
-    private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-
-    public BatchExecutionCommand createRandomMigrationAnalyticsCommand() {
-        return createRandomMigrationAnalyticsCommand(createSampleInputDataModel());
-    }
-
-    public BatchExecutionCommand createRandomMigrationAnalyticsCommand(InputDataModel inputDataModel) {
+    public BatchExecutionCommand createMigrationAnalyticsCommand(InputDataModel inputDataModel) {
         return generateCommands(inputDataModel, "get reports", "kiesession0");
-    }
-
-    public InputDataModel createSampleInputDataModel()
-    {
-        InputDataModel inputDataModel = new InputDataModel();
-        String customerId = Integer.toString(random.nextInt(99999999));
-        inputDataModel.setCustomerId(customerId);
-        inputDataModel.setFileName(format.format(new Date()) + "-" + customerId + "-payload.json");
-        inputDataModel.setNumberOfHosts(random.nextInt(99999));
-        inputDataModel.setTotalDiskSpace(Integer.toUnsignedLong(random.nextInt(999999999)));
-        return inputDataModel;
     }
 
     private BatchExecutionCommand generateCommands(Object insert, String retrieveQueryId, String kiseSessionId)
