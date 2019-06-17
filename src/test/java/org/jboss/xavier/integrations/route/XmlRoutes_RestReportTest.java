@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) 
 @ActiveProfiles("test")
-public class MainRouteBuilder_RestReportTest {
+public class XmlRoutes_RestReportTest {
     @Autowired
     CamelContext camelContext;
 

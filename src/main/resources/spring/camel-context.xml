@@ -68,7 +68,7 @@
         <!--
             The following route is used as sub-route to send generic commands to the kie server.
         -->
-        <route id="decision-server-rest" trace="false">
+        <route id="decision-server-rest">
             <!-- Using the xstream marshalling -->
             <from id="route-from-decision-server-rest" uri="direct:decisionserver"/>
             <setHeader headerName="CamelHttpMethod" id="header-post">
@@ -85,7 +85,7 @@
                 <xstream/>
             </marshal>
             <to id="log-request" uri="log:INFO?showBody=true&amp;showHeaders=true" />
-            <to id="route-to-decision-server-rest" uri="http://{{service:{{kieserver.service}}:{{kieserver.devel-service}}}}/{{kieserver.path}}?authMethod=Basic&amp;authUsername={{kieserver.username}}&amp;authPassword={{kieserver.password}}"/>
+            <to id="route-to-decision-server-rest" uri="http4://{{service:{{kieserver.service}}:{{kieserver.devel-service}}}}/{{kieserver.path}}?authMethod=Basic&amp;authUsername={{kieserver.username}}&amp;authPassword={{kieserver.password}}"/>
             <!-- Unmarshal the response -->
             <unmarshal id="route-unmarshal">
                 <xstream/>
