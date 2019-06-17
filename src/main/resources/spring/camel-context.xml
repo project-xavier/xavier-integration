@@ -54,14 +54,6 @@
             </get>
         </rest>
 
-        <route id="sample-inputDataModel-generator" autoStartup="{{sig.autoStartup}}">
-            <description>Example route that will regularly create an InputDataModel and send it to a JMS queue</description>
-            <from id="route-timer" uri="timer:testRoute?period=10s" />
-            <bean id="route-new-inputDataModel" method="createSampleInputDataModel" ref="decisionServerHelper" />
-            <to id="route-to-jms" uri="jms:queue:inputDataModel" />
-            <log id="route-log-message-sent" message="Message with sample InputDataModel sent" />
-        </route>
-
         <route id="call-kie-extract-reports" trace="true">
             <from uri="jms:queue:inputDataModel" />
             <log message="Message received" />

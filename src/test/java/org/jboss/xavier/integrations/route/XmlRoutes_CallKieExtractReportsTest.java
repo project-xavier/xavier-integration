@@ -31,7 +31,7 @@ import static org.mockito.Mockito.doReturn;
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
-public class XmlRoutesTest {
+public class XmlRoutes_CallKieExtractReportsTest {
     @Autowired
     CamelContext camelContext;
 
@@ -43,7 +43,7 @@ public class XmlRoutesTest {
     
     @Before
     public void setup() throws Exception {
-        camelContext.getRouteDefinition("test-route-ma").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+        camelContext.getRouteDefinition("call-kie-extract-reports").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
                 replaceFromWith("direct:inputDataModel");
@@ -62,7 +62,7 @@ public class XmlRoutesTest {
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         camelContext.start();
-        camelContext.startRoute("test-route-ma");
+        camelContext.startRoute("call-kie-extract-reports");
 
         camelContext.createProducerTemplate().sendBody("direct:inputDataModel", getInputDataModelSample());
 
