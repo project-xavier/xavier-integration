@@ -5,9 +5,11 @@ import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.integrations.Application;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,14 @@ public class MainRouteBuilder_RestUploadTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-
+    
+    @Value("${camel.component.servlet.mapping.context-path}")
+    String camel_context;
+    
+    @Before
+    public void setup() {
+        camel_context = camel_context.substring(0, camel_context.indexOf("*"));
+    }
    
     @Test
     public void mainRouteBuilder_routeRestUpload_ContentGiven_ShouldStoreinLocalFile() throws Exception {
@@ -41,7 +50,7 @@ public class MainRouteBuilder_RestUploadTest {
         //When
         camelContext.start();
         camelContext.startRoute("rest-upload");
-        ResponseEntity<String> answer = restTemplate.postForEntity("/camel/upload/CID12345", body, String.class);
+        ResponseEntity<String> answer = restTemplate.postForEntity(camel_context + "upload/CID12345", body, String.class);
 
         //Then
         assertThat(answer).isNotNull();

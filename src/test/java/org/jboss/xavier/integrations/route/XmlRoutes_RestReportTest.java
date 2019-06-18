@@ -6,9 +6,11 @@ import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.integrations.Application;
 import org.jboss.xavier.integrations.jpa.service.ReportService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -37,6 +39,14 @@ public class XmlRoutes_RestReportTest {
     @MockBean
     private ReportService reportService;
 
+    @Value("${camel.component.servlet.mapping.context-path}")
+    String camel_context;
+
+    @Before
+    public void setup() {
+        camel_context = camel_context.substring(0, camel_context.indexOf("*"));
+    }
+
     @Test
     public void mainRouteBuilder_RestReport_SummaryParamGiven_ShouldCallFindReportSummary() throws Exception {
         //Given
@@ -48,7 +58,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.startRoute("reports-get-all");
         Map<String, String> variables = new HashMap<>();
         variables.put("summary", "true");
-        restTemplate.getForEntity("/camel/report?summary={summary}", String.class, variables);
+        restTemplate.getForEntity(camel_context + "report?summary={summary}", String.class, variables);
         
         //Then
         verify(reportService).findReportSummary();
@@ -66,7 +76,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.startRoute("reports-get-all");
         Map<String, String> variables = new HashMap<>();
         variables.put("summary", "false");
-        restTemplate.getForEntity("/camel/report?summary={summary}", String.class, variables);
+        restTemplate.getForEntity(camel_context + "report?summary={summary}", String.class, variables);
         
         //Then
         verify(reportService).findReports();
