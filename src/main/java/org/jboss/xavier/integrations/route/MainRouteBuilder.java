@@ -50,7 +50,7 @@ public class MainRouteBuilder extends RouteBuilder {
     public void configure() {
         getContext().setTracing(true);
 
-        from("rest:post:/upload/{customerID}?consumes=multipart/form-data")
+        from("rest:post:/upload?consumes=multipart/form-data")
                 .id("rest-upload")
                 .to("direct:upload");
 
