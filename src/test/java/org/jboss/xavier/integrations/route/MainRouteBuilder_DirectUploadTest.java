@@ -52,7 +52,7 @@ public class MainRouteBuilder_DirectUploadTest {
 
         //Then
         mockStore.assertIsSatisfied();
-        assertThat(mockStore.getExchanges().stream().filter(e -> "pepito".equalsIgnoreCase(e.getIn().getHeader("nombre", String.class))).collect(Collectors.toList()).size()).isEqualTo(5);
+        assertThat(mockStore.getExchanges().stream().filter(e -> "CID12345".equalsIgnoreCase(e.getIn().getHeader("customerid", String.class))).collect(Collectors.toList()).size()).isEqualTo(5);
 
         camelContext.stop();
     }
