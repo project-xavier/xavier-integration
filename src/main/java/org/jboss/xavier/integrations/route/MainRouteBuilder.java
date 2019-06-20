@@ -4,19 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.kafka.KafkaConstants;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
-import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.RHIdentity;
 import org.jboss.xavier.integrations.route.model.cloudforms.CloudFormAnalysis;
@@ -25,12 +21,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
-import java.text.SimpleDateFormat;
 import java.util.Base64;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.apache.camel.builder.PredicateBuilder.not;
 
 /**
  * A Camel Java8 DSL Router
@@ -38,13 +34,12 @@ import java.util.UUID;
 @Component
 public class MainRouteBuilder extends RouteBuilder {
 
+    protected static final String CONTENT_TYPE = "Content-Type";
     @Value("${insights.upload.host}")
     private String uploadHost;
 
     @Value("${insights.kafka.host}")
     private String kafkaHost;
-
-    private SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 
     @Value("${insights.upload.mimetype}")
     private String mimeType;
@@ -52,33 +47,20 @@ public class MainRouteBuilder extends RouteBuilder {
     @Value("${insights.upload.accountnumber}")
     private String accountNumber;
 
-    @Value("${insights.upload.origin}")
-    private String origin;
-
     public void configure() {
         getContext().setTracing(true);
 
-/*
-        restConfiguration()
-                .component("servlet")
-                .contextPath("/");
-*/
-
-        rest()
-                .post("/upload/{customerID}")
-                    .id("uploadAction")
-                    .bindingMode(RestBindingMode.off)
-                    .consumes("multipart/form-data")
-                    .produces("")
-                    .to("direct:upload")
-/*                .get("/health")
-                    .to("direct:health")*/;
+        from("rest:post:/upload/{customerID}?consumes=multipart/form-data")
+                .id("rest-upload")
+                .to("direct:upload");
 
         from("direct:upload")
+                .id("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .split()
                     .attachments()
                     .process(processMultipart())
+                    .filter(not(isTextField()))
                     .choice()
                         .when(isZippedFile())
                             .split(new ZipSplitter())
@@ -89,23 +71,14 @@ public class MainRouteBuilder extends RouteBuilder {
                             .to("direct:store");
 
         from("direct:store")
+                .id("direct-store")
                 .convertBodyTo(String.class)
                 .to("file:./upload")
                 .to("direct:insights");
 
         from("direct:insights")
                 .id("call-insights-upload-service")
-                .process(exchange -> {
-                    MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
-                    multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-                    multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
-                    String filename = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
-                    exchange.getIn().setHeader(Exchange.FILE_NAME, filename);
-
-                    String file = exchange.getIn().getBody(String.class);
-                    multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), filename));
-                    exchange.getIn().setBody(multipartEntityBuilder.build());
-                })
+                .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
@@ -116,31 +89,12 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
                 .id("kafka-upload-message")
-                .process(exchange -> {
-                    String messageKey = "";
-                    if (exchange.getIn() != null) {
-                        Message message = exchange.getIn();
-                        Integer partitionId = (Integer) message.getHeader(KafkaConstants.PARTITION);
-                        String topicName = (String) message.getHeader(KafkaConstants.TOPIC);
-                        if (message.getHeader(KafkaConstants.KEY) != null)
-                            messageKey = (String) message.getHeader(KafkaConstants.KEY);
-                        Object data = message.getBody();
-
-                        System.out.println("topicName :: " + topicName +
-                                " partitionId :: " + partitionId +
-                                " messageKey :: " + messageKey +
-                                " message :: "+ data + "\n");
-                    }
-                })
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
-                .filter(simple("'ma-xavier' == ${body.getCategory}"))
-                .to("direct:download-from-S3");
+                .filter(simple("'{{insights.service}}' == ${body.getService}"))
+                .to("direct:download-file");
 
-        from("kafka:" + kafkaHost + "?topic={{insights.kafka.validation.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
-                .id("kafka-validation-message")
-                .to("log:INFO?showBody=true&showHeaders=true");
-
-        from("direct:download-from-S3")
+        from("direct:download-file")
+                .id("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .process( exchange -> {
                     FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
@@ -148,53 +102,33 @@ public class MainRouteBuilder extends RouteBuilder {
                     RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
                     exchange.getIn().setHeader("customerid", rhIdentity.getInternal().get("customerid"));
                     exchange.getIn().setHeader("filename", rhIdentity.getInternal().get("filename"));
-                    exchange.getIn().setHeader("origin", rhIdentity.getInternal().get("origin"));
                 })
-                .filter().method(MainRouteBuilder.class, "filterMessages")
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
                 .convertBodyTo(String.class)
-                .to("direct:parse");
+                .to("direct:calculate");
 
-        from("direct:parse")
+        from("direct:calculate")
+                .id("calculate")
                 .unmarshal().json(JsonLibrary.Jackson, CloudFormAnalysis.class)
-                .process(exchange -> {
-                    int numberofhosts = exchange.getIn().getBody(CloudFormAnalysis.class).getDatacenters()
-                            .stream()
-                            .flatMap(e -> e.getEmsClusters().stream())
-                            .mapToInt(t -> t.getHosts().size())
-                            .sum();
-                    long totalspace = exchange.getIn().getBody(CloudFormAnalysis.class).getDatacenters()
-                            .stream()
-                            .flatMap(e-> e.getDatastores().stream())
-                            .mapToLong(t -> t.getTotalSpace())
-                            .sum();
-                    exchange.getIn().setHeader("numberofhosts",String.valueOf(numberofhosts));
-                    exchange.getIn().setHeader("totaldiskspace", String.valueOf(totalspace));
-                })
-                .process(exchange ->
-                {
-                    InputDataModel inputDataModel = new InputDataModel();
-                    inputDataModel.setCustomerId(exchange.getIn().getHeader("customerid").toString());
-                    inputDataModel.setFileName(getFilename(exchange.getIn().getHeader("filename").toString()));
-                    inputDataModel.setNumberOfHosts(Integer.parseInt((exchange.getMessage().getHeader("numberofhosts").toString())));
-                    inputDataModel.setTotalDiskSpace(Long.parseLong(exchange.getMessage().getHeader("totaldiskspace").toString()));
-                    exchange.getMessage().setBody(inputDataModel);
-                })
+                .transform().method("analyticsCalculator", "calculate(${body}, ${header.customerid}, ${header.filename})")
                 .log("Message to send to AMQ : ${body}")
-//                .marshal().json()
                 .to("jms:queue:inputDataModel");
     }
 
-    private String getFilename(String filename) {
-        return format.format(new Date()) + "-" + filename;
+    private Predicate isTextField() {
+        return header(CONTENT_TYPE).convertToString().isEqualToIgnoreCase("text/plain");
     }
 
-    public boolean filterMessages(Exchange exchange) {
-        String originHeader = exchange.getIn().getHeader("origin", String.class);
-        System.out.println("Origin header : " + originHeader + " env var : " + origin);
-        return (originHeader != null && originHeader.equalsIgnoreCase(origin));
+    private void createMultipartToSendToInsights(Exchange exchange) {
+        MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+        multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
+
+        String file = exchange.getIn().getBody(String.class);
+        multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
+        exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
     private String getRHInsightsRequestId() {
@@ -203,11 +137,9 @@ public class MainRouteBuilder extends RouteBuilder {
     }
 
     public String getRHIdentity(String customerid, String filename) {
-        // '{"identity": {"account_number": "12345", "internal": {"org_id": "54321"}}}'
         Map<String,String> internal = new HashMap<>();
         internal.put("customerid", customerid);
         internal.put("filename", filename);
-        internal.put("origin", origin);
         String rhIdentity_json = "";
         try {
             rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
@@ -217,7 +149,6 @@ public class MainRouteBuilder extends RouteBuilder {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        System.out.println("---------- RHIdentity : " + rhIdentity_json);
         return Base64.getEncoder().encodeToString(rhIdentity_json.getBytes());
     }
 
@@ -227,13 +158,17 @@ public class MainRouteBuilder extends RouteBuilder {
 
     private Processor processMultipart() {
         return exchange -> {
-            DataHandler dataHandler = exchange.getIn().getBody(Attachment.class).getDataHandler();
+            Attachment body = exchange.getIn().getBody(Attachment.class);
+            
+            DataHandler dataHandler = body.getDataHandler();
+
             exchange.getIn().setHeader(Exchange.FILE_NAME, dataHandler.getName());
             exchange.getIn().setHeader("part_contenttype", dataHandler.getContentType());
-            exchange.getIn().setHeader("part_name", dataHandler.getName());
             exchange.getIn().setBody(dataHandler.getInputStream());
         };
     }
+
+
 
 
 }
