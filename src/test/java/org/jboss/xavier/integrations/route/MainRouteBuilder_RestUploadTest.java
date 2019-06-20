@@ -50,7 +50,7 @@ public class MainRouteBuilder_RestUploadTest {
         //When
         camelContext.start();
         camelContext.startRoute("rest-upload");
-        ResponseEntity<String> answer = restTemplate.postForEntity(camel_context + "upload/CID12345", body, String.class);
+        ResponseEntity<String> answer = restTemplate.postForEntity(camel_context + "upload", body, String.class);
 
         //Then
         assertThat(answer).isNotNull();
