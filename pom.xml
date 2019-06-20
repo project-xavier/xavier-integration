@@ -190,7 +190,11 @@
             <artifactId>camel-test-spring</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency> 
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.12.2</version>
+        </dependency>        
     </dependencies>
 
 
@@ -216,7 +220,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.jboss.redhat-fuse</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -235,8 +238,26 @@
     <profiles>
         <profile>
             <id>coverage</id>
+            <properties>
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <sonar.organization>project-xavier</sonar.organization>
+                <sonar.projectKey>project-xavier_xavier-integration</sonar.projectKey>
+            </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>3.5.0.1254</version>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sonar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
