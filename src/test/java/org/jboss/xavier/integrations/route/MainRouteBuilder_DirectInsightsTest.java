@@ -64,7 +64,7 @@ public class MainRouteBuilder_DirectInsightsTest {
         HttpEntity bodyResult = mockInsightsServiceHttp4.getExchanges().get(0).getIn().getBody(HttpEntity.class);
         String receivedBody = IOUtils.toString(bodyResult.getContent(), Charset.forName("UTF-8"));
         assertThat(receivedBody.indexOf(body)).isGreaterThanOrEqualTo(0);
-        String expectedRHIdentity = routeBuilder.getRHIdentity(customerid, filename);
+        String expectedRHIdentity = routeBuilder.getRHIdentity( filename, headers);
         assertThat(mockInsightsServiceHttp4.getExchanges().get(0).getIn().getHeader("x-rh-identity", String.class)).isEqualToIgnoringCase(expectedRHIdentity);
 
         camelContext.stop();

@@ -15,6 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @MockEndpointsAndSkip("http4:oldhost|direct:calculate")
@@ -47,7 +50,9 @@ public class MainRouteBuilder_DirectDownloadTest {
         //When
         camelContext.start();
         camelContext.startRoute("download-file");
-        FilePersistedNotification body = FilePersistedNotification.builder().url("http://dummyurl.com").category("cat").service("xavier").b64_identity(mainRouteBuilder.getRHIdentity("CID1234", "ficherito.txt")).build();
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("customerid", "CID1234");
+        FilePersistedNotification body = FilePersistedNotification.builder().url("http://dummyurl.com").category("cat").service("xavier").b64_identity(mainRouteBuilder.getRHIdentity("ficherito.txt", headers)).build();
 
         camelContext.createProducerTemplate().sendBody("direct:download-file", body);
 

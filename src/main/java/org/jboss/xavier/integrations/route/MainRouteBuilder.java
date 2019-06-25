@@ -9,6 +9,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -23,10 +24,9 @@ import org.springframework.stereotype.Component;
 import javax.activation.DataHandler;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.apache.camel.builder.PredicateBuilder.not;
 
 /**
  * A Camel Java8 DSL Router
@@ -34,7 +34,6 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilder {
 
-    protected static final String CONTENT_TYPE = "Content-Type";
     @Value("${insights.upload.host}")
     private String uploadHost;
 
@@ -47,6 +46,9 @@ public class MainRouteBuilder extends RouteBuilder {
     @Value("${insights.upload.accountnumber}")
     private String accountNumber;
 
+    @Value("#{'${insights.properties}'.split(',')}")
+    protected List<String> insightsProperties;
+
     public void configure() {
         getContext().setTracing(true);
 
@@ -57,19 +59,32 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:upload")
                 .id("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
-                .split()
-                    .attachments()
-                    .process(processMultipart())
-                    .filter(not(isTextField()))
-                    .choice()
-                        .when(isZippedFile())
-                            .split(new ZipSplitter())
-                            .streaming()
-                            .to("direct:store")
-                        .endChoice()
-                        .otherwise()
-                            .to("direct:store");
+                .choice()
+                    .when(isAllExpectedHeadersExist())
+                        .split()
+                            .attachments()
+                            .process(processMultipart())
+                            .filter(isFilePart())
+                                .to("direct:choice-zip-file")
+                            .end()
+                        .end()
+                    .endChoice()
+                    .otherwise()
+                      .process(httpError400())                    
+                    .end();
 
+        from("direct:choice-zip-file")
+                .id("choice-zip-file")
+                .choice()
+                  .when(isZippedFile())
+                    .split(new ZipSplitter())
+                    .streaming()
+                    .to("direct:store")
+                  .endChoice()
+                  .otherwise()
+                    .to("direct:store")
+                .end();
+        
         from("direct:store")
                 .id("direct-store")
                 .convertBodyTo(String.class)
@@ -80,7 +95,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("call-insights-upload-service")
                 .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
+                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.CamelFileName}, ${headers})"))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
                 .removeHeaders("Camel*")
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
@@ -100,8 +115,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
                     String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
                     RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
-                    exchange.getIn().setHeader("customerid", rhIdentity.getInternal().get("customerid"));
-                    exchange.getIn().setHeader("filename", rhIdentity.getInternal().get("filename"));
+                    rhIdentity.getInternal().forEach((key,value) -> exchange.getIn().setHeader(key, value));
                 })
                 .setBody(constant(""))
                 .to("http4://oldhost")
@@ -117,8 +131,24 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("jms:queue:inputDataModel");
     }
 
+    private Processor httpError400() {
+        return exchange -> {
+          exchange.getIn().setBody("{ \"error\": \"Bad Request\"}");
+          exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
+          exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+        };
+    }
+
+    private Predicate isAllExpectedHeadersExist() {
+        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty(exchange.getIn().getHeader(e, String.class)) );
+    }
+
     private Predicate isTextField() {
-        return header(CONTENT_TYPE).convertToString().isEqualToIgnoreCase("text/plain");
+        return exchange -> (!exchange.getIn().getHeaders().containsKey(CustomizedMultipartDataFormat.CONTENT_TYPE) || "text/plain".equalsIgnoreCase(exchange.getIn().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE, String.class)));
+    }
+    
+    private Predicate isFilePart() {
+        return exchange -> exchange.getIn().getHeader(CustomizedMultipartDataFormat.CONTENT_DISPOSITION, String.class).contains("filename");
     }
 
     private void createMultipartToSendToInsights(Exchange exchange) {
@@ -136,9 +166,12 @@ public class MainRouteBuilder extends RouteBuilder {
         return UUID.randomUUID().toString();
     }
 
-    public String getRHIdentity(String customerid, String filename) {
+    public String getRHIdentity(String filename, Map<String, Object> headers) {
         Map<String,String> internal = new HashMap<>();
-        internal.put("customerid", customerid);
+        
+        // we add all properties defined on the Insights Properties, that we should have as Headers of the message
+        insightsProperties.forEach(e -> internal.put(e, headers.get(e).toString()));
+        
         internal.put("filename", filename);
         String rhIdentity_json = "";
         try {
@@ -153,7 +186,7 @@ public class MainRouteBuilder extends RouteBuilder {
     }
 
     private Predicate isZippedFile() {
-        return exchange -> "application/zip".equalsIgnoreCase(exchange.getMessage().getHeader("part_contenttype").toString());
+        return exchange -> "application/zip".equalsIgnoreCase(exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString());
     }
 
     private Processor processMultipart() {
@@ -163,7 +196,8 @@ public class MainRouteBuilder extends RouteBuilder {
             DataHandler dataHandler = body.getDataHandler();
 
             exchange.getIn().setHeader(Exchange.FILE_NAME, dataHandler.getName());
-            exchange.getIn().setHeader("part_contenttype", dataHandler.getContentType());
+            exchange.getIn().setHeader(CustomizedMultipartDataFormat.CONTENT_TYPE, dataHandler.getContentType());
+            exchange.getIn().setHeader(CustomizedMultipartDataFormat.CONTENT_DISPOSITION, body.getHeader(CustomizedMultipartDataFormat.CONTENT_DISPOSITION));
             exchange.getIn().setBody(dataHandler.getInputStream());
         };
     }
