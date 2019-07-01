@@ -34,9 +34,6 @@
                 <description>Get the list of all the reports</description>
                 <param name="summary" type="query" defaultValue="true" required="false" description="Disable the output objects to have only the fields needed in the reports summary page setting the parameter 'summary=false'" />
                 <route id="reports-get-all">
-                    <log message="### Before ${headers} ${body}" />
-                    <removeHeaders pattern="CamelHttp*" />
-                    <log message="### After ${headers} ${body}" />
                     <choice>
                         <when>
                             <simple>${header.summary} == 'false'</simple>
@@ -46,7 +43,16 @@
                             <bean beanType="org.jboss.xavier.integrations.jpa.service.ReportService" method="findReportSummary" />
                         </otherwise>
                     </choice>
-                    <removeHeaders pattern="*" />
+                    <choice>
+                        <when>
+                            <simple>${header.remove} == 'true'</simple>
+                            <removeHeaders pattern="*" />
+                            <log message="### REMOVED ${headers} ${body}" />
+                        </when>
+                        <otherwise>
+                            <log message="### KEPT ${headers} ${body}" />
+                        </otherwise>
+                    </choice>
                 </route>
             </get>
             <get uri="/{id}">
