@@ -46,6 +46,7 @@
                             <bean beanType="org.jboss.xavier.integrations.jpa.service.ReportService" method="findReportSummary" />
                         </otherwise>
                     </choice>
+                    <removeHeaders pattern="*" />
                 </route>
             </get>
             <get uri="/{id}">
