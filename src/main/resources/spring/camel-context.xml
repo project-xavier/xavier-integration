@@ -21,7 +21,7 @@
     </bean>
 
     <bean id="restResponseHeaderRemover" class="org.apache.camel.impl.DefaultHeaderFilterStrategy">
-        <property name="outFilterPattern" value="\\*" />
+        <property name="outFilterPattern" value=".*" />
     </bean>
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
