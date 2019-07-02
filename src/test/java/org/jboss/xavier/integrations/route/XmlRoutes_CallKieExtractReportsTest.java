@@ -7,9 +7,9 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.Application;
 import org.jboss.xavier.integrations.DecisionServerHelper;
-import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
 import org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,8 +75,17 @@ public class XmlRoutes_CallKieExtractReportsTest {
         return ReportDataModel.builder().numberOfHosts(10).totalDiskSpace(100L).totalPrice(1000).build();
     }    
 
-    private InputDataModel getInputDataModelSample() {
-        return InputDataModel.builder().customerId("CID7899").fileName("ficherito.json").numberOfHosts(100).totalDiskSpace(2000L).build();
+    private UploadFormInputDataModel getInputDataModelSample() {
+        String customerId = "CID123";
+        String fileName = "cloudforms-export-v1.json";
+        Integer hypervisor = 1;
+        Long totaldiskspace = 1000L;
+        Integer sourceproductindicator = 1;
+        Double year1hypervisorpercentage = 10D;
+        Double year2hypervisorpercentage = 20D;
+        Double year3hypervisorpercentage = 30D;
+        Double growthratepercentage = 7D;
+        return new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
     }
     
 }

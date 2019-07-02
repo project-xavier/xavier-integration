@@ -7,8 +7,8 @@ import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.Application;
-import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +43,16 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.setAutoStartup(false);
 
         String customerId = "CID123";
-        String fileName = "cloudforms-export.json";
-        mockJmsQueue.expectedBodiesReceived(InputDataModel.builder().customerId(customerId).fileName(fileName).numberOfHosts(2).totalDiskSpace(1826703278080L).build());
+        String fileName = "cloudforms-export-v1.json";
+        Integer hypervisor = 1;
+        Long totaldiskspace = 1000L;
+        Integer sourceproductindicator = 1;
+        Double year1hypervisorpercentage = 10D;
+        Double year2hypervisorpercentage = 20D;
+        Double year3hypervisorpercentage = 30D;
+        Double growthratepercentage = 7D;
+        UploadFormInputDataModel uploadFormInputDataModel = new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
+        mockJmsQueue.expectedBodiesReceived(uploadFormInputDataModel);
         
         //When
         camelContext.start();
