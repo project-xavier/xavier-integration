@@ -210,6 +210,7 @@ public class MainRouteBuilder extends RouteBuilder {
         internal.put("customerid", customerid);
         internal.put("filename", filename);
         internal.put("origin", origin);
+        internal.put("org_id", "000001");
         String rhIdentity_json = "";
         try {
             rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
