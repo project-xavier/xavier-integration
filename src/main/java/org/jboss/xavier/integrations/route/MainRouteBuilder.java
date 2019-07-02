@@ -16,7 +16,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.RHIdentity;
-import org.jboss.xavier.integrations.route.model.cloudforms.CloudFormAnalysis;
+import org.jboss.xavier.integrations.route.model.cloudforms.v1.CloudFormsExport;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -125,8 +125,8 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:calculate")
                 .id("calculate")
-                .unmarshal().json(JsonLibrary.Jackson, CloudFormAnalysis.class)
-                .transform().method("analyticsCalculator", "calculate(${body}, ${header.customerid}, ${header.filename})")
+                .unmarshal().json(JsonLibrary.Jackson, CloudFormsExport.class)
+                .transform().method("analyticsCalculator", "calculate(${body}, ${headers})")
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:inputDataModel");
     }

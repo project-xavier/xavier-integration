@@ -15,7 +15,7 @@
  */
 package org.jboss.xavier.integrations;
 
-import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel;
 import org.kie.api.KieServices;
 import org.kie.api.command.BatchExecutionCommand;
@@ -33,7 +33,7 @@ import java.util.List;
 @Component
 public class DecisionServerHelper {
 
-    public BatchExecutionCommand createMigrationAnalyticsCommand(InputDataModel inputDataModel) {
+    public BatchExecutionCommand createMigrationAnalyticsCommand(UploadFormInputDataModel inputDataModel) {
         return generateCommands(inputDataModel, "get reports", "kiesession0");
     }
 
