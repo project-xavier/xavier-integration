@@ -108,8 +108,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 })
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-identity-header", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
-                .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
-                .setHeader("x-rh-request_id", constant(getRHInsightsRequestId()))
+                .setHeader("x-rh-insights-request-id", method(MainRouteBuilder.class, "getRHInsightsRequestId()"))
                 .removeHeaders("Camel*")
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
@@ -199,7 +198,7 @@ public class MainRouteBuilder extends RouteBuilder {
         return (originHeader != null && originHeader.equalsIgnoreCase(origin));
     }
 
-    private String getRHInsightsRequestId() {
+    public String getRHInsightsRequestId() {
         // 52df9f748eabcfea
         return UUID.randomUUID().toString();
     }
