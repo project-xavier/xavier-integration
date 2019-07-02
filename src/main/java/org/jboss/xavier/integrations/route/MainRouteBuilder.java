@@ -109,7 +109,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
-                .removeHeaders("Camel*")
+//                .removeHeaders("Camel*")
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                 .to("log:INFO?showBody=true&showHeaders=true")
                 .end();

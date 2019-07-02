@@ -20,14 +20,14 @@
         <property name="connectionFactory" ref="artemisConnectionFactory"/>
     </bean>
 
-    <bean id="restResponseHeaderRemover" class="org.apache.camel.impl.DefaultHeaderFilterStrategy">
+<!--    <bean id="restResponseHeaderRemover" class="org.apache.camel.impl.DefaultHeaderFilterStrategy">
         <property name="outFilterPattern" value=".*" />
-    </bean>
+    </bean>-->
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
         <restConfiguration apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
-            <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>
+<!--            <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>-->
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
             <apiProperty key="api.version" value="0.1"/>
             <apiProperty key="cors" value="true"/>
@@ -48,7 +48,7 @@
                             <bean beanType="org.jboss.xavier.integrations.jpa.service.ReportService" method="findReportSummary" />
                         </otherwise>
                     </choice>
-                    <choice>
+<!--                    <choice>
                         <when>
                             <simple>${header.remove} == 'true'</simple>
                             <removeHeaders pattern="*" />
@@ -57,7 +57,7 @@
                         <otherwise>
                             <log message="### KEPT ${headers} ${body}" />
                         </otherwise>
-                    </choice>
+                    </choice>-->
                 </route>
             </get>
             <get uri="/{id}">
