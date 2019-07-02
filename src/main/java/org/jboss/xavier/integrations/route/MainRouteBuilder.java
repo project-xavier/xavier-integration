@@ -106,10 +106,10 @@ public class MainRouteBuilder extends RouteBuilder {
                     multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), filename));
                     exchange.getIn().setBody(multipartEntityBuilder.build());
                 })
-                .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
-//                .removeHeaders("Camel*")
+                .removeHeaders("Camel*")
+                .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                 .to("log:INFO?showBody=true&showHeaders=true")
                 .end();
