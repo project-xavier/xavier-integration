@@ -103,7 +103,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     exchange.getIn().setHeader(Exchange.FILE_NAME, filename);
 
                     String file = exchange.getIn().getBody(String.class);
-                    multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), filename));
+                    multipartEntityBuilder.addPart("file", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), filename));
                     exchange.getIn().setBody(multipartEntityBuilder.build());
                 })
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
