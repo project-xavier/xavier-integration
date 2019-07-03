@@ -107,7 +107,6 @@ public class MainRouteBuilder extends RouteBuilder {
                     exchange.getIn().setBody(multipartEntityBuilder.build());
                 })
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
-                .setHeader("x-rh-identity-header", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
                 .setHeader("x-rh-insights-request-id", method(MainRouteBuilder.class, "getRHInsightsRequestId()"))
                 .removeHeaders("Camel*")
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
