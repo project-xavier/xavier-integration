@@ -38,7 +38,7 @@ public class XmlRoutes_DirectDecisionServerTest {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
-        String expectedBody = "<?xml version='1.0' encoding='UTF-8'?><batch-execution lookup=\"kiesession0\"><insert><org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel><id>1</id><customerId>CID12234</customerId><fileName>ficherito.json</fileName><numberOfHosts>10</numberOfHosts><totalDiskSpace>1000</totalDiskSpace></org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel></insert><fire-all-rules/><query out-identifier=\"output\" name=\"get reports\"/></batch-execution>";
+        String expectedBody = "<?xml version='1.0' encoding='UTF-8'?><batch-execution lookup=\"kiesession0\"><insert><org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel><customerId>CID123</customerId><fileName>cloudforms-export-v1.json</fileName><hypervisor>1</hypervisor><totalDiskSpace>1000</totalDiskSpace><sourceProductIndicator>1</sourceProductIndicator><year1HypervisorPercentage>10.0</year1HypervisorPercentage><year2HypervisorPercentage>20.0</year2HypervisorPercentage><year3HypervisorPercentage>30.0</year3HypervisorPercentage><growthRatePercentage>7.0</growthRatePercentage><dealIndicator>1</dealIndicator><openStackIndicator>1</openStackIndicator></org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel></insert><fire-all-rules/><query out-identifier=\"output\" name=\"get reports\"/></batch-execution>";
         kieServer.expectedBodiesReceived(expectedBody);
 
         //When
