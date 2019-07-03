@@ -165,6 +165,41 @@ public class MainRouteBuilder_DirectUploadTest {
         camelContext.stop();
     }
     
+    @Test
+    public void mainRouteBuilder_routeDirectUpload_ContentWithTarGZFileGiven_ShouldReturn1Message() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        mockStore.expectedMessageCount(1);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("direct-upload");
+        camelContext.startRoute("choice-zip-file");
+        
+
+
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1.tar.gz");
+        assertThat(resourceAsStream).isNotNull();
+        
+        String mimeHeader = "----------------------------378483299686133026113807\n" +
+                "Content-Disposition: form-data; name=\"redhat\"; filename=\"cloudforms-export-v1.tar.gz\"\n" +
+                "Content-Type: application/zip\n\n";
+        String mimeFooter = "\n----------------------------378483299686133026113807\n" +
+                "Content-Disposition: form-data; name=\"customerid\"\n" +
+                "\n" +
+                "CID12345" +
+                "\n\n----------------------------378483299686133026113807--\n";
+        SequenceInputStream sequenceInputStream = new SequenceInputStream(new SequenceInputStream(new ByteArrayInputStream(mimeHeader.getBytes()), resourceAsStream), new ByteArrayInputStream(mimeFooter.getBytes()));
+
+        camelContext.createProducerTemplate().sendBodyAndHeader("direct:upload", sequenceInputStream, "Content-Type", "multipart/mixed");
+
+        //Then
+        mockStore.assertIsSatisfied();
+
+        camelContext.stop();
+    }
+    
 
     
 }

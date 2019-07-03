@@ -76,11 +76,19 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:choice-zip-file")
                 .id("choice-zip-file")
                 .choice()
-                  .when(isZippedFile())
+                  .when(isZippedFile("zip"))
                     .split(new ZipSplitter())
                     .streaming()
                     .to("direct:store")
                   .endChoice()
+                  .when(isZippedFile("tar.gz"))
+                     .split(new TarSplitter())
+                     .to("direct:store")
+                  .endChoice()  
+                  .when(isZippedFile("gz"))
+                     .unmarshal().gzip()
+                     .to("direct:store")
+                  .endChoice()  
                   .otherwise()
                     .to("direct:store")
                 .end();
@@ -184,8 +192,17 @@ public class MainRouteBuilder extends RouteBuilder {
         return Base64.getEncoder().encodeToString(rhIdentity_json.getBytes());
     }
 
-    private Predicate isZippedFile() {
-        return exchange -> "application/zip".equalsIgnoreCase(exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString());
+    private Predicate isZippedFile(String extension) {
+        return exchange -> {
+            boolean zipContentType = isZipContentType(exchange);
+            String filename = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
+            boolean zipExtension = extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
+            return zipContentType && zipExtension;
+        };
+    }
+    
+    private boolean isZipContentType(Exchange exchange) {
+        return "application/zip".equalsIgnoreCase(exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString());
     }
 
     private Processor processMultipart() {
