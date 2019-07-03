@@ -11,11 +11,11 @@ import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.Application;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.inject.Inject;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,10 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
 public class MainRouteBuilder_DirectCalculateTest {
-    @Autowired
+    @Inject
     CamelContext camelContext;
     
-    @Autowired
+    @Inject
     MainRouteBuilder mainRouteBuilder;
 
     @EndpointInject(uri = "mock:jms:queue:inputDataModel")
@@ -46,8 +46,8 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
-        Integer hypervisor = 2;
-        Long totaldiskspace = 2470679937024L;
+        Integer hypervisor = 1;
+        Long totaldiskspace = 1235339968512L;
         Integer sourceproductindicator = 1;
         Double year1hypervisorpercentage = 10D;
         Double year2hypervisorpercentage = 20D;

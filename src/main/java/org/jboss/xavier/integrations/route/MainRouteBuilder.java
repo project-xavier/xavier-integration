@@ -126,7 +126,7 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .unmarshal().json(JsonLibrary.Jackson, CloudFormsExport.class)
-                .transform().method("analyticsCalculator", "calculate(${body}, ${headers})")
+                .transform().method("analyticsCalculatorV1", "calculate(${body}, ${headers})")
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:inputDataModel");
     }
@@ -157,7 +157,7 @@ public class MainRouteBuilder extends RouteBuilder {
         multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
 
         String file = exchange.getIn().getBody(String.class);
-        multipartEntityBuilder.addPart("upload", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
+        multipartEntityBuilder.addPart("file", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 

@@ -2,26 +2,29 @@ package org.jboss.xavier.integrations.route.model.cloudforms.v1;
 
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.route.model.cloudforms.Calculator;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.inject.Named;
 import java.util.Map;
 
-@Component("analyticsCalculator")
+@Named("analyticsCalculatorV1")
 public class ReportCalculatorV1 implements Calculator {
+    @Value("${cloudforms.filter.type}")
+    private String hostFilterByType;
 
     @Override
     public UploadFormInputDataModel calculate(CloudFormsExport cloudFormAnalysis, Map<String, Object> headers) { 
         Long numberofhypervisors = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
                 .getEmsClusters().stream()
                 .flatMap(e -> e.getHosts().stream())
-                .filter(j -> j.getType().equalsIgnoreCase(Calculator.HOST_FILTER_BY_TYPE))
+                .filter(j -> j.getType().equalsIgnoreCase(hostFilterByType))
                 .mapToLong(e -> (e.getCpuTotalCores() / (e.getCpuCoresPerSocket() * 2)))
                 .sum();
         
         Long totalspace = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
                 .getEmsClusters().stream()
                 .flatMap(e -> e.getHosts().stream())
-                .filter(j -> j.getType().equalsIgnoreCase(Calculator.HOST_FILTER_BY_TYPE))
+                .filter(j -> j.getType().equalsIgnoreCase(hostFilterByType))
                 .flatMap(e -> e.getStorages().stream())
                 .mapToLong(e -> e.getTotalSpace())
                 .sum();

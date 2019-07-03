@@ -1,8 +1,8 @@
 {
-  "ManageIQ::Providers::DummyProvider::InfraManager": {
+  "ManageIQ::Providers::Vmware::InfraManager": {
     "id": 2,
     "name": "DummyProvider",
-    "type": "ManageIQ::Providers::DummyProvider::InfraManager",
+    "type": "ManageIQ::Providers::VMWare::InfraManager",
     "guid": "1efeb5bc-8c74-404c-b87c-a2f98798917c",
     "api_version": "6.5",
     "emstype_description": "DummyProvider vCenter",
@@ -1439,7 +1439,7 @@
             "ems_ref": "host-44",
             "name": "esx12.v2v.bos.redhat.com",
             "hostname": "esx12.v2v.bos.redhat.com",
-            "type": "ManageIQ::Providers::DummyProvider::InfraManager::HostEsx",
+            "type": "ManageIQ::Providers::DummyProvider::InfraManager::HostEsxDummy",
             "cpu_total_cores": 16,
             "cpu_cores_per_socket": 8,
             "hyperthreading": true,
@@ -7465,6 +7465,141 @@
                       "free_space": null,
                       "mode": null,
                       "size": null,
+                      "size_on_disk": null,
+                      "partitions": [
+
+
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "ManageIQ::Providers::REDHAT::InfraManager": {
+    "id": 2,
+    "name": "DummyProvider",
+    "type": "ManageIQ::Providers::VMWare::InfraManager",
+    "guid": "1efeb5bc-8c74-404c-b87c-a2f98798917c",
+    "api_version": "6.5",
+    "emstype_description": "DummyProvider vCenter",
+    "hostname": "vcenter.redhat.com",
+    "ems_clusters": [
+      {
+        "id": 1,
+        "name": "V2V_Cluster",
+        "type": null,
+        "drs_automation_level": "fullyAutomated",
+        "drs_enabled": false,
+        "drs_migration_threshold": 3,
+        "ha_admit_control": true,
+        "ha_enabled": false,
+        "aggregate_cpu_speed": 76608,
+        "aggregate_cpu_total_cores": 32,
+        "aggregate_disk_capacity": 0,
+        "aggregate_memory": 261694,
+        "aggregate_physical_cpus": 4,
+        "aggregate_vm_cpus": 180,
+        "aggregate_vm_memory": 302336,
+        "total_hosts": 2,
+        "total_miq_templates": 7,
+        "total_vms": 147,
+        "total_vms_and_templates": 154,
+        "v_cpu_vr_ratio": 5.6000000000000005,
+        "v_parent_datacenter": "V2V-DC",
+        "v_qualified_desc": "V2V_Cluster in V2V-DC",
+        "v_ram_vr_ratio": 1.2000000000000002,
+        "hosts": [
+          {
+            "id": 1,
+            "ems_ref": "host-29",
+            "name": "esx13.redhat.com",
+            "hostname": "esx13.redhat.com",
+            "type": "ManageIQ::Providers::DummyProvider::InfraManager::HostEsx",
+            "cpu_total_cores": 16,
+            "cpu_cores_per_socket": 8,
+            "hyperthreading": true,
+            "ram_size": 130847,
+            "address": "esx13.redhat.com",
+            "ipaddress": "10.19.2.13",
+            "power_state": "on",
+            "vmm_product": "ESXi",
+            "vmm_vendor": "DummyProvider",
+            "vmm_version": "6.5.0",
+            "total_vcpus": 16,
+            "v_owning_cluster": "V2V_Cluster",
+            "switches": [
+              {
+                "id": 2,
+                "name": "vSwitch0",
+                "type": "ManageIQ::Providers::DummyProvider::InfraManager::HostVirtualSwitch"
+              },
+              {
+                "id": 3,
+                "name": "vSwitch1",
+                "type": "ManageIQ::Providers::DummyProvider::InfraManager::HostVirtualSwitch"
+              },
+              {
+                "id": 4,
+                "name": "vSwitch2",
+                "type": "ManageIQ::Providers::DummyProvider::InfraManager::HostVirtualSwitch"
+              },
+              {
+                "id": 1,
+                "name": "vDS-1",
+                "type": "ManageIQ::Providers::DummyProvider::InfraManager::DistributedVirtualSwitch"
+              }
+            ],
+            "storages": [
+              {
+                "id": 2,
+                "name": "datastore13",
+                "store_type": "VMFS",
+                "total_space": 591363309568,
+                "free_space": 334087847936,
+                "multiplehostaccess": 0,
+                "directory_hierarchy_supported": true,
+                "thin_provisioning_supported": true,
+                "raw_disk_mappings_supported": true
+              }
+            ],
+            "vms": [
+              {
+                "id": 5,
+                "name": "dummy-db-03-copy",
+                "type": "ManageIQ::Providers::DummyProvider::InfraManager::Vm",
+                "guid": "7cf68ded-8b90-4470-a507-00db1e8440b8",
+                "uid_ems": "4225e4bf-8fa4-1506-528f-c78751960b40",
+                "archived": false,
+                "cpu_cores_per_socket": 1,
+                "cpu_total_cores": 1,
+                "disks_aligned": "Unknown",
+                "ems_ref": "vm-534",
+                "has_rdm_disk": false,
+                "host_id": 1,
+                "linked_clone": true,
+                "orphaned": false,
+                "power_state": "off",
+                "ram_size_in_bytes": 2147483648,
+                "retired": null,
+                "v_datastore_path": "datastore13/dummy-db-03-copy/dummy-db-03-copy.vmx",
+                "hardware": {
+                  "id": 7,
+                  "number_of_nics": null,
+                  "guest_os_full_name": "CentOS 7 (64-bit)",
+                  "disks": [
+                    {
+                      "id": 9,
+                      "device_name": "Hard disk 1",
+                      "device_type": "disk",
+                      "disk_type": "thin",
+                      "free_space": null,
+                      "mode": "persistent",
+                      "size": 17179869184,
                       "size_on_disk": null,
                       "partitions": [
 
