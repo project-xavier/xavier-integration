@@ -48,16 +48,6 @@
                             <bean beanType="org.jboss.xavier.integrations.jpa.service.ReportService" method="findReportSummary" />
                         </otherwise>
                     </choice>
-<!--                    <choice>
-                        <when>
-                            <simple>${header.remove} == 'true'</simple>
-                            <removeHeaders pattern="*" />
-                            <log message="### REMOVED ${headers} ${body}" />
-                        </when>
-                        <otherwise>
-                            <log message="### KEPT ${headers} ${body}" />
-                        </otherwise>
-                    </choice>-->
                 </route>
             </get>
             <get uri="/{id}">
