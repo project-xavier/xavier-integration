@@ -22,7 +22,7 @@ import java.util.Map;
 public class Hardware {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("number_of_nics")
     private Object numberOfNics;
     @JsonProperty("guest_os_full_name")
@@ -33,16 +33,16 @@ public class Hardware {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Hardware withId(Integer id) {
+    public Hardware withId(Long id) {
         this.id = id;
         return this;
     }

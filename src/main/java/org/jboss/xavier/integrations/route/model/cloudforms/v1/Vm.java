@@ -36,7 +36,7 @@ import java.util.Map;
 public class Vm {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("type")
@@ -48,9 +48,9 @@ public class Vm {
     @JsonProperty("archived")
     private Boolean archived;
     @JsonProperty("cpu_cores_per_socket")
-    private Integer cpuCoresPerSocket;
+    private Long cpuCoresPerSocket;
     @JsonProperty("cpu_total_cores")
-    private Integer cpuTotalCores;
+    private Long cpuTotalCores;
     @JsonProperty("disks_aligned")
     private String disksAligned;
     @JsonProperty("ems_ref")
@@ -58,7 +58,7 @@ public class Vm {
     @JsonProperty("has_rdm_disk")
     private Boolean hasRdmDisk;
     @JsonProperty("host_id")
-    private Integer hostId;
+    private Long hostId;
     @JsonProperty("linked_clone")
     private Boolean linkedClone;
     @JsonProperty("orphaned")
@@ -66,7 +66,7 @@ public class Vm {
     @JsonProperty("power_state")
     private String powerState;
     @JsonProperty("ram_size_in_bytes")
-    private Integer ramSizeInBytes;
+    private Long ramSizeInBytes;
     @JsonProperty("retired")
     private Object retired;
     @JsonProperty("v_datastore_path")
@@ -77,16 +77,16 @@ public class Vm {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Vm withId(Integer id) {
+    public Vm withId(Long id) {
         this.id = id;
         return this;
     }
@@ -167,31 +167,31 @@ public class Vm {
     }
 
     @JsonProperty("cpu_cores_per_socket")
-    public Integer getCpuCoresPerSocket() {
+    public Long getCpuCoresPerSocket() {
         return cpuCoresPerSocket;
     }
 
     @JsonProperty("cpu_cores_per_socket")
-    public void setCpuCoresPerSocket(Integer cpuCoresPerSocket) {
+    public void setCpuCoresPerSocket(Long cpuCoresPerSocket) {
         this.cpuCoresPerSocket = cpuCoresPerSocket;
     }
 
-    public Vm withCpuCoresPerSocket(Integer cpuCoresPerSocket) {
+    public Vm withCpuCoresPerSocket(Long cpuCoresPerSocket) {
         this.cpuCoresPerSocket = cpuCoresPerSocket;
         return this;
     }
 
     @JsonProperty("cpu_total_cores")
-    public Integer getCpuTotalCores() {
+    public Long getCpuTotalCores() {
         return cpuTotalCores;
     }
 
     @JsonProperty("cpu_total_cores")
-    public void setCpuTotalCores(Integer cpuTotalCores) {
+    public void setCpuTotalCores(Long cpuTotalCores) {
         this.cpuTotalCores = cpuTotalCores;
     }
 
-    public Vm withCpuTotalCores(Integer cpuTotalCores) {
+    public Vm withCpuTotalCores(Long cpuTotalCores) {
         this.cpuTotalCores = cpuTotalCores;
         return this;
     }
@@ -242,16 +242,16 @@ public class Vm {
     }
 
     @JsonProperty("host_id")
-    public Integer getHostId() {
+    public Long getHostId() {
         return hostId;
     }
 
     @JsonProperty("host_id")
-    public void setHostId(Integer hostId) {
+    public void setHostId(Long hostId) {
         this.hostId = hostId;
     }
 
-    public Vm withHostId(Integer hostId) {
+    public Vm withHostId(Long hostId) {
         this.hostId = hostId;
         return this;
     }
@@ -302,16 +302,16 @@ public class Vm {
     }
 
     @JsonProperty("ram_size_in_bytes")
-    public Integer getRamSizeInBytes() {
+    public Long getRamSizeInBytes() {
         return ramSizeInBytes;
     }
 
     @JsonProperty("ram_size_in_bytes")
-    public void setRamSizeInBytes(Integer ramSizeInBytes) {
+    public void setRamSizeInBytes(Long ramSizeInBytes) {
         this.ramSizeInBytes = ramSizeInBytes;
     }
 
-    public Vm withRamSizeInBytes(Integer ramSizeInBytes) {
+    public Vm withRamSizeInBytes(Long ramSizeInBytes) {
         this.ramSizeInBytes = ramSizeInBytes;
         return this;
     }

@@ -27,7 +27,7 @@ import java.util.Map;
 public class Disk {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("device_name")
     private String deviceName;
     @JsonProperty("device_type")
@@ -48,16 +48,16 @@ public class Disk {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Disk withId(Integer id) {
+    public Disk withId(Long id) {
         this.id = id;
         return this;
     }

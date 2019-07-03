@@ -11,14 +11,14 @@ public class ReportCalculatorV1 implements Calculator {
 
     @Override
     public UploadFormInputDataModel calculate(CloudFormsExport cloudFormAnalysis, Map<String, Object> headers) { 
-        int numberofhypervisors = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
+        Long numberofhypervisors = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
                 .getEmsClusters().stream()
                 .flatMap(e -> e.getHosts().stream())
                 .filter(j -> j.getType().equalsIgnoreCase(Calculator.HOST_FILTER_BY_TYPE))
-                .mapToInt(e -> (e.getCpuTotalCores() / (e.getCpuCoresPerSocket() * 2)))
+                .mapToLong(e -> (e.getCpuTotalCores() / (e.getCpuCoresPerSocket() * 2)))
                 .sum();
         
-        long totalspace = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
+        Long totalspace = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
                 .getEmsClusters().stream()
                 .flatMap(e -> e.getHosts().stream())
                 .filter(j -> j.getType().equalsIgnoreCase(Calculator.HOST_FILTER_BY_TYPE))
@@ -34,7 +34,7 @@ public class ReportCalculatorV1 implements Calculator {
         double year3hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE).toString() : "0");
         double growthratepercentage = Double.parseDouble(headers.get(Calculator.GROWTHRATEPERCENTAGE) != null ? headers.get(Calculator.GROWTHRATEPERCENTAGE).toString() : "0");
         
-        return new UploadFormInputDataModel(customerid, filename, numberofhypervisors, totalspace,
+        return new UploadFormInputDataModel(customerid, filename, numberofhypervisors.intValue(), totalspace,
                 sourceproductindicator, year1hypervisorpercentage,
                 year2hypervisorpercentage,
                 year3hypervisorpercentage, growthratepercentage);

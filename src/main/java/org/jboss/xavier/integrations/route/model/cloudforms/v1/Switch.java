@@ -20,7 +20,7 @@ import java.util.Map;
 public class Switch {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("type")
@@ -29,16 +29,16 @@ public class Switch {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Switch withId(Integer id) {
+    public Switch withId(Long id) {
         this.id = id;
         return this;
     }

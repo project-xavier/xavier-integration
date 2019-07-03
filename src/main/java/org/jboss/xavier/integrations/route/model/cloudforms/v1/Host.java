@@ -38,7 +38,7 @@ import java.util.Map;
 public class Host {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("ems_ref")
     private String emsRef;
     @JsonProperty("name")
@@ -48,13 +48,13 @@ public class Host {
     @JsonProperty("type")
     private String type;
     @JsonProperty("cpu_total_cores")
-    private Integer cpuTotalCores;
+    private Long cpuTotalCores;
     @JsonProperty("cpu_cores_per_socket")
-    private Integer cpuCoresPerSocket;
+    private Long cpuCoresPerSocket;
     @JsonProperty("hyperthreading")
     private Boolean hyperthreading;
     @JsonProperty("ram_size")
-    private Integer ramSize;
+    private Long ramSize;
     @JsonProperty("address")
     private String address;
     @JsonProperty("ipaddress")
@@ -68,7 +68,7 @@ public class Host {
     @JsonProperty("vmm_version")
     private String vmmVersion;
     @JsonProperty("total_vcpus")
-    private Integer totalVcpus;
+    private Long totalVcpus;
     @JsonProperty("v_owning_cluster")
     private String vOwningCluster;
     @JsonProperty("switches")
@@ -81,16 +81,16 @@ public class Host {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Host withId(Integer id) {
+    public Host withId(Long id) {
         this.id = id;
         return this;
     }
@@ -156,31 +156,31 @@ public class Host {
     }
 
     @JsonProperty("cpu_total_cores")
-    public Integer getCpuTotalCores() {
+    public Long getCpuTotalCores() {
         return cpuTotalCores;
     }
 
     @JsonProperty("cpu_total_cores")
-    public void setCpuTotalCores(Integer cpuTotalCores) {
+    public void setCpuTotalCores(Long cpuTotalCores) {
         this.cpuTotalCores = cpuTotalCores;
     }
 
-    public Host withCpuTotalCores(Integer cpuTotalCores) {
+    public Host withCpuTotalCores(Long cpuTotalCores) {
         this.cpuTotalCores = cpuTotalCores;
         return this;
     }
 
     @JsonProperty("cpu_cores_per_socket")
-    public Integer getCpuCoresPerSocket() {
+    public Long getCpuCoresPerSocket() {
         return cpuCoresPerSocket;
     }
 
     @JsonProperty("cpu_cores_per_socket")
-    public void setCpuCoresPerSocket(Integer cpuCoresPerSocket) {
+    public void setCpuCoresPerSocket(Long cpuCoresPerSocket) {
         this.cpuCoresPerSocket = cpuCoresPerSocket;
     }
 
-    public Host withCpuCoresPerSocket(Integer cpuCoresPerSocket) {
+    public Host withCpuCoresPerSocket(Long cpuCoresPerSocket) {
         this.cpuCoresPerSocket = cpuCoresPerSocket;
         return this;
     }
@@ -201,16 +201,16 @@ public class Host {
     }
 
     @JsonProperty("ram_size")
-    public Integer getRamSize() {
+    public Long getRamSize() {
         return ramSize;
     }
 
     @JsonProperty("ram_size")
-    public void setRamSize(Integer ramSize) {
+    public void setRamSize(Long ramSize) {
         this.ramSize = ramSize;
     }
 
-    public Host withRamSize(Integer ramSize) {
+    public Host withRamSize(Long ramSize) {
         this.ramSize = ramSize;
         return this;
     }
@@ -306,16 +306,16 @@ public class Host {
     }
 
     @JsonProperty("total_vcpus")
-    public Integer getTotalVcpus() {
+    public Long getTotalVcpus() {
         return totalVcpus;
     }
 
     @JsonProperty("total_vcpus")
-    public void setTotalVcpus(Integer totalVcpus) {
+    public void setTotalVcpus(Long totalVcpus) {
         this.totalVcpus = totalVcpus;
     }
 
-    public Host withTotalVcpus(Integer totalVcpus) {
+    public Host withTotalVcpus(Long totalVcpus) {
         this.totalVcpus = totalVcpus;
         return this;
     }

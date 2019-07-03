@@ -26,17 +26,17 @@ import java.util.Map;
 public class Storage {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("store_type")
     private String storeType;
     @JsonProperty("total_space")
-    private Integer totalSpace;
+    private Long totalSpace;
     @JsonProperty("free_space")
-    private Integer freeSpace;
+    private Long freeSpace;
     @JsonProperty("multiplehostaccess")
-    private Integer multiplehostaccess;
+    private Long multiplehostaccess;
     @JsonProperty("directory_hierarchy_supported")
     private Boolean directoryHierarchySupported;
     @JsonProperty("thin_provisioning_supported")
@@ -47,16 +47,16 @@ public class Storage {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Storage withId(Integer id) {
+    public Storage withId(Long id) {
         this.id = id;
         return this;
     }
@@ -92,46 +92,46 @@ public class Storage {
     }
 
     @JsonProperty("total_space")
-    public Integer getTotalSpace() {
+    public Long getTotalSpace() {
         return totalSpace;
     }
 
     @JsonProperty("total_space")
-    public void setTotalSpace(Integer totalSpace) {
+    public void setTotalSpace(Long totalSpace) {
         this.totalSpace = totalSpace;
     }
 
-    public Storage withTotalSpace(Integer totalSpace) {
+    public Storage withTotalSpace(Long totalSpace) {
         this.totalSpace = totalSpace;
         return this;
     }
 
     @JsonProperty("free_space")
-    public Integer getFreeSpace() {
+    public Long getFreeSpace() {
         return freeSpace;
     }
 
     @JsonProperty("free_space")
-    public void setFreeSpace(Integer freeSpace) {
+    public void setFreeSpace(Long freeSpace) {
         this.freeSpace = freeSpace;
     }
 
-    public Storage withFreeSpace(Integer freeSpace) {
+    public Storage withFreeSpace(Long freeSpace) {
         this.freeSpace = freeSpace;
         return this;
     }
 
     @JsonProperty("multiplehostaccess")
-    public Integer getMultiplehostaccess() {
+    public Long getMultiplehostaccess() {
         return multiplehostaccess;
     }
 
     @JsonProperty("multiplehostaccess")
-    public void setMultiplehostaccess(Integer multiplehostaccess) {
+    public void setMultiplehostaccess(Long multiplehostaccess) {
         this.multiplehostaccess = multiplehostaccess;
     }
 
-    public Storage withMultiplehostaccess(Integer multiplehostaccess) {
+    public Storage withMultiplehostaccess(Long multiplehostaccess) {
         this.multiplehostaccess = multiplehostaccess;
         return this;
     }

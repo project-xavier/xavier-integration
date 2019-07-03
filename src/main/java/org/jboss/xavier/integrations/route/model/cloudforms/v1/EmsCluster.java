@@ -42,7 +42,7 @@ import java.util.Map;
 public class EmsCluster {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("type")
@@ -52,33 +52,33 @@ public class EmsCluster {
     @JsonProperty("drs_enabled")
     private Boolean drsEnabled;
     @JsonProperty("drs_migration_threshold")
-    private Integer drsMigrationThreshold;
+    private Long drsMigrationThreshold;
     @JsonProperty("ha_admit_control")
     private Boolean haAdmitControl;
     @JsonProperty("ha_enabled")
     private Boolean haEnabled;
     @JsonProperty("aggregate_cpu_speed")
-    private Integer aggregateCpuSpeed;
+    private Long aggregateCpuSpeed;
     @JsonProperty("aggregate_cpu_total_cores")
-    private Integer aggregateCpuTotalCores;
+    private Long aggregateCpuTotalCores;
     @JsonProperty("aggregate_disk_capacity")
-    private Integer aggregateDiskCapacity;
+    private Long aggregateDiskCapacity;
     @JsonProperty("aggregate_memory")
-    private Integer aggregateMemory;
+    private Long aggregateMemory;
     @JsonProperty("aggregate_physical_cpus")
-    private Integer aggregatePhysicalCpus;
+    private Long aggregatePhysicalCpus;
     @JsonProperty("aggregate_vm_cpus")
-    private Integer aggregateVmCpus;
+    private Long aggregateVmCpus;
     @JsonProperty("aggregate_vm_memory")
-    private Integer aggregateVmMemory;
+    private Long aggregateVmMemory;
     @JsonProperty("total_hosts")
-    private Integer totalHosts;
+    private Long totalHosts;
     @JsonProperty("total_miq_templates")
-    private Integer totalMiqTemplates;
+    private Long totalMiqTemplates;
     @JsonProperty("total_vms")
-    private Integer totalVms;
+    private Long totalVms;
     @JsonProperty("total_vms_and_templates")
-    private Integer totalVmsAndTemplates;
+    private Long totalVmsAndTemplates;
     @JsonProperty("v_cpu_vr_ratio")
     private Double vCpuVrRatio;
     @JsonProperty("v_parent_datacenter")
@@ -93,16 +93,16 @@ public class EmsCluster {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public EmsCluster withId(Integer id) {
+    public EmsCluster withId(Long id) {
         this.id = id;
         return this;
     }
@@ -168,16 +168,16 @@ public class EmsCluster {
     }
 
     @JsonProperty("drs_migration_threshold")
-    public Integer getDrsMigrationThreshold() {
+    public Long getDrsMigrationThreshold() {
         return drsMigrationThreshold;
     }
 
     @JsonProperty("drs_migration_threshold")
-    public void setDrsMigrationThreshold(Integer drsMigrationThreshold) {
+    public void setDrsMigrationThreshold(Long drsMigrationThreshold) {
         this.drsMigrationThreshold = drsMigrationThreshold;
     }
 
-    public EmsCluster withDrsMigrationThreshold(Integer drsMigrationThreshold) {
+    public EmsCluster withDrsMigrationThreshold(Long drsMigrationThreshold) {
         this.drsMigrationThreshold = drsMigrationThreshold;
         return this;
     }
@@ -213,166 +213,166 @@ public class EmsCluster {
     }
 
     @JsonProperty("aggregate_cpu_speed")
-    public Integer getAggregateCpuSpeed() {
+    public Long getAggregateCpuSpeed() {
         return aggregateCpuSpeed;
     }
 
     @JsonProperty("aggregate_cpu_speed")
-    public void setAggregateCpuSpeed(Integer aggregateCpuSpeed) {
+    public void setAggregateCpuSpeed(Long aggregateCpuSpeed) {
         this.aggregateCpuSpeed = aggregateCpuSpeed;
     }
 
-    public EmsCluster withAggregateCpuSpeed(Integer aggregateCpuSpeed) {
+    public EmsCluster withAggregateCpuSpeed(Long aggregateCpuSpeed) {
         this.aggregateCpuSpeed = aggregateCpuSpeed;
         return this;
     }
 
     @JsonProperty("aggregate_cpu_total_cores")
-    public Integer getAggregateCpuTotalCores() {
+    public Long getAggregateCpuTotalCores() {
         return aggregateCpuTotalCores;
     }
 
     @JsonProperty("aggregate_cpu_total_cores")
-    public void setAggregateCpuTotalCores(Integer aggregateCpuTotalCores) {
+    public void setAggregateCpuTotalCores(Long aggregateCpuTotalCores) {
         this.aggregateCpuTotalCores = aggregateCpuTotalCores;
     }
 
-    public EmsCluster withAggregateCpuTotalCores(Integer aggregateCpuTotalCores) {
+    public EmsCluster withAggregateCpuTotalCores(Long aggregateCpuTotalCores) {
         this.aggregateCpuTotalCores = aggregateCpuTotalCores;
         return this;
     }
 
     @JsonProperty("aggregate_disk_capacity")
-    public Integer getAggregateDiskCapacity() {
+    public Long getAggregateDiskCapacity() {
         return aggregateDiskCapacity;
     }
 
     @JsonProperty("aggregate_disk_capacity")
-    public void setAggregateDiskCapacity(Integer aggregateDiskCapacity) {
+    public void setAggregateDiskCapacity(Long aggregateDiskCapacity) {
         this.aggregateDiskCapacity = aggregateDiskCapacity;
     }
 
-    public EmsCluster withAggregateDiskCapacity(Integer aggregateDiskCapacity) {
+    public EmsCluster withAggregateDiskCapacity(Long aggregateDiskCapacity) {
         this.aggregateDiskCapacity = aggregateDiskCapacity;
         return this;
     }
 
     @JsonProperty("aggregate_memory")
-    public Integer getAggregateMemory() {
+    public Long getAggregateMemory() {
         return aggregateMemory;
     }
 
     @JsonProperty("aggregate_memory")
-    public void setAggregateMemory(Integer aggregateMemory) {
+    public void setAggregateMemory(Long aggregateMemory) {
         this.aggregateMemory = aggregateMemory;
     }
 
-    public EmsCluster withAggregateMemory(Integer aggregateMemory) {
+    public EmsCluster withAggregateMemory(Long aggregateMemory) {
         this.aggregateMemory = aggregateMemory;
         return this;
     }
 
     @JsonProperty("aggregate_physical_cpus")
-    public Integer getAggregatePhysicalCpus() {
+    public Long getAggregatePhysicalCpus() {
         return aggregatePhysicalCpus;
     }
 
     @JsonProperty("aggregate_physical_cpus")
-    public void setAggregatePhysicalCpus(Integer aggregatePhysicalCpus) {
+    public void setAggregatePhysicalCpus(Long aggregatePhysicalCpus) {
         this.aggregatePhysicalCpus = aggregatePhysicalCpus;
     }
 
-    public EmsCluster withAggregatePhysicalCpus(Integer aggregatePhysicalCpus) {
+    public EmsCluster withAggregatePhysicalCpus(Long aggregatePhysicalCpus) {
         this.aggregatePhysicalCpus = aggregatePhysicalCpus;
         return this;
     }
 
     @JsonProperty("aggregate_vm_cpus")
-    public Integer getAggregateVmCpus() {
+    public Long getAggregateVmCpus() {
         return aggregateVmCpus;
     }
 
     @JsonProperty("aggregate_vm_cpus")
-    public void setAggregateVmCpus(Integer aggregateVmCpus) {
+    public void setAggregateVmCpus(Long aggregateVmCpus) {
         this.aggregateVmCpus = aggregateVmCpus;
     }
 
-    public EmsCluster withAggregateVmCpus(Integer aggregateVmCpus) {
+    public EmsCluster withAggregateVmCpus(Long aggregateVmCpus) {
         this.aggregateVmCpus = aggregateVmCpus;
         return this;
     }
 
     @JsonProperty("aggregate_vm_memory")
-    public Integer getAggregateVmMemory() {
+    public Long getAggregateVmMemory() {
         return aggregateVmMemory;
     }
 
     @JsonProperty("aggregate_vm_memory")
-    public void setAggregateVmMemory(Integer aggregateVmMemory) {
+    public void setAggregateVmMemory(Long aggregateVmMemory) {
         this.aggregateVmMemory = aggregateVmMemory;
     }
 
-    public EmsCluster withAggregateVmMemory(Integer aggregateVmMemory) {
+    public EmsCluster withAggregateVmMemory(Long aggregateVmMemory) {
         this.aggregateVmMemory = aggregateVmMemory;
         return this;
     }
 
     @JsonProperty("total_hosts")
-    public Integer getTotalHosts() {
+    public Long getTotalHosts() {
         return totalHosts;
     }
 
     @JsonProperty("total_hosts")
-    public void setTotalHosts(Integer totalHosts) {
+    public void setTotalHosts(Long totalHosts) {
         this.totalHosts = totalHosts;
     }
 
-    public EmsCluster withTotalHosts(Integer totalHosts) {
+    public EmsCluster withTotalHosts(Long totalHosts) {
         this.totalHosts = totalHosts;
         return this;
     }
 
     @JsonProperty("total_miq_templates")
-    public Integer getTotalMiqTemplates() {
+    public Long getTotalMiqTemplates() {
         return totalMiqTemplates;
     }
 
     @JsonProperty("total_miq_templates")
-    public void setTotalMiqTemplates(Integer totalMiqTemplates) {
+    public void setTotalMiqTemplates(Long totalMiqTemplates) {
         this.totalMiqTemplates = totalMiqTemplates;
     }
 
-    public EmsCluster withTotalMiqTemplates(Integer totalMiqTemplates) {
+    public EmsCluster withTotalMiqTemplates(Long totalMiqTemplates) {
         this.totalMiqTemplates = totalMiqTemplates;
         return this;
     }
 
     @JsonProperty("total_vms")
-    public Integer getTotalVms() {
+    public Long getTotalVms() {
         return totalVms;
     }
 
     @JsonProperty("total_vms")
-    public void setTotalVms(Integer totalVms) {
+    public void setTotalVms(Long totalVms) {
         this.totalVms = totalVms;
     }
 
-    public EmsCluster withTotalVms(Integer totalVms) {
+    public EmsCluster withTotalVms(Long totalVms) {
         this.totalVms = totalVms;
         return this;
     }
 
     @JsonProperty("total_vms_and_templates")
-    public Integer getTotalVmsAndTemplates() {
+    public Long getTotalVmsAndTemplates() {
         return totalVmsAndTemplates;
     }
 
     @JsonProperty("total_vms_and_templates")
-    public void setTotalVmsAndTemplates(Integer totalVmsAndTemplates) {
+    public void setTotalVmsAndTemplates(Long totalVmsAndTemplates) {
         this.totalVmsAndTemplates = totalVmsAndTemplates;
     }
 
-    public EmsCluster withTotalVmsAndTemplates(Integer totalVmsAndTemplates) {
+    public EmsCluster withTotalVmsAndTemplates(Long totalVmsAndTemplates) {
         this.totalVmsAndTemplates = totalVmsAndTemplates;
         return this;
     }
