@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("jms:queue:inputDataModel")
+@MockEndpointsAndSkip("jms:queue:inputDataModel|log*")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
@@ -36,7 +36,10 @@ public class MainRouteBuilder_DirectCalculateTest {
     MainRouteBuilder mainRouteBuilder;
 
     @EndpointInject(uri = "mock:jms:queue:inputDataModel")
-    private MockEndpoint mockJmsQueue;    
+    private MockEndpoint mockJmsQueue; 
+    
+    @EndpointInject(uri="mock:log")
+    private MockEndpoint mockLog;
     
     @Test
     public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
@@ -76,6 +79,34 @@ public class MainRouteBuilder_DirectCalculateTest {
         //Then
         assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(uploadFormInputDataModelExpected);
 
+        camelContext.stop();
+    }    
+    
+    @Test
+    public void mainRouteBuilder_DirectDownloadFile_WrongJSONFileGiven_ShouldLogExceptionButNotCrash() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        mockJmsQueue.expectedMessageCount(0);
+
+        String customerId = "CID123";
+        String fileName = "cloudforms-export-v1.json";
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("customerid", customerId);
+        headers.put("filename", fileName);
+        mockLog.expectedBodiesReceived("Exception on unmarshaling Cloudforms file");
+        
+        //When
+        camelContext.start();
+        camelContext.startRoute("calculate");
+        String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
+        
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate", "{ \"ñkajsñlkj\" : " + body, headers);
+
+        //Then
+        mockJmsQueue.assertIsSatisfied();
+        mockLog.assertIsSatisfied();
+        
         camelContext.stop();
     }
     

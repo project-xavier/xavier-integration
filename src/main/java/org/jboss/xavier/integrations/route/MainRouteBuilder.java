@@ -132,10 +132,15 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:calculate")
                 .id("calculate")
-                .unmarshal().json(JsonLibrary.Jackson, CloudFormsExport.class)
-                .transform().method("analyticsCalculatorV1", "calculate(${body}, ${headers})")
-                .log("Message to send to AMQ : ${body}")
-                .to("jms:queue:inputDataModel");
+                .doTry()
+                    .unmarshal().json(JsonLibrary.Jackson, CloudFormsExport.class)
+                    .transform().method("analyticsCalculatorV1", "calculate(${body}, ${headers})")
+                    .log("Message to send to AMQ : ${body}")
+                    .to("jms:queue:inputDataModel")
+                .endDoTry()
+                .doCatch(Exception.class)
+                    .log("Exception on unmarshaling Cloudforms file")
+                .end();
     }
 
     private Processor httpError400() {
