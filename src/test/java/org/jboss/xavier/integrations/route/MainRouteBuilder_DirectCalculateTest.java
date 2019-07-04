@@ -4,6 +4,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
+import org.apache.camel.test.spring.MockEndpoints;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
@@ -24,7 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("jms:queue:inputDataModel|log*")
+@MockEndpointsAndSkip("jms:queue:inputDataModel")
+@MockEndpoints("log*")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
@@ -38,7 +40,7 @@ public class MainRouteBuilder_DirectCalculateTest {
     @EndpointInject(uri = "mock:jms:queue:inputDataModel")
     private MockEndpoint mockJmsQueue; 
     
-    @EndpointInject(uri="mock:log")
+    @EndpointInject(uri="mock:log:WARN")
     private MockEndpoint mockLog;
     
     @Test

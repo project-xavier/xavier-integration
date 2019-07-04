@@ -139,7 +139,8 @@ public class MainRouteBuilder extends RouteBuilder {
                     .to("jms:queue:inputDataModel")
                 .endDoTry()
                 .doCatch(Exception.class)
-                    .log("Exception on unmarshaling Cloudforms file")
+                    .setBody(simple("Exception on unmarshaling Cloudforms file"))
+                    .to("log:WARN")
                 .end();
     }
 
