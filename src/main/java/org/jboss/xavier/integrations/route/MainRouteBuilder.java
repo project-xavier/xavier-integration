@@ -7,6 +7,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.lang3.StringUtils;
@@ -82,11 +83,9 @@ public class MainRouteBuilder extends RouteBuilder {
                     .to("direct:store")
                   .endChoice()
                   .when(isZippedFile("tar.gz"))
-                     .split(new TarSplitter())
-                     .to("direct:store")
-                  .endChoice()  
-                  .when(isZippedFile("gz"))
                      .unmarshal().gzip()
+                     .split(new TarSplitter())
+                     .streaming()
                      .to("direct:store")
                   .endChoice()  
                   .otherwise()

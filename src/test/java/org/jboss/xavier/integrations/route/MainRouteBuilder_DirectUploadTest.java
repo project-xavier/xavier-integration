@@ -170,20 +170,20 @@ public class MainRouteBuilder_DirectUploadTest {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
-        mockStore.expectedMessageCount(1);
+        mockStore.expectedMessageCount(2);
 
         //When
         camelContext.start();
         camelContext.startRoute("direct-upload");
         camelContext.startRoute("choice-zip-file");
-        
 
 
-        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1.tar.gz");
+        String filename = "cloudforms-export-v1-multiple-files.tar.gz";
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(filename);
         assertThat(resourceAsStream).isNotNull();
         
         String mimeHeader = "----------------------------378483299686133026113807\n" +
-                "Content-Disposition: form-data; name=\"redhat\"; filename=\"cloudforms-export-v1.tar.gz\"\n" +
+                "Content-Disposition: form-data; name=\"redhat\"; filename=\"" + filename + "\"\n" +
                 "Content-Type: application/zip\n\n";
         String mimeFooter = "\n----------------------------378483299686133026113807\n" +
                 "Content-Disposition: form-data; name=\"customerid\"\n" +
