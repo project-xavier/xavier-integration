@@ -94,10 +94,10 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:insights")
                 .id("call-insights-upload-service")
                 .process(this::createMultipartToSendToInsights)
-                .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.CamelFileName}, ${headers})"))
-                .setHeader("x-rh-insights-request-id", constant(getRHInsightsRequestId()))
+                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.customerid}, ${header.CamelFileName})"))
+                .setHeader("x-rh-insights-request-id", method(MainRouteBuilder.class, "getRHInsightsRequestId()"))
                 .removeHeaders("Camel*")
+                .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                 .to("log:INFO?showBody=true&showHeaders=true")
                 .end();
@@ -161,7 +161,7 @@ public class MainRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
-    private String getRHInsightsRequestId() {
+    public String getRHInsightsRequestId() {
         // 52df9f748eabcfea
         return UUID.randomUUID().toString();
     }
@@ -173,6 +173,7 @@ public class MainRouteBuilder extends RouteBuilder {
         insightsProperties.forEach(e -> internal.put(e, headers.get(e).toString()));
         
         internal.put("filename", filename);
+        internal.put("org_id", "000001");
         String rhIdentity_json = "";
         try {
             rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
