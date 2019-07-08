@@ -19,6 +19,8 @@ import org.springframework.test.context.ActiveProfiles;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,6 +68,36 @@ public class MainRouteBuilder_DirectInsightsTest {
         assertThat(receivedBody.indexOf(body)).isGreaterThanOrEqualTo(0);
         String expectedRHIdentity = routeBuilder.getRHIdentity( filename, headers);
         assertThat(mockInsightsServiceHttp4.getExchanges().get(0).getIn().getHeader("x-rh-identity", String.class)).isEqualToIgnoringCase(expectedRHIdentity);
+
+        camelContext.stop();
+    }    
+    
+    @Test
+    public void mainRouteBuilder_routeDirectInsights_ContentGiven_ShouldHaveDifferentRequestIdEveryTime() throws Exception {
+        //Given
+                
+        String body = "this is a test body";
+        String filename = "testfilename.txt";
+        String customerid = "CID90765";
+        
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        mockInsightsServiceHttp4.expectedMessageCount(1000);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("call-insights-upload-service");
+        Map<String,Object> headers = new HashMap<>();
+        headers.put("CamelFileName", filename);
+        headers.put("customerid", customerid);
+
+        IntStream.range(0, 1000).forEach( e -> camelContext.createProducerTemplate().sendBodyAndHeaders("direct:insights", body, headers ));
+        
+        //Then
+        mockInsightsServiceHttp4.assertIsSatisfied();
+        
+        assertThat(mockInsightsServiceHttp4.getExchanges().stream().collect(Collectors.groupingBy(e -> e.getIn().getHeader("x-rh-insights-request-id", String.class), 
+                                                                 Collectors.counting())).entrySet().stream().anyMatch(e -> e.getValue() > 1)).isFalse();
 
         camelContext.stop();
     }
