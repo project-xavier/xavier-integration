@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,7 +79,9 @@ public class CustomizedMultipartDataFormat extends MimeMultipartDataFormat {
                 }
                 // All non file parts are considered parameters and set as headers of the whole message
                 if (!camelAttachment.getHeader(CONTENT_DISPOSITION).contains("filename")) {
-                    camelMessage.setHeader(getFieldNameFromMultipart(camelAttachment), camelAttachment.getDataHandler().getContent());
+                    Map ma_metadata = camelMessage.getHeader("MA_metadata", new HashMap<String,String>(), java.util.Map.class);
+                    ma_metadata.put(getFieldNameFromMultipart(camelAttachment), camelAttachment.getDataHandler().getContent());
+                    camelMessage.setHeader("MA_metadata", ma_metadata);
                 }
                 
                 camelMessage.addAttachmentObject(getAttachmentKey(bp), camelAttachment);

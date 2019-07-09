@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Attachment;
@@ -23,11 +24,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
+import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * A Camel Java8 DSL Router
@@ -61,7 +62,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .choice()
-                    .when(isAllExpectedHeadersExist())
+                    .when(isAllExpectedParamsExist())
                         .split()
                             .attachments()
                             .process(processMultipart())
@@ -102,8 +103,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("call-insights-upload-service")
                 .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.CamelFileName}, ${headers})"))
-                .setHeader("x-rh-insights-request-id", method(MainRouteBuilder.class, "getRHInsightsRequestId()"))
+                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
                 .removeHeaders("Camel*")
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                 .to("log:INFO?showBody=true&showHeaders=true")
@@ -122,7 +122,12 @@ public class MainRouteBuilder extends RouteBuilder {
                     FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
                     String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
                     RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
-                    rhIdentity.getInternal().forEach((key,value) -> exchange.getIn().setHeader(key, value));
+                    
+                    rhIdentity.getInternal().forEach((key,value) -> {
+                        Map header = exchange.getIn().getHeader("MA_metadata", new HashMap<String, String>(), Map.class);
+                        header.put(key, value);
+                        exchange.getIn().setHeader("MA_metadata", header);
+                    });
                 })
                 .setBody(constant(""))
                 .to("http4://oldhost")
@@ -134,7 +139,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("calculate")
                 .doTry()
                     .unmarshal().json(JsonLibrary.Jackson, CloudFormsExport.class)
-                    .transform().method("analyticsCalculatorV1", "calculate(${body}, ${headers})")
+                    .transform().method("analyticsCalculatorV1", "calculate(${body}, ${header.MA_metadata})")
                     .log("Message to send to AMQ : ${body}")
                     .to("jms:queue:inputDataModel")
                 .endDoTry()
@@ -152,8 +157,8 @@ public class MainRouteBuilder extends RouteBuilder {
         };
     }
 
-    private Predicate isAllExpectedHeadersExist() {
-        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty(exchange.getIn().getHeader(e, String.class)) );
+    private Predicate isAllExpectedParamsExist() {
+        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
     }
 
     private Predicate isTextField() {
@@ -174,22 +179,23 @@ public class MainRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
-    public String getRHInsightsRequestId() {
-        return UUID.randomUUID().toString();
-    }
-
-    public String getRHIdentity(String filename, Map<String, Object> headers) {
-        Map<String,String> internal = new HashMap<>();
+    public String getRHIdentity(String x_rh_identity_json, String filename, Map<String, Object> headers) throws IOException {
+        RHIdentity rhidentity;
+        if (x_rh_identity_json != null) {
+            rhidentity = new ObjectMapper().reader().withRootName("identity").readValue(new JsonFactory().createParser(x_rh_identity_json), RHIdentity.class);
+        } else {
+          rhidentity = new RHIdentity();  
+        }
         
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        insightsProperties.forEach(e -> internal.put(e, headers.get(e).toString()));
-        
-        internal.put("filename", filename);
+        insightsProperties.forEach(e -> rhidentity.getInternal().put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
+
+        rhidentity.getInternal().put("filename", filename);
         String rhIdentity_json = "";
         try {
             rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
                     .account_number(accountNumber)
-                    .internal(internal)
+                    .internal(rhidentity.getInternal())
                     .build());
         } catch (JsonProcessingException e) {
             e.printStackTrace();

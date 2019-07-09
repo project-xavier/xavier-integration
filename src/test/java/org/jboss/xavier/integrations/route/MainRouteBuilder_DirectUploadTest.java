@@ -22,7 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +51,19 @@ public class MainRouteBuilder_DirectUploadTest {
     @Test
     public void mainRouteBuilder_routeDirectUpload_ContentWithSeveralFilesGiven_ShouldReturnSameNumberOfMessagesAsFilesInMultipart() throws Exception {
         //Given
+        String filename = "testfilename.txt";
+        String customerid = "CID90765";
+        Map<String,Object> metadata = new HashMap<>();
+        metadata.put("customerid", customerid);
+
+        Map<String,Object> headers = new HashMap<>();
+        headers.put("CamelFileName", filename);
+        headers.put("Content-Type", "multipart/mixed");
+
+        String rhidentity = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";;
+        headers.put("x-rh-identity", rhidentity);
+        headers.put("MA_metadata", metadata);
+        
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockStore.expectedMessageCount(4);
@@ -60,11 +75,11 @@ public class MainRouteBuilder_DirectUploadTest {
 
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("mime-message-several-files-sample.txt");
 
-        camelContext.createProducerTemplate().sendBodyAndHeader("direct:upload", IOUtils.toString(resourceAsStream, Charset.forName("UTF-8")), "Content-Type", "multipart/mixed");
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:upload", IOUtils.toString(resourceAsStream, Charset.forName("UTF-8")), headers); 
 
         //Then
         mockStore.assertIsSatisfied();
-        assertThat(mockStore.getExchanges().stream().filter(e -> "CID12345".equalsIgnoreCase(e.getIn().getHeader("customerid", String.class))).collect(Collectors.toList()).size()).isEqualTo(4);
+        assertThat(mockStore.getExchanges().stream().filter(e -> "CID12345".equalsIgnoreCase(e.getIn().getHeader("MA_metadata", Map.class).get("customerid").toString())).collect(Collectors.toList()).size()).isEqualTo(4);
 
         camelContext.stop();
     }    

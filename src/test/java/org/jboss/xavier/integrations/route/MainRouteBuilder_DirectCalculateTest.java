@@ -61,14 +61,17 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         UploadFormInputDataModel uploadFormInputDataModelExpected = new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
 
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("customerid", customerId);
+        metadata.put("filename", fileName);
+        metadata.put("year1hypervisorpercentage", year1hypervisorpercentage);
+        metadata.put("year2hypervisorpercentage", year2hypervisorpercentage);
+        metadata.put("year3hypervisorpercentage", year3hypervisorpercentage);
+        metadata.put("growthratepercentage", growthratepercentage);
+        metadata.put("sourceproductindicator", sourceproductindicator);
+        
         Map<String, Object> headers = new HashMap<>();
-        headers.put("customerid", customerId);
-        headers.put("filename", fileName);
-        headers.put("year1hypervisorpercentage", year1hypervisorpercentage);
-        headers.put("year2hypervisorpercentage", year2hypervisorpercentage);
-        headers.put("year3hypervisorpercentage", year3hypervisorpercentage);
-        headers.put("growthratepercentage", growthratepercentage);
-        headers.put("sourceproductindicator", sourceproductindicator);
+        headers.put("MA_metadata", metadata);
 
 
         //When
