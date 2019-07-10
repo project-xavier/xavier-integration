@@ -67,7 +67,7 @@ public class MainRouteBuilder extends RouteBuilder {
                             .attachments()
                             .process(processMultipart())
                             .filter(isFilePart())
-                                .to("direct:choice-zip-file")
+                                .to("direct:store")
                             .end()
                         .end()
                     .endChoice()
@@ -75,24 +75,7 @@ public class MainRouteBuilder extends RouteBuilder {
                       .process(httpError400())                    
                     .end();
 
-        from("direct:choice-zip-file")
-                .id("choice-zip-file")
-                .choice()
-                  .when(isZippedFile("zip"))
-                    .split(new ZipSplitter())
-                    .streaming()
-                    .to("direct:store")
-                  .endChoice()
-                  .when(isZippedFile("tar.gz"))
-                     .unmarshal().gzip()
-                     .split(new TarSplitter())
-                     .streaming()
-                     .to("direct:store")
-                  .endChoice()  
-                  .otherwise()
-                    .to("direct:store")
-                .end();
-        
+
         from("direct:store")
                 .id("direct-store")
                 .convertBodyTo(String.class)
@@ -122,7 +105,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
                     String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
                     RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
-                    
+
                     rhIdentity.getInternal().forEach((key,value) -> {
                         Map header = exchange.getIn().getHeader("MA_metadata", new HashMap<String, String>(), Map.class);
                         header.put(key, value);
@@ -132,9 +115,26 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
-                .convertBodyTo(String.class)
-                .to("direct:calculate");
+                .to("direct:unzip-file");
 
+        from("direct:unzip-file")
+                .id("unzip-file")
+                .choice()
+                    .when(isZippedFile("zip"))
+                        .split(new ZipSplitter())
+                        .streaming()
+                        .to("direct:calculate")
+                    .endChoice()
+                    .when(isZippedFile("tar.gz"))
+                        .unmarshal().gzip()
+                        .split(new TarSplitter())
+                        .streaming()
+                        .to("direct:calculate")
+                    .endChoice()
+                    .otherwise()
+                        .to("direct:calculate")
+                .end();
+        
         from("direct:calculate")
                 .id("calculate")
                 .doTry()
