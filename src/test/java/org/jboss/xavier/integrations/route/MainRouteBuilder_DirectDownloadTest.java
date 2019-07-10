@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("http4:oldhost|direct:calculate")
+@MockEndpointsAndSkip("http4:oldhost|direct:unzip-file")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
@@ -36,15 +36,15 @@ public class MainRouteBuilder_DirectDownloadTest {
     @EndpointInject(uri = "mock:http4:oldhost")
     private MockEndpoint mockOldHost;    
     
-    @EndpointInject(uri = "mock:direct:calculate")
-    private MockEndpoint mockCalculate;
-
+    @EndpointInject(uri = "mock:direct:unzip-file")
+    private MockEndpoint mockUnzipFile;
+    
     @Test
     public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
-        mockCalculate.expectedMessageCount(1);
+        mockUnzipFile.expectedMessageCount(1);
         
         mockOldHost.expectedHeaderReceived("CamelHttpUri", "http://dummyurl.com");
 
@@ -65,7 +65,7 @@ public class MainRouteBuilder_DirectDownloadTest {
         mockOldHost.assertIsSatisfied();
         assertThat(mockOldHost.getExchanges().get(0).getIn().getHeader("MA_metadata", Map.class).get("customerid")).isEqualTo("CID1234");
         assertThat(mockOldHost.getExchanges().get(0).getIn().getHeader("MA_metadata", Map.class).get("auth_time")).isEqualTo("0");
-        mockCalculate.assertIsSatisfied();
+        mockUnzipFile.assertIsSatisfied();
 
         camelContext.stop();
     }

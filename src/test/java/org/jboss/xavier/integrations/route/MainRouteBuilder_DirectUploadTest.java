@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,7 +59,7 @@ public class MainRouteBuilder_DirectUploadTest {
         headers.put("CamelFileName", filename);
         headers.put("Content-Type", "multipart/mixed");
 
-        String rhidentity = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";;
+        String rhidentity = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";
         headers.put("x-rh-identity", rhidentity);
         headers.put("MA_metadata", metadata);
         
@@ -71,7 +70,6 @@ public class MainRouteBuilder_DirectUploadTest {
         //When
         camelContext.start();
         camelContext.startRoute("direct-upload");
-        camelContext.startRoute("choice-zip-file");
 
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("mime-message-several-files-sample.txt");
 
@@ -79,7 +77,7 @@ public class MainRouteBuilder_DirectUploadTest {
 
         //Then
         mockStore.assertIsSatisfied();
-        assertThat(mockStore.getExchanges().stream().filter(e -> "CID12345".equalsIgnoreCase(e.getIn().getHeader("MA_metadata", Map.class).get("customerid").toString())).collect(Collectors.toList()).size()).isEqualTo(4);
+        assertThat(mockStore.getExchanges().stream().filter(e -> "CID12345".equalsIgnoreCase(e.getIn().getHeader("MA_metadata", Map.class).get("customerid").toString())).count()).isEqualTo(4);
 
         camelContext.stop();
     }    
@@ -94,7 +92,6 @@ public class MainRouteBuilder_DirectUploadTest {
         //When
         camelContext.start();
         camelContext.startRoute("direct-upload");
-        camelContext.startRoute("choice-zip-file");
         
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("mime-message-several-files-sample.txt");
 
@@ -124,7 +121,6 @@ public class MainRouteBuilder_DirectUploadTest {
         //When
         camelContext.start();
         camelContext.startRoute("direct-upload");
-        camelContext.startRoute("choice-zip-file");
         
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("mime-message-several-files-sample.txt");
 
@@ -146,16 +142,15 @@ public class MainRouteBuilder_DirectUploadTest {
     }
     
     @Test
-    public void mainRouteBuilder_routeDirectUpload_ContentWithZipFilesGiven_ShouldReturn1MessagePerFileInsideZip() throws Exception {
+    public void mainRouteBuilder_routeDirectUpload_ContentWithZipFilesGiven_ShouldReturn1Message() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
-        mockStore.expectedMessageCount(3);
+        mockStore.expectedMessageCount(1);
 
         //When
         camelContext.start();
         camelContext.startRoute("direct-upload");
-        camelContext.startRoute("choice-zip-file");
         
 
 
@@ -185,12 +180,12 @@ public class MainRouteBuilder_DirectUploadTest {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
-        mockStore.expectedMessageCount(2);
+        mockStore.expectedMessageCount(1);
 
         //When
         camelContext.start();
         camelContext.startRoute("direct-upload");
-        camelContext.startRoute("choice-zip-file");
+        camelContext.startRoute("unzip-file");
 
 
         String filename = "cloudforms-export-v1-multiple-files.tar.gz";
