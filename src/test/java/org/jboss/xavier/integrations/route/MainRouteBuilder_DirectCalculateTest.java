@@ -52,14 +52,14 @@ public class MainRouteBuilder_DirectCalculateTest {
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
         Integer hypervisor = 1;
-        Long totaldiskspace = 1235339968512L;
+        Long totaldiskspace = 2470679937024L;
         Integer sourceproductindicator = 1;
         Double year1hypervisorpercentage = 10D;
         Double year2hypervisorpercentage = 20D;
         Double year3hypervisorpercentage = 30D;
         Double growthratepercentage = 7D;
 
-        UploadFormInputDataModel uploadFormInputDataModelExpected = new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
+        UploadFormInputDataModel expectedFormInputDataModelExpected = new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
 
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("customerid", customerId);
@@ -82,7 +82,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate", body, headers);
 
         //Then
-        assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(uploadFormInputDataModelExpected);
+        assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
 
         camelContext.stop();
     }    

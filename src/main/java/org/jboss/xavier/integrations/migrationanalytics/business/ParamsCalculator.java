@@ -1,34 +1,39 @@
-package org.jboss.xavier.integrations.route.model.cloudforms.v1;
+package org.jboss.xavier.integrations.migrationanalytics.business;
 
+import com.jayway.jsonpath.JsonPath;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.jboss.xavier.integrations.route.model.cloudforms.Calculator;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Named;
+import java.util.List;
 import java.util.Map;
 
-@Named("analyticsCalculatorV1")
-public class ReportCalculatorV1 implements Calculator {
+@Named("calculator")
+public class ParamsCalculator implements Calculator {
+    
     @Value("${cloudforms.filter.type}")
     private String hostFilterByType;
 
-    @Override
-    public UploadFormInputDataModel calculate(CloudFormsExport cloudFormAnalysis, Map<String, Object> headers) { 
-        Long numberofhypervisors = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
-                .getEmsClusters().stream()
-                .flatMap(e -> e.getHosts().stream())
-                .filter(j -> j.getType().equalsIgnoreCase(hostFilterByType))
-                .mapToLong(e -> (e.getCpuTotalCores() / (e.getCpuCoresPerSocket() * 2)))
-                .sum();
-        
-        Long totalspace = cloudFormAnalysis.getManageIQProvidersVmwareInfraManager()
-                .getEmsClusters().stream()
-                .flatMap(e -> e.getHosts().stream())
-                .filter(j -> j.getType().equalsIgnoreCase(hostFilterByType))
-                .flatMap(e -> e.getStorages().stream())
-                .mapToLong(e -> e.getTotalSpace())
-                .sum();
+    @Value("${cloudforms.manifest.v1.cpuTotalCoresPath}")
+    String cpuTotalCoresPath;
 
+    @Value("${cloudforms.manifest.v1.cpuCoresPerSocketPath}")
+    String cpuCoresPerSocketPath;
+
+    @Value("${cloudforms.manifest.v1.totalSpacePath}")
+    String totalSpacePath;
+
+
+    @Override
+    public UploadFormInputDataModel calculate(String cloudFormsJson, Map<String, Object> headers) {
+        // Calculations
+        Integer cpuTotalCores = ((List<Integer>) JsonPath.read(cloudFormsJson, cpuTotalCoresPath)).stream().mapToInt(Integer::intValue).sum();
+        Integer cpuCoresPerSocket = ((List<Integer>) JsonPath.read(cloudFormsJson, cpuCoresPerSocketPath)).stream().mapToInt(Integer::intValue).sum();
+        Long totalspace = ((List<Long>) JsonPath.read(cloudFormsJson, totalSpacePath)).stream().mapToLong(Long::longValue).sum();
+
+        Long numberofhypervisors = new Double(cpuTotalCores / (cpuCoresPerSocket * 2)).longValue();
+        
+        // User properties
         String customerid = headers.get(Calculator.CUSTOMERID).toString();
         String filename = headers.get(Calculator.FILENAME).toString();
         int sourceproductindicator = Integer.parseInt(headers.get(Calculator.SOURCEPRODUCTINDICATOR) != null ? headers.get(Calculator.SOURCEPRODUCTINDICATOR).toString() : "0");
@@ -37,6 +42,7 @@ public class ReportCalculatorV1 implements Calculator {
         double year3hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE).toString() : "0");
         double growthratepercentage = Double.parseDouble(headers.get(Calculator.GROWTHRATEPERCENTAGE) != null ? headers.get(Calculator.GROWTHRATEPERCENTAGE).toString() : "0");
         
+        // Calculated and enriched model
         return new UploadFormInputDataModel(customerid, filename, numberofhypervisors.intValue(), totalspace,
                 sourceproductindicator, year1hypervisorpercentage,
                 year2hypervisorpercentage,

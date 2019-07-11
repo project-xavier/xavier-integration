@@ -1,7 +1,6 @@
-package org.jboss.xavier.integrations.route.model.cloudforms;
+package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.jboss.xavier.integrations.route.model.cloudforms.v1.CloudFormsExport;
 
 import java.util.Map;
 
@@ -14,5 +13,5 @@ public interface Calculator {
     String YEAR_3_HYPERVISORPERCENTAGE = "year3hypervisorpercentage";
     String GROWTHRATEPERCENTAGE = "growthratepercentage";
 
-    UploadFormInputDataModel calculate(CloudFormsExport cloudFormAnalysis, Map<String, Object> headers);
+    UploadFormInputDataModel calculate(String cloudFormJson, Map<String, Object> headers);
 }
