@@ -29,7 +29,7 @@ public class ParamsCalculatorTest {
     private Calculator reportCalculator;
 
     @Test
-    public void analyticsCalculator_calculate_CloudFormsModelWith8HostsAnd8000OfSpaceGiven_ShouldReturn8HostsAnd8000TotalDiskSpace() throws IOException {
+    public void analyticsCalculator_calculate_CloudFormsModelWith32coresAnd16cpupercoreGiven_ShouldReturn1HostAndTotalDiskSpace() throws IOException {
         // Given
         String filename = "cloudforms-export-v1.json";
         String customerid = "CIDE9988";
