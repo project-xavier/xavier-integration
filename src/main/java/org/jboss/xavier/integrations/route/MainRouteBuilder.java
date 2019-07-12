@@ -100,17 +100,7 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:download-file")
                 .id("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
-                .process( exchange -> {
-                    FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
-                    String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
-                    RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
-
-                    rhIdentity.getInternal().forEach((key,value) -> {
-                        Map header = exchange.getIn().getHeader("MA_metadata", new HashMap<String, String>(), Map.class);
-                        header.put(key, value);
-                        exchange.getIn().setHeader("MA_metadata", header);
-                    });
-                })
+                .process(this::extractAndEnrichRHIdentityFromNotification)
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
@@ -142,9 +132,21 @@ public class MainRouteBuilder extends RouteBuilder {
                     .to("jms:queue:inputDataModel")
                 .endDoTry()
                 .doCatch(Exception.class)
-                    .setBody(simple("Exception on unmarshaling Cloudforms file"))
+                    .setBody(simple("Exception on parsing Cloudforms file"))
                     .to("log:WARN")
                 .end();
+    }
+
+    private void extractAndEnrichRHIdentityFromNotification(Exchange exchange) throws IOException {
+        FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
+        String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
+        RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
+
+        rhIdentity.getInternal().forEach((key,value) -> {
+            Map header = exchange.getIn().getHeader("MA_metadata", new HashMap<String, String>(), Map.class);
+            header.put(key, value);
+            exchange.getIn().setHeader("MA_metadata", header);
+        });
     }
 
     private Processor httpError400() {
@@ -159,10 +161,6 @@ public class MainRouteBuilder extends RouteBuilder {
         return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
     }
 
-    private Predicate isTextField() {
-        return exchange -> (!exchange.getIn().getHeaders().containsKey(CustomizedMultipartDataFormat.CONTENT_TYPE) || "text/plain".equalsIgnoreCase(exchange.getIn().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE, String.class)));
-    }
-    
     private Predicate isFilePart() {
         return exchange -> exchange.getIn().getHeader(CustomizedMultipartDataFormat.CONTENT_DISPOSITION, String.class).contains("filename");
     }
@@ -226,8 +224,5 @@ public class MainRouteBuilder extends RouteBuilder {
             exchange.getIn().setBody(dataHandler.getInputStream());
         };
     }
-
-
-
 
 }
