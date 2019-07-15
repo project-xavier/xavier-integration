@@ -50,7 +50,8 @@ public class ParamsCalculator implements Calculator {
     }
 
     // It will try to extract the version of the payload from the JSON file, falling back to v1
-    private String getManifestVersion(String cloudFormsJson) {
+    @Override
+    public String getManifestVersion(String cloudFormsJson) {
         return "v1";
     }
 }
