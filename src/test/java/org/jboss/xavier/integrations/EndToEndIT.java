@@ -56,12 +56,12 @@ public class EndToEndIT {
     
     @Value("${insights.kafka.upload.topic}")
     String kakfaTopic;
-    
+
+    @Rule
+    public GenericContainer activemq = new GenericContainer<>("rmhor:activemq").withExposedPorts(61616).withNetworkAliases("activemq");
+
     @Rule
     public KafkaContainer kafka = new KafkaContainer().withNetworkAliases("kafka");
-    
-    @Rule
-    public GenericContainer activemq = new GenericContainer<>("rmhor:activemq").withExposedPorts(61616).withNetworkAliases("activemq");    
     
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(80));
