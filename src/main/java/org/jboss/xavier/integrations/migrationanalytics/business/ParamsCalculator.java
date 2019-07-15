@@ -2,7 +2,6 @@ package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 
 import javax.inject.Inject;
@@ -15,9 +14,6 @@ public class ParamsCalculator implements Calculator {
     @Inject
     private Environment env;
     
-    @Value("${cloudforms.filter.type}")
-    private String hostFilterByType;
-
     @Override
     public UploadFormInputDataModel calculate(String cloudFormsJson, Map<String, Object> headers) {
         String payloadVersion = getManifestVersion(cloudFormsJson);
@@ -29,9 +25,9 @@ public class ParamsCalculator implements Calculator {
         // Calculations
         Integer cpuTotalCores = ((List<Integer>) JsonPath.read(cloudFormsJson, cpuTotalCoresPath)).stream().mapToInt(Integer::intValue).sum();
         Integer cpuCoresPerSocket = ((List<Integer>) JsonPath.read(cloudFormsJson, cpuCoresPerSocketPath)).stream().mapToInt(Integer::intValue).sum();
-        Long totalspace = ((List<Long>) JsonPath.read(cloudFormsJson, totalSpacePath)).stream().mapToLong(Long::longValue).sum();
+        Long totalspace = ((List<Number>) JsonPath.parse(cloudFormsJson).read(totalSpacePath)).stream().mapToLong(Number::longValue).sum();
 
-        Long numberofhypervisors = new Double(cpuTotalCores / (cpuCoresPerSocket * 2)).longValue();
+        Long numberofhypervisors = (cpuCoresPerSocket > 0) ? new Double(cpuTotalCores / (cpuCoresPerSocket * 2)).longValue() : 0;
         
         // User properties
         String customerid = headers.get(Calculator.CUSTOMERID).toString();

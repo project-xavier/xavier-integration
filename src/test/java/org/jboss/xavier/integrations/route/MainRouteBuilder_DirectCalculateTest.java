@@ -2,9 +2,9 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
-import org.apache.camel.test.spring.MockEndpoints;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @MockEndpointsAndSkip("jms:queue:inputDataModel")
-@MockEndpoints("log*")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}) 
 @ActiveProfiles("test")
@@ -40,9 +39,6 @@ public class MainRouteBuilder_DirectCalculateTest {
     @EndpointInject(uri = "mock:jms:queue:inputDataModel")
     private MockEndpoint mockJmsQueue; 
     
-    @EndpointInject(uri="mock:log:WARN")
-    private MockEndpoint mockLog;
-    
     @Test
     public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
@@ -52,7 +48,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
         Integer hypervisor = 1;
-        Long totaldiskspace = 2470679937024L;
+        Long totaldiskspace = 281951062016L;
         Integer sourceproductindicator = 1;
         Double year1hypervisorpercentage = 10D;
         Double year2hypervisorpercentage = 20D;
@@ -72,7 +68,6 @@ public class MainRouteBuilder_DirectCalculateTest {
         
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
-
 
         //When
         camelContext.start();
@@ -99,19 +94,20 @@ public class MainRouteBuilder_DirectCalculateTest {
         Map<String, Object> headers = new HashMap<>();
         headers.put("customerid", customerId);
         headers.put("filename", fileName);
-        mockLog.expectedBodiesReceived("Exception on unmarshaling Cloudforms file");
         
         //When
         camelContext.start();
         camelContext.startRoute("calculate");
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
-        
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate", "{ \"ñkajsñlkj\" : " + body, headers);
+
+        Exchange message = camelContext.createProducerTemplate().request("direct:calculate", exchange -> {
+            exchange.getIn().setBody("{ \"ñkajsñlkj\" : " + body);
+            exchange.getIn().setHeaders(headers);
+        });
 
         //Then
         mockJmsQueue.assertIsSatisfied();
-        mockLog.assertIsSatisfied();
-        
+        assertThat(message.getIn().getBody(String.class)).isEqualToIgnoringCase("Exception on parsing Cloudforms file");
         camelContext.stop();
     }
     

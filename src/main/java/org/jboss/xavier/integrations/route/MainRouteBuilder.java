@@ -132,8 +132,8 @@ public class MainRouteBuilder extends RouteBuilder {
                     .to("jms:queue:inputDataModel")
                 .endDoTry()
                 .doCatch(Exception.class)
+                    .to("log:error?showCaughtException=true&showStackTrace=true")
                     .setBody(simple("Exception on parsing Cloudforms file"))
-                    .to("log:WARN")
                 .end();
     }
 
