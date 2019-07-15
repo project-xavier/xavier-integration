@@ -13,5 +13,8 @@ public interface Calculator {
     String YEAR_3_HYPERVISORPERCENTAGE = "year3hypervisorpercentage";
     String GROWTHRATEPERCENTAGE = "growthratepercentage";
 
-    UploadFormInputDataModel calculate(String cloudFormJson, Map<String, Object> headers);
+    UploadFormInputDataModel calculate(String cloudFormsJson, Map<String, Object> headers);
+
+    // It will try to extract the version of the payload from the JSON file, falling back to v1
+    String getManifestVersion(String cloudFormsJson);
 }
