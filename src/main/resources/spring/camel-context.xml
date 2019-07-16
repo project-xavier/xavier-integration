@@ -71,7 +71,7 @@
             <to uri="jpa:org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel" />
         </route>
 
-        <route id="sample-uploadFormInputDataModel-generator">
+        <route id="sample-uploadFormInputDataModel-generator" autoStartup="{{sig.autoStartup}}">
             <description>Example route that will regularly create an InputDataModel and send it to a JMS queue</description>
             <from id="route-timer" uri="timer:testRoute?period=10s" />
             <bean id="route-new-uploadFormInputDataModel" method="createSampleUploadFormInputDataModel" ref="decisionServerHelper" />
