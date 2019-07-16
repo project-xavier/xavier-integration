@@ -98,10 +98,10 @@ public class DecisionServerHelper {
         report.getEnvironmentModel().setReport(report);
         report.getSourceCostsModel().setReport(report);
         report.getSourceRampDownCostsModel().setReport(report);
-/*        report.getRhvRampUpCostsModel().setReport(report);
+        report.getRhvRampUpCostsModel().setReport(report);
         report.getRhvYearByYearCostsModel().setReport(report);
         report.getRhvSavingsModel().setReport(report);
-        report.getRhvAdditionalContainerCapacityModel().setReport(report);
+        /*report.getRhvAdditionalContainerCapacityModel().setReport(report);
         report.getRhvOrderFormModel().setReport(report);*/
         return report;
     }

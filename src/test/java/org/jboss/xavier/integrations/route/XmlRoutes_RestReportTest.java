@@ -4,7 +4,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
-import org.jboss.xavier.integrations.Application;
+import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.jpa.service.ReportService;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @MockEndpointsAndSkip("")
 @UseAdviceWith // Disables automatic start of Camel context
-@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) 
+@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class XmlRoutes_RestReportTest {
     @Autowired
@@ -35,7 +35,7 @@ public class XmlRoutes_RestReportTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-    
+
     @MockBean
     private ReportService reportService;
 
@@ -59,12 +59,12 @@ public class XmlRoutes_RestReportTest {
         Map<String, String> variables = new HashMap<>();
         variables.put("summary", "true");
         restTemplate.getForEntity(camel_context + "report?summary={summary}", String.class, variables);
-        
+
         //Then
         verify(reportService).findReportSummary();
         camelContext.stop();
-    }    
-    
+    }
+
     @Test
     public void mainRouteBuilder_RestReport_NotSummaryParamGiven_ShouldCallFindReports() throws Exception {
         //Given
@@ -77,10 +77,10 @@ public class XmlRoutes_RestReportTest {
         Map<String, String> variables = new HashMap<>();
         variables.put("summary", "false");
         restTemplate.getForEntity(camel_context + "report?summary={summary}", String.class, variables);
-        
+
         //Then
         verify(reportService).findReports();
         camelContext.stop();
     }
-    
+
 }
