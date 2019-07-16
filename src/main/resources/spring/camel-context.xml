@@ -45,9 +45,6 @@
                             <simple>${header.summary} == 'false'</simple>
                             <bean beanType="org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService" method="findReports" />
 <!--                            <bean ref="initialSavingsEstimationReportService" method="findReports" />-->
-                            <setOutHeader headerName="X-Total-Count">
-                                <simple>${body.getTotalElements()}</simple>
-                            </setOutHeader>
                         </when>
                         <otherwise>
                             <bean beanType="org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService" method="findReportSummary" />
