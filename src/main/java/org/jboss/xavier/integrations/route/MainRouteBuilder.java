@@ -71,7 +71,7 @@ public class MainRouteBuilder extends RouteBuilder {
                         .end()
                     .endChoice()
                     .otherwise()
-                      .process(httpError400())                    
+                      .process(httpError400())
                     .end();
 
 
@@ -123,7 +123,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     .otherwise()
                         .to("direct:calculate")
                 .end();
-        
+
         from("direct:calculate")
                 .id("calculate")
                 .doTry()
@@ -180,9 +180,9 @@ public class MainRouteBuilder extends RouteBuilder {
         if (x_rh_identity_json != null) {
             rhidentity = new ObjectMapper().reader().withRootName("identity").readValue(new JsonFactory().createParser(x_rh_identity_json), RHIdentity.class);
         } else {
-          rhidentity = new RHIdentity();  
+          rhidentity = new RHIdentity();
         }
-        
+
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
         insightsProperties.forEach(e -> rhidentity.getInternal().put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
 
@@ -207,7 +207,7 @@ public class MainRouteBuilder extends RouteBuilder {
             return zipContentType && zipExtension;
         };
     }
-    
+
     private boolean isZipContentType(Exchange exchange) {
         return "application/zip".equalsIgnoreCase(exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString());
     }
@@ -215,7 +215,7 @@ public class MainRouteBuilder extends RouteBuilder {
     private Processor processMultipart() {
         return exchange -> {
             Attachment body = exchange.getIn().getBody(Attachment.class);
-            
+
             DataHandler dataHandler = body.getDataHandler();
 
             exchange.getIn().setHeader(Exchange.FILE_NAME, dataHandler.getName());

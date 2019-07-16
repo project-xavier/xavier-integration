@@ -43,10 +43,14 @@
                     <choice>
                         <when>
                             <simple>${header.summary} == 'false'</simple>
-                            <bean ref="reportService" method="findReports" />
+                            <bean beanType="org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService" method="findReports" />
+<!--                            <bean ref="initialSavingsEstimationReportService" method="findReports" />-->
+                            <setOutHeader headerName="X-Total-Count">
+                                <simple>${body.getTotalElements()}</simple>
+                            </setOutHeader>
                         </when>
                         <otherwise>
-                            <bean ref="reportService" method="findReportSummary" />
+                            <bean beanType="org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService" method="findReportSummary" />
                         </otherwise>
                     </choice>
                 </route>
@@ -54,7 +58,7 @@
             <get uri="/{id}">
                 <description>Get the details of a report</description>
                 <route id="reports-get-details">
-                    <bean beanType="org.jboss.xavier.integrations.jpa.service.ReportService" method="findReportDetails(${header.id})" />
+                    <bean beanType="org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService" method="findReportDetails(${header.id})" />
                 </route>
             </get>
         </rest>
@@ -70,10 +74,37 @@
             <to uri="jpa:org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel" />
         </route>
 
+        <route id="sample-uploadFormInputDataModel-generator">
+            <description>Example route that will regularly create an InputDataModel and send it to a JMS queue</description>
+            <from id="route-timer" uri="timer:testRoute?period=10s" />
+            <bean id="route-new-uploadFormInputDataModel" method="createSampleUploadFormInputDataModel" ref="decisionServerHelper" />
+            <to id="route-to-new-jms" uri="jms:queue:uploadFormInputDataModel" />
+            <log message="Message with sample UploadFormInputDataModel sent" />
+        </route>
+
+        <route id="route-ma">
+            <from uri="jms:queue:uploadFormInputDataModel" />
+            <log message="Message received" />
+            <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
+            <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
+            <to uri="direct:decisionserver"/>
+            <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
+<!--            <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
+            <to uri="jpa:org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel" />-->
+            <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
+            <bean ref="analysisModel" method="setInitialSavingsEstimationReportModel(${body})" />
+            <setBody>
+                <simple>${ref:analysisModel}</simple>
+            </setBody>
+            <log message="######## AnalysisModel ${body}" />
+            <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
+            <to uri="jpa:org.jboss.xavier.analytics.pojo.output.AnalysisModel" />
+        </route>
+
         <!--
             The following route is used as sub-route to send generic commands to the kie server.
         -->
-        <route id="decision-server-rest">
+        <route id="decision-server-rest" trace="true">
             <!-- Using the xstream marshalling -->
             <from id="route-from-decision-server-rest" uri="direct:decisionserver"/>
             <setHeader headerName="CamelHttpMethod" id="header-post">
