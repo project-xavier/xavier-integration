@@ -3,6 +3,7 @@ package org.jboss.xavier.integrations.route;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.Serializers;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
@@ -175,10 +176,11 @@ public class MainRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
-    public String getRHIdentity(String x_rh_identity_json, String filename, Map<String, Object> headers) throws IOException {
+    public String getRHIdentity(String x_rh_identity_base64, String filename, Map<String, Object> headers) throws IOException {
+        String xRhIdentityJson = new String(Base64.getDecoder().decode(x_rh_identity_base64));
         RHIdentity rhidentity;
-        if (x_rh_identity_json != null) {
-            rhidentity = new ObjectMapper().reader().withRootName("identity").readValue(new JsonFactory().createParser(x_rh_identity_json), RHIdentity.class);
+        if (xRhIdentityJson != null) {
+            rhidentity = new ObjectMapper().reader().withRootName("identity").readValue(new JsonFactory().createParser(xRhIdentityJson), RHIdentity.class);
         } else {
           rhidentity = new RHIdentity();
         }
