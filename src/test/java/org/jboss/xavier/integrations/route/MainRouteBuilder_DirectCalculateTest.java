@@ -48,8 +48,8 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
-        Integer hypervisor = 1;
-        Long totaldiskspace = 281951062016L;
+        Integer hypervisor = 2;
+        Long totaldiskspace = 563902124032L;
         Integer sourceproductindicator = 1;
         Double year1hypervisorpercentage = 10D;
         Double year2hypervisorpercentage = 20D;
