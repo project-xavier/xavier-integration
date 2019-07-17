@@ -130,6 +130,7 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .doTry()
+                    .convertBodyTo(String.class)
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                     .log("Message to send to AMQ : ${body}")
                     .to("jms:queue:inputDataModel")
