@@ -13,11 +13,11 @@ import java.util.Map;
 public class ParamsCalculator implements Calculator {
     @Inject
     private Environment env;
-    
+
     @Override
     public UploadFormInputDataModel calculate(String cloudFormsJson, Map<String, Object> headers) {
         String payloadVersion = getManifestVersion(cloudFormsJson);
-        
+
         String cpuTotalCoresPath = env.getProperty("cloudforms.manifest." + payloadVersion + ".cpuTotalCoresPath", env.getProperty("cloudforms.manifest.v1.cpuTotalCoresPath"));
         String cpuCoresPerSocketPath = env.getProperty("cloudforms.manifest." + payloadVersion + ".cpuCoresPerSocketPath", env.getProperty("cloudforms.manifest.v1.cpuCoresPerSocketPath"));
         String totalSpacePath = env.getProperty("cloudforms.manifest." + payloadVersion + ".totalSpacePath", env.getProperty("cloudforms.manifest.v1.totalSpacePath"));
@@ -28,19 +28,19 @@ public class ParamsCalculator implements Calculator {
         Long totalspace = ((List<Number>) JsonPath.parse(cloudFormsJson).read(totalSpacePath)).stream().mapToLong(Number::longValue).sum();
 
         Long numberofhypervisors = (cpuCoresPerSocket > 0) ? new Double(cpuTotalCores / (cpuCoresPerSocket * 2)).longValue() : 0;
-        
+
         // User properties
         String customerid = headers.get(Calculator.CUSTOMERID).toString();
         String filename = headers.get(Calculator.FILENAME).toString();
-        int sourceproductindicator = Integer.parseInt(headers.get(Calculator.SOURCEPRODUCTINDICATOR) != null ? headers.get(Calculator.SOURCEPRODUCTINDICATOR).toString() : "0");
-        double year1hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_1_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_1_HYPERVISORPERCENTAGE).toString() : "0");
-        double year2hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_2_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_2_HYPERVISORPERCENTAGE).toString() : "0");
-        double year3hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE).toString() : "0");
-        double growthratepercentage = Double.parseDouble(headers.get(Calculator.GROWTHRATEPERCENTAGE) != null ? headers.get(Calculator.GROWTHRATEPERCENTAGE).toString() : "0");
-        
+//        int sourceproductindicator = Integer.parseInt(headers.get(Calculator.SOURCEPRODUCTINDICATOR) != null ? headers.get(Calculator.SOURCEPRODUCTINDICATOR).toString() : "0");
+        double year1hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_1_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_1_HYPERVISORPERCENTAGE).toString() : "0") / 100;
+        double year2hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_2_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_2_HYPERVISORPERCENTAGE).toString() : "0") / 100;
+        double year3hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE).toString() : "0") / 100;
+        double growthratepercentage = Double.parseDouble(headers.get(Calculator.GROWTHRATEPERCENTAGE) != null ? headers.get(Calculator.GROWTHRATEPERCENTAGE).toString() : "0") / 100;
+
         // Calculated and enriched model
         return new UploadFormInputDataModel(customerid, filename, numberofhypervisors.intValue(), totalspace,
-                sourceproductindicator, year1hypervisorpercentage,
+                null, year1hypervisorpercentage,
                 year2hypervisorpercentage,
                 year3hypervisorpercentage, growthratepercentage);
     }

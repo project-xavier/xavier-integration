@@ -133,7 +133,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     .convertBodyTo(String.class)
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                     .log("Message to send to AMQ : ${body}")
-                    .to("jms:queue:inputDataModel")
+                    .to("jms:queue:uploadFormInputDataModel")
                 .endDoTry()
                 .doCatch(Exception.class)
                     .to("log:error?showCaughtException=true&showStackTrace=true")
