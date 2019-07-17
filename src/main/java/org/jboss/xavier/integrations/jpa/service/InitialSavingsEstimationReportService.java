@@ -38,6 +38,11 @@ public class InitialSavingsEstimationReportService
         return reportRepository.findAllReportSummaryBy(pageable);
     }
 
+    public InitialSavingsEstimationReportSummary findReportSummaryById(Long id)
+    {
+        return reportRepository.findReportSummaryById(id);
+    }
+
     public InitialSavingsEstimationReportModel findReportDetails(Long id)
     {
         return reportRepository.findOne(id);

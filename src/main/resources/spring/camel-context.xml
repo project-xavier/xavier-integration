@@ -54,6 +54,12 @@
                     </choice>
                 </route>
             </get>
+            <get uri="/{id}">
+                <description>Get the details of a report</description>
+                <route id="report-get-details">
+                    <bean beanType="org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService" method="findReportSummaryById(${header.id})" />
+                </route>
+            </get>
             <get uri="/{id}/initial-saving-estimation">
                 <description>Get the Initial Cost Saving report</description>
                 <route id="reports-get-details">

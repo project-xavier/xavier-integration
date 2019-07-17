@@ -13,4 +13,6 @@ public interface InitialSavingsEstimationReportRepository extends JpaRepository<
     Iterable<InitialSavingsEstimationReportSummary> findAllReportSummaryBy();
 
     Page<InitialSavingsEstimationReportSummary> findAllReportSummaryBy(Pageable pageable);
+
+    InitialSavingsEstimationReportSummary findReportSummaryById(Long id);
 }
