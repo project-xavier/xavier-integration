@@ -8,7 +8,7 @@ public class UserService
 {
     public User findUser()
     {
-        return User.builder().build();
+        return User.builder().firstTimeCreatingReports(true).build();
     }
 
 }

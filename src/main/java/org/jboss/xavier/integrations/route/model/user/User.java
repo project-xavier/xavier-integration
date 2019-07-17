@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class User
 {
-    private boolean firstTimeCreatingReports = true;
-
+    private boolean firstTimeCreatingReports;
 }
