@@ -41,7 +41,7 @@ public class MainRouteBuilder_DirectCalculateTest {
     private MockEndpoint mockJmsQueue; 
     
     @Test
-    public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
+    public void mainRouteBuilder_DirectCalculate_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
@@ -84,7 +84,7 @@ public class MainRouteBuilder_DirectCalculateTest {
     }    
     
     @Test
-    public void mainRouteBuilder_DirectDownloadFile_WrongJSONFileGiven_ShouldLogExceptionButNotCrash() throws Exception {
+    public void mainRouteBuilder_DirectCalculate_WrongJSONFileGiven_ShouldLogExceptionButNotCrash() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
@@ -113,7 +113,7 @@ public class MainRouteBuilder_DirectCalculateTest {
     }    
     
     @Test
-    public void mainRouteBuilder_DirectDownloadFile_FileGiven_ShouldSendMessageToJMS() throws Exception {
+    public void mainRouteBuilder_DirectCalculate_FileGiven_ShouldSendMessageToJMS() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);

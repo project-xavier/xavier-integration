@@ -144,9 +144,7 @@ public class MainRouteBuilder extends RouteBuilder {
         JsonNode node= new ObjectMapper().reader().readTree(identity_json);
 
         Map header = new HashMap<String, String>();
-        node.get("identity").get("internal").elements().forEachRemaining(subnode -> {
-            System.out.println(subnode.toString());
-        });
+        node.get("identity").get("internal").fieldNames().forEachRemaining(field -> header.put(field, node.get("identity").get("internal").get(field).asText()));
         return header;
     }
 
@@ -176,8 +174,8 @@ public class MainRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
-    public String getRHIdentity(String x_rh_identity_json, String filename, Map<String, Object> headers) throws IOException {
-        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_json)));
+    public String getRHIdentity(String x_rh_identity_json_encoded, String filename, Map<String, Object> headers) throws IOException {
+        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_json_encoded)));
 
         ObjectNode objectNode = (ObjectNode) node.get("identity").get("internal");
         objectNode.put("filename", filename);
