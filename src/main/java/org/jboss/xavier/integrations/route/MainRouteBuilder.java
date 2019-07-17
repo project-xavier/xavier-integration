@@ -103,7 +103,8 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:download-file")
                 .id("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
-                .process(this::extractAndEnrichRHIdentityFromNotification)
+                .convertBodyTo(FilePersistedNotification.class)
+                .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
@@ -162,6 +163,15 @@ public class MainRouteBuilder extends RouteBuilder {
             header.put(entry.getKey(), entry.getValue().toString());
             exchange.getIn().setHeader("MA_metadata", header);
         });
+    }
+
+    public Map<String,String> extractMAmetadataHeaderFromIdentity(FilePersistedNotification filePersistedNotification) throws IOException {
+        String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
+        JsonNode node= new ObjectMapper().reader().readTree(identity_json);
+
+        Map header = new HashMap<String, String>();
+        node.get("identity").get("internal").fieldNames().forEachRemaining(field -> header.put(field, node.get("identity").get("internal").get(field).asText()));
+        return header;
     }
 
     private Processor httpError400() {
