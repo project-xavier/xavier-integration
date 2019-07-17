@@ -19,15 +19,23 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
@@ -49,25 +57,46 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
+@ContextConfiguration(initializers = EndToEndIT.Initializer.class)
 @ActiveProfiles("test")
+@Ignore
 public class EndToEndIT {
+
+    @ClassRule
+    public static GenericContainer activemq = new GenericContainer<>("rmohr/activemq").withExposedPorts(61616);
+
+    @ClassRule
+    public static KafkaContainer kafka = new KafkaContainer()
+            .withEnv("KAFKA_CREATE_TOPICS", "platform.upload.xavier")
+            .withEnv("advertised.host.name","localhost");
+    
+    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+        @Override
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+           
+            EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
+                    "spring.activemq.broker-url=tcp://" + activemq.getContainerIpAddress() + ":" + activemq.getMappedPort(61616),
+                    "amq.server=tcp://" + activemq.getContainerIpAddress(),
+                    "amq.port=" + activemq.getMappedPort(61616),
+                    "insights.kafka.host=" + kafka.getBootstrapServers());
+        }
+    }
+    
     @Inject
     CamelContext camelContext;
+    
+    @Inject
+    JmsTemplate jmsTemplate;
     
     @Value("${insights.kafka.upload.topic}")
     String kakfaTopic;
 
     @Rule
-    public GenericContainer activemq = new GenericContainer<>("rmhor:activemq").withExposedPorts(61616).withNetworkAliases("activemq");
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8080));
 
-    @Rule
-    public KafkaContainer kafka = new KafkaContainer().withNetworkAliases("kafka");
-    
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(80));
-    
+  
     public class ExampleTransformer extends ResponseDefinitionTransformer {
-
         @Override
         public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource files, Parameters parameters) {
             try {
@@ -81,13 +110,12 @@ public class EndToEndIT {
                         .build();
             }
         }
-
         @Override
         public String getName() {
             return "dynamic-transformer";
         }
-    }
     
+    }
     
     @Before
     public void setup() throws IOException {
@@ -109,7 +137,7 @@ public class EndToEndIT {
     @NotNull
     private void sendKafkaMessageToSimulateInsightsUploadProcess() throws ExecutionException, InterruptedException, IOException {
         String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("platform.upload.xavier.json"), Charset.forName("UTF-8"));
-        body.replaceAll("172.17.0.1:9000", "localhost:80");
+        body.replaceAll("172.17.0.1:9000", "localhost:8080");
         
         final ProducerRecord<Long, String> record = new ProducerRecord<>(kakfaTopic, body );
 
@@ -118,7 +146,7 @@ public class EndToEndIT {
 
     private static Producer<Long, String> createKafkaProducer() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:29092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers() + ":" + kafka.getMappedPort(29092));
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -127,7 +155,6 @@ public class EndToEndIT {
 
     @Test
     public void end2endTest() throws Exception {
-        
         camelContext.start();
         
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz");
@@ -150,9 +177,14 @@ public class EndToEndIT {
       
         SequenceInputStream sequenceInputStream = new SequenceInputStream(new SequenceInputStream(new ByteArrayInputStream(mimeHeader.getBytes()), resourceAsStream), new ByteArrayInputStream(mimeFooter.getBytes()));
         
-        String output = new RestTemplate().postForObject("localhost:8080/api/xavier/upload", sequenceInputStream, String.class);
+        String output = new RestTemplate().postForObject("http://localhost:8080/api/ingress/v1/upload", IOUtils.toString(sequenceInputStream, "UTF-8"), String.class);
         
-        //TODO Check JMS receives the message
+        // Here we receive the message.
+        UploadFormInputDataModel message = (UploadFormInputDataModel) jmsTemplate.receiveAndConvert("inputDataModel");
+
+        assertThat(message).isNotNull();
+        assertThat(message.getHypervisor()).isEqualTo(1);
+        assertThat(message.getTotalDiskSpace()).isEqualTo(281951062016L);
         
     }
 
