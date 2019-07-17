@@ -52,10 +52,20 @@
                     </choice>
                 </route>
             </get>
-            <get uri="/{id}">
-                <description>Get the details of a report</description>
+            <get uri="/{id}/initial-saving-estimation">
+                <description>Get the Initial Cost Saving report</description>
                 <route id="reports-get-details">
                     <bean beanType="org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService" method="findReportDetails(${header.id})" />
+                </route>
+            </get>
+        </rest>
+
+        <rest path="/user">
+            <description>User REST API</description>
+            <get uri="/" outType="org.jboss.xavier.integrations.route.model.user.User">
+                <description>Get session user info</description>
+                <route id="get-user-info">
+                    <bean ref="userService" method="findUser" />
                 </route>
             </get>
         </rest>
