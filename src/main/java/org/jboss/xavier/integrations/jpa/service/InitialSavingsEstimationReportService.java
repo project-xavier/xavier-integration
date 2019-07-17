@@ -21,9 +21,21 @@ public class InitialSavingsEstimationReportService
         return reportRepository.findAll(page);
     }
 
+    public Page<InitialSavingsEstimationReportModel> findReports(int page, int size)
+    {
+        Pageable pageable = new PageRequest(page, size);
+        return reportRepository.findAll(pageable);
+    }
+
     public Iterable<InitialSavingsEstimationReportSummary> findReportSummary()
     {
         return reportRepository.findAllReportSummaryBy();
+    }
+
+    public Page<InitialSavingsEstimationReportSummary> findReportSummary(int page, int size)
+    {
+        Pageable pageable = new PageRequest(page, size);
+        return reportRepository.findAllReportSummaryBy(pageable);
     }
 
     public InitialSavingsEstimationReportModel findReportDetails(Long id)
