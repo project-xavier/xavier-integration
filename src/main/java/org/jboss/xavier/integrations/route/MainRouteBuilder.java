@@ -1,9 +1,9 @@
 package org.jboss.xavier.integrations.route;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ser.Serializers;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
@@ -143,7 +143,7 @@ public class MainRouteBuilder extends RouteBuilder {
         String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
         RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
 
-        rhIdentity.getInternal().forEach((key,value) -> {
+        rhIdentity.getIdentity().getInternal().forEach((key,value) -> {
             Map header = exchange.getIn().getHeader("MA_metadata", new HashMap<String, String>(), Map.class);
             header.put(key, value);
             exchange.getIn().setHeader("MA_metadata", header);
@@ -180,20 +180,25 @@ public class MainRouteBuilder extends RouteBuilder {
         String xRhIdentityJson = new String(Base64.getDecoder().decode(x_rh_identity_base64));
         RHIdentity rhidentity;
         if (xRhIdentityJson != null) {
-            rhidentity = new ObjectMapper().reader().withRootName("identity").readValue(new JsonFactory().createParser(xRhIdentityJson), RHIdentity.class);
+            JsonParser jsonParser = new JsonFactory().createParser(xRhIdentityJson);
+            rhidentity = new ObjectMapper().reader().readValue(jsonParser, RHIdentity.class);
+/*          code that worked with the old RHIdentity object
+            ObjectMapper mapper = new ObjectMapper();
+            TreeNode identityTreeNode = mapper.readTree(jsonParser).get("identity");
+            rhidentity = mapper.treeToValue(identityTreeNode , RHIdentity.class);*/
         } else {
           rhidentity = new RHIdentity();
         }
 
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        insightsProperties.forEach(e -> rhidentity.getInternal().put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
+        insightsProperties.forEach(e -> rhidentity.getIdentity().getInternal().put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
 
-        rhidentity.getInternal().put("filename", filename);
+        rhidentity.getIdentity().getInternal().put("filename", filename);
         String rhIdentity_json = "";
         try {
-            rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
-                    .account_number(accountNumber)
-                    .internal(rhidentity.getInternal())
+            rhIdentity_json = new ObjectMapper().writer().writeValueAsString(RHIdentity.builder()
+                    .identity(rhidentity.getIdentity())
+                    .entitlements(rhidentity.getEntitlements())
                     .build());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
