@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.springframework.core.env.Environment;
 
@@ -30,7 +31,7 @@ public class ParamsCalculator implements Calculator {
         Long numberofhypervisors = (cpuCoresPerSocket > 0) ? new Double(cpuTotalCores / (cpuCoresPerSocket * 2)).longValue() : 0;
         
         // User properties
-        String customerid = headers.get(Calculator.CUSTOMERID).toString();
+        String customerid = StringUtils.defaultString(headers.get(Calculator.CUSTOMERID).toString());
         String filename = headers.get(Calculator.FILENAME).toString();
         int sourceproductindicator = Integer.parseInt(headers.get(Calculator.SOURCEPRODUCTINDICATOR) != null ? headers.get(Calculator.SOURCEPRODUCTINDICATOR).toString() : "0");
         double year1hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_1_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_1_HYPERVISORPERCENTAGE).toString() : "0");
