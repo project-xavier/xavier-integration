@@ -109,7 +109,7 @@ public class EndToEndIT {
         String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("platform.upload.xavier.json"), Charset.forName("UTF-8"));
         body = body.replaceAll("http://172.17.0.1:9000", "http://www.myservice.com");
 
-        final ProducerRecord<String, String> record = new ProducerRecord<>"platform.upload.xavier", body );
+        final ProducerRecord<String, String> record = new ProducerRecord<>("platform.upload.xavier", body );
 
         RecordMetadata metadata = createKafkaProducer().send(record).get();
         System.out.println("Kafka answer : " + metadata);
