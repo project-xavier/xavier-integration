@@ -1,13 +1,6 @@
 package org.jboss.xavier.integrations;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.common.FileSource;
-import com.github.tomakehurst.wiremock.extension.Parameters;
-import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
-import com.github.tomakehurst.wiremock.http.Request;
-import com.github.tomakehurst.wiremock.http.ResponseDefinition;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.specto.hoverfly.junit.rule.HoverflyRule;
 import org.apache.camel.CamelContext;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
@@ -17,17 +10,12 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.ApplicationContextInitializer;
@@ -39,6 +27,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
@@ -46,11 +35,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.nio.charset.Charset;
-import java.util.Properties;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.specto.hoverfly.junit.core.HoverflyConfig.localConfigs;
+import static io.specto.hoverfly.junit.core.SimulationSource.dsl;
+import static io.specto.hoverfly.junit.dsl.HoverflyDsl.service;
+import static io.specto.hoverfly.junit.dsl.ResponseCreators.success;
+import static io.specto.hoverfly.junit.dsl.matchers.HoverflyMatchers.startsWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
@@ -59,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = {Application.class})
 @ContextConfiguration(initializers = EndToEndIT.Initializer.class)
 @ActiveProfiles("test")
-@Ignore
+//@Ignore
 public class EndToEndIT {
 
     @ClassRule
@@ -68,7 +61,8 @@ public class EndToEndIT {
     @ClassRule
     public static KafkaContainer kafka = new KafkaContainer()
             .withEnv("KAFKA_CREATE_TOPICS", "platform.upload.xavier")
-            .withEnv("advertised.host.name","localhost");
+//            .withEnv("advertised.host.name","localhost")
+            .withExposedPorts(9092);
     
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -76,9 +70,10 @@ public class EndToEndIT {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
            
             EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
-                    "spring.activemq.broker-url=tcp://" + activemq.getContainerIpAddress() + ":" + activemq.getMappedPort(61616),
-                    "amq.server=tcp://" + activemq.getContainerIpAddress(),
+                    "spring.activemq.broker-url=" + activemq.getContainerIpAddress() + ":" + activemq.getMappedPort(61616),
+                    "amq.server=" + activemq.getContainerIpAddress(),
                     "amq.port=" + activemq.getMappedPort(61616),
+                    "insights.upload.host=www.myservice.com",
                     "insights.kafka.host=" + kafka.getBootstrapServers());
         }
     }
@@ -88,74 +83,55 @@ public class EndToEndIT {
     
     @Inject
     JmsTemplate jmsTemplate;
-    
-    @Value("${insights.kafka.upload.topic}")
-    String kakfaTopic;
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8080));
+    @ClassRule
+    public static HoverflyRule hoverflyRule;
 
-  
-    public class ExampleTransformer extends ResponseDefinitionTransformer {
-        @Override
-        public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource files, Parameters parameters) {
-            try {
-                EndToEndIT.this.sendKafkaMessageToSimulateInsightsUploadProcess();
-                return new ResponseDefinitionBuilder().build();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseDefinitionBuilder()
-                        .withBody("Error : " + e.getMessage())
-                        .withStatus(400)
-                        .build();
-            }
+    static {
+        try {
+            hoverflyRule = HoverflyRule.inSimulationMode(dsl(
+                    service("www.myservice.com")
+                            .post("/api/ingress/v1/upload")
+                                .anyBody()
+                                .anyQueryParams()
+                                .willReturn(success("hola", "text/json"))
+                            .anyMethod(startsWith("/insights-upload-perm-test"))
+                                .anyBody()
+                                .anyQueryParams()
+                                .willReturn(success(IOUtils.toString(EndToEndIT.class.getClassLoader().getResourceAsStream("cloudforms-export-v1.tar.gz"), StandardCharsets.UTF_8), "application/zip")
+            )));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        @Override
-        public String getName() {
-            return "dynamic-transformer";
-        }
-    
-    }
-    
-    @Before
-    public void setup() throws IOException {
-        new WireMockServer(wireMockConfig().extensions(new ExampleTransformer()));
-        
-        // insights-upload simulation
-        wireMockRule.stubFor(any(urlPathEqualTo("/api/ingress/v1/upload"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "text/json")
-                        .withStatus(200)
-                        .withBody("{}")
-                        .withTransformers("dynamic-transformer")));        
-        wireMockRule.stubFor(any(urlPathEqualTo("/insights-upload-perm-test"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody(IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1.tar.gz"), Charset.forName("UTF-8")))));
     }
 
-    @NotNull
     private void sendKafkaMessageToSimulateInsightsUploadProcess() throws ExecutionException, InterruptedException, IOException {
         String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("platform.upload.xavier.json"), Charset.forName("UTF-8"));
-        body.replaceAll("172.17.0.1:9000", "localhost:8080");
-        
-        final ProducerRecord<Long, String> record = new ProducerRecord<>(kakfaTopic, body );
+        body = body.replaceAll("http://172.17.0.1:9000", "http://www.myservice.com");
+
+        final ProducerRecord<String, String> record = new ProducerRecord<>"platform.upload.xavier", body );
 
         RecordMetadata metadata = createKafkaProducer().send(record).get();
+        System.out.println("Kafka answer : " + metadata);
     }
 
-    private static Producer<Long, String> createKafkaProducer() {
-        Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers() + ":" + kafka.getMappedPort(29092));
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        return new KafkaProducer<>(props);
-    }
+    private static Producer<String, String> createKafkaProducer() {
+        KafkaProducer<String, String> producer = new KafkaProducer<>(
+                ImmutableMap.of(
+                        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers(),
+                        ProducerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString()
+                ),
+                new StringSerializer(),
+                new StringSerializer()
+        );
 
+        return producer;
+    }
+        
     @Test
     public void end2endTest() throws Exception {
-        camelContext.start();
+        
+        localConfigs().logToStdOut();
         
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz");
         assertThat(resourceAsStream).isNotNull();
@@ -177,8 +153,14 @@ public class EndToEndIT {
       
         SequenceInputStream sequenceInputStream = new SequenceInputStream(new SequenceInputStream(new ByteArrayInputStream(mimeHeader.getBytes()), resourceAsStream), new ByteArrayInputStream(mimeFooter.getBytes()));
         
-        String output = new RestTemplate().postForObject("http://localhost:8080/api/ingress/v1/upload", IOUtils.toString(sequenceInputStream, "UTF-8"), String.class);
+        String output = new RestTemplate().postForObject("http://www.myservice.com/api/ingress/v1/upload", IOUtils.toString(sequenceInputStream, "UTF-8"), String.class);
+        System.out.println("Output from hoverfly : " + output);
+
+        camelContext.setTracing(true);
+        camelContext.start();
         
+        sendKafkaMessageToSimulateInsightsUploadProcess();
+
         // Here we receive the message.
         UploadFormInputDataModel message = (UploadFormInputDataModel) jmsTemplate.receiveAndConvert("inputDataModel");
 

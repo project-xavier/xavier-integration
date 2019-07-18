@@ -83,6 +83,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:insights")
                 .id("call-insights-upload-service")
+                .errorHandler(defaultErrorHandler().maximumRedeliveries(1))
                 .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
@@ -93,6 +94,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
                 .id("kafka-upload-message")
+                .errorHandler(defaultErrorHandler().maximumRedeliveries(1))
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
                 .to("direct:download-file");
@@ -103,12 +105,14 @@ public class MainRouteBuilder extends RouteBuilder {
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setBody(constant(""))
-                .to("http4://oldhost")
+                .to("http4://oldhost?headerFilterStrategy=#noFilter")
+                .log("************* ${headers} --- ${body}")
                 .removeHeader("Exchange.HTTP_URI")
                 .to("direct:unzip-file");
 
         from("direct:unzip-file")
                 .id("unzip-file")
+                .to("log:INFO?showBody=true&showHeaders=true")
                 .choice()
                     .when(isZippedFile("zip"))
                         .split(new ZipSplitter())

@@ -63,9 +63,15 @@
         </exclusions>
         </dependency>
         <dependency>
+            <groupId>io.specto</groupId>
+            <artifactId>hoverfly-java</artifactId>
+            <version>0.12.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-undertow</artifactId>
-        </dependency>        
+        </dependency>    
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-activemq</artifactId>
@@ -226,12 +232,7 @@
             <version>1.11.3</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock</artifactId>
-            <version>2.19.0</version>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
 
 
