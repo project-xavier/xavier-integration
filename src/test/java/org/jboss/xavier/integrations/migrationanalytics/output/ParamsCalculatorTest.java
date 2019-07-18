@@ -38,8 +38,8 @@ public class ParamsCalculatorTest {
 
         String cloudFormJSON = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(filename), "UTF-8");
 
-        Integer hypervisor = 1;
-        Long totaldiskspace = 281951062016L;
+        Integer hypervisor = 2;
+        Long totaldiskspace = 563902124032L;
 
         Integer sourceproductindicator = 1;
         Double year1hypervisorpercentage = 10D;
@@ -72,8 +72,8 @@ public class ParamsCalculatorTest {
 
         String cloudFormJSON = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(filename), "UTF-8");
 
-        Integer hypervisor = 1;
-        Long totaldiskspace = 281951062016L;
+        Integer hypervisor = 2;
+        Long totaldiskspace = 563902124032L;
 
         Integer sourceproductindicator = 1;
         Double year1hypervisorpercentage = 10D;

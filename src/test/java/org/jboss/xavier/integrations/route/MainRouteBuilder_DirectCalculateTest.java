@@ -17,6 +17,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,15 +41,15 @@ public class MainRouteBuilder_DirectCalculateTest {
     private MockEndpoint mockJmsQueue; 
     
     @Test
-    public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
+    public void mainRouteBuilder_DirectCalculate_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
-        Integer hypervisor = 1;
-        Long totaldiskspace = 281951062016L;
+        Integer hypervisor = 2;
+        Long totaldiskspace = 563902124032L;
         Integer sourceproductindicator = 1;
         Double year1hypervisorpercentage = 10D;
         Double year2hypervisorpercentage = 20D;
@@ -72,7 +73,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         //When
         camelContext.start();
         camelContext.startRoute("calculate");
-        String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
+        InputStream body = getClass().getClassLoader().getResourceAsStream(fileName);
         
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate", body, headers);
 
@@ -83,7 +84,7 @@ public class MainRouteBuilder_DirectCalculateTest {
     }    
     
     @Test
-    public void mainRouteBuilder_DirectDownloadFile_WrongJSONFileGiven_ShouldLogExceptionButNotCrash() throws Exception {
+    public void mainRouteBuilder_DirectCalculate_WrongJSONFileGiven_ShouldLogExceptionButNotCrash() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
@@ -108,6 +109,45 @@ public class MainRouteBuilder_DirectCalculateTest {
         //Then
         mockJmsQueue.assertIsSatisfied();
         assertThat(message.getIn().getBody(String.class)).isEqualToIgnoringCase("Exception on parsing Cloudforms file");
+        camelContext.stop();
+    }    
+    
+    @Test
+    public void mainRouteBuilder_DirectCalculate_FileGiven_ShouldSendMessageToJMS() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        mockJmsQueue.expectedMessageCount(1);
+
+        String fileName = "cloudforms-export-v1.json";
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("filename", fileName);
+        metadata.put("dummy", "dummy");
+        metadata.put("year1hypervisorpercentage", 10D);
+        metadata.put("year2hypervisorpercentage", 20D);
+        metadata.put("year3hypervisorpercentage", 30D);
+        metadata.put("growthratepercentage", 7D);
+        metadata.put("sourceproductindicator", 1);
+        
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("MA_metadata", metadata);
+        headers.put("Content-type", "application/zip");
+        
+        //When
+        camelContext.start();
+        camelContext.startRoute("unzip-file");
+        camelContext.startRoute("calculate");
+        String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
+
+        Exchange message = camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
+            exchange.getIn().setBody(body);
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        mockJmsQueue.assertIsSatisfied();
+        assertThat(message.getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isGreaterThan(0);
         camelContext.stop();
     }
     

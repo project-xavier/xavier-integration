@@ -1,8 +1,8 @@
 package org.jboss.xavier.integrations.route;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
@@ -17,13 +17,13 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
-import org.jboss.xavier.integrations.route.model.RHIdentity;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -100,7 +100,8 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:download-file")
                 .id("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
-                .process(this::extractAndEnrichRHIdentityFromNotification)
+                .convertBodyTo(FilePersistedNotification.class)
+                .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .removeHeader("Exchange.HTTP_URI")
@@ -127,6 +128,7 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .doTry()
+                    .convertBodyTo(String.class)
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                     .log("Message to send to AMQ : ${body}")
                     .to("jms:queue:inputDataModel")
@@ -137,16 +139,13 @@ public class MainRouteBuilder extends RouteBuilder {
                 .end();
     }
 
-    private void extractAndEnrichRHIdentityFromNotification(Exchange exchange) throws IOException {
-        FilePersistedNotification filePersistedNotification = exchange.getIn().getBody(FilePersistedNotification.class);
+    public Map<String,String> extractMAmetadataHeaderFromIdentity(FilePersistedNotification filePersistedNotification) throws IOException {
         String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
-        RHIdentity rhIdentity = new ObjectMapper().reader().forType(RHIdentity.class).withRootName("identity").readValue(identity_json);
+        JsonNode node= new ObjectMapper().reader().readTree(identity_json);
 
-        rhIdentity.getInternal().forEach((key,value) -> {
-            Map header = exchange.getIn().getHeader("MA_metadata", new HashMap<String, String>(), Map.class);
-            header.put(key, value);
-            exchange.getIn().setHeader("MA_metadata", header);
-        });
+        Map header = new HashMap<String, String>();
+        node.get("identity").get("internal").fieldNames().forEachRemaining(field -> header.put(field, node.get("identity").get("internal").get(field).asText()));
+        return header;
     }
 
     private Processor httpError400() {
@@ -175,41 +174,30 @@ public class MainRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
-    public String getRHIdentity(String x_rh_identity_json, String filename, Map<String, Object> headers) throws IOException {
-        RHIdentity rhidentity;
-        if (x_rh_identity_json != null) {
-            rhidentity = new ObjectMapper().reader().withRootName("identity").readValue(new JsonFactory().createParser(x_rh_identity_json), RHIdentity.class);
-        } else {
-          rhidentity = new RHIdentity();  
-        }
+    public String getRHIdentity(String x_rh_identity_json_encoded, String filename, Map<String, Object> headers) throws IOException {
+        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_json_encoded)));
+
+        ObjectNode objectNode = (ObjectNode) node.get("identity").get("internal");
+        objectNode.put("filename", filename);
         
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        insightsProperties.forEach(e -> rhidentity.getInternal().put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
+        insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
 
-        rhidentity.getInternal().put("filename", filename);
-        String rhIdentity_json = "";
-        try {
-            rhIdentity_json = new ObjectMapper().writer().withRootName("identity").writeValueAsString(RHIdentity.builder()
-                    .account_number(accountNumber)
-                    .internal(rhidentity.getInternal())
-                    .build());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return Base64.getEncoder().encodeToString(rhIdentity_json.getBytes());
+        return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private Predicate isZippedFile(String extension) {
         return exchange -> {
             boolean zipContentType = isZipContentType(exchange);
-            String filename = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
+            String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
             boolean zipExtension = extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
             return zipContentType && zipExtension;
         };
     }
     
     private boolean isZipContentType(Exchange exchange) {
-        return "application/zip".equalsIgnoreCase(exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString());
+        String mimetype = exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString();
+        return "application/zip".equalsIgnoreCase(mimetype) || "application/gzip".equalsIgnoreCase(mimetype) || "application/tar+gz".equalsIgnoreCase(mimetype);
     }
 
     private Processor processMultipart() {
