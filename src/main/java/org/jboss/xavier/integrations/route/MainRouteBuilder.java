@@ -92,7 +92,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("log:INFO?showBody=true&showHeaders=true")
                 .end();
 
-        from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
+        from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=earliest&autoCommitEnable=true")
                 .id("kafka-upload-message")
                 .errorHandler(defaultErrorHandler().maximumRedeliveries(1))
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
@@ -112,20 +112,34 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:unzip-file")
                 .id("unzip-file")
-                .to("log:INFO?showBody=true&showHeaders=true")
+                .log("new body: [${in.body}]")
+                .choice()
+                    .when().simple("${in.body} == null")
+                        .log(" BODY IS null")
+                    .otherwise()
+                        .log(" BODY IS NOT null")
+                .end()
                 .choice()
                     .when(isZippedFile("zip"))
                         .split(new ZipSplitter())
                         .streaming()
+                        .log("${headers} -- ${body}")
                         .to("direct:calculate")
                     .endChoice()
                     .when(isZippedFile("tar.gz"))
                         .unmarshal().gzip()
                         .split(new TarSplitter())
                         .streaming()
+                        .log("%%%%TAR.GZ %%%% ${headers} -- ${body}")
+                        .to("direct:calculate")
+                    .endChoice()
+                    .when(isZippedFile(".gz"))
+                        .unmarshal().gzip()
+                        .log("%%% GZ %%%% ${headers} -- ${body}")
                         .to("direct:calculate")
                     .endChoice()
                     .otherwise()
+                        .log("((((((((((((( ${headers} -- ${body}")
                         .to("direct:calculate")
                 .end();
         
@@ -191,16 +205,23 @@ public class MainRouteBuilder extends RouteBuilder {
     }
 
     private Predicate isZippedFile(String extension) {
+        System.out.println(" ------------- isZippedFile");
         return exchange -> {
             boolean zipContentType = isZipContentType(exchange);
+            System.out.println(" ------------- isZippedFile : zipcontent :" + zipContentType);
+
             String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
+            System.out.println(" ------------- isZippedFile : filename :" + filename);
+
             boolean zipExtension = extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
+            System.out.println(" ------------- isZippedFile : extension :" + filename.substring(filename.length() - extension.length()) + " , " + (zipContentType && zipExtension));
             return zipContentType && zipExtension;
         };
     }
     
     private boolean isZipContentType(Exchange exchange) {
         String mimetype = exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString();
+ 
         return "application/zip".equalsIgnoreCase(mimetype) || "application/gzip".equalsIgnoreCase(mimetype) || "application/tar+gz".equalsIgnoreCase(mimetype);
     }
 

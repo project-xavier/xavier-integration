@@ -1,6 +1,5 @@
 package org.jboss.xavier.integrations;
 
-import io.specto.hoverfly.junit.rule.HoverflyRule;
 import org.apache.camel.CamelContext;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
@@ -13,9 +12,13 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jetbrains.annotations.NotNull;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.BinaryBody;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.ApplicationContextInitializer;
@@ -35,16 +38,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import static io.specto.hoverfly.junit.core.HoverflyConfig.localConfigs;
-import static io.specto.hoverfly.junit.core.SimulationSource.dsl;
-import static io.specto.hoverfly.junit.dsl.HoverflyDsl.service;
-import static io.specto.hoverfly.junit.dsl.ResponseCreators.success;
-import static io.specto.hoverfly.junit.dsl.matchers.HoverflyMatchers.startsWith;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.notFoundResponse;
+import static org.mockserver.model.HttpResponse.response;
+
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -61,7 +62,6 @@ public class EndToEndIT {
     @ClassRule
     public static KafkaContainer kafka = new KafkaContainer()
             .withEnv("KAFKA_CREATE_TOPICS", "platform.upload.xavier")
-//            .withEnv("advertised.host.name","localhost")
             .withExposedPorts(9092);
     
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -73,7 +73,7 @@ public class EndToEndIT {
                     "spring.activemq.broker-url=" + activemq.getContainerIpAddress() + ":" + activemq.getMappedPort(61616),
                     "amq.server=" + activemq.getContainerIpAddress(),
                     "amq.port=" + activemq.getMappedPort(61616),
-                    "insights.upload.host=www.myservice.com",
+                    "insights.upload.host=localhost:8000",
                     "insights.kafka.host=" + kafka.getBootstrapServers());
         }
     }
@@ -84,30 +84,56 @@ public class EndToEndIT {
     @Inject
     JmsTemplate jmsTemplate;
 
-    @ClassRule
-    public static HoverflyRule hoverflyRule;
-
-    static {
-        try {
-            hoverflyRule = HoverflyRule.inSimulationMode(dsl(
-                    service("www.myservice.com")
-                            .post("/api/ingress/v1/upload")
-                                .anyBody()
-                                .anyQueryParams()
-                                .willReturn(success("hola", "text/json"))
-                            .anyMethod(startsWith("/insights-upload-perm-test"))
-                                .anyBody()
-                                .anyQueryParams()
-                                .willReturn(success(IOUtils.toString(EndToEndIT.class.getClassLoader().getResourceAsStream("cloudforms-export-v1.tar.gz"), StandardCharsets.UTF_8), "application/zip")
-            )));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private static ClientAndServer clientAndServer;
+    
+    @Before
+    public void setupMockServer() {
+        clientAndServer = ClientAndServer.startClientAndServer(8000);
+        
+        clientAndServer.when(request()
+                .withPath("/api/ingress/v1/upload"))
+                .respond(myrequest -> {
+                    try {
+                        sendKafkaMessageToSimulateInsightsUploadProcess();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return response().withStatusCode(202).withBody("success").withHeader("Content-Type", "application/zip");
+                });
+        
+        clientAndServer.when(request()
+                                .withPath("/insights-upload-perm-test/440c88f9-5930-416e-9799-fa01d156df29"))
+                        .respond(myrequest -> {
+                            try {
+                                return response()
+                                        .withHeader("Content-Type", "application/zip")
+                                        .withBody(new BinaryBody(IOUtils.resourceToByteArray("platform.upload.xavier.json.gz", EndToEndIT.class.getClassLoader())));
+                            } catch (IOException e) {
+                                return notFoundResponse();
+                            }
+                        });        
+        
+        clientAndServer.when(request()
+                                .withPath("/insights-upload-perm-test2"))
+                        .respond(myrequest -> {
+                            try {
+                                return response()
+                                        .withHeader("Content-Type", "application/zip")
+                                        .withBody(new BinaryBody(IOUtils.resourceToByteArray("platform.upload.xavier.json.gz", EndToEndIT.class.getClassLoader())));
+                            } catch (IOException e) {
+                                return notFoundResponse();
+                            }
+                        });
+    }
+    
+    @AfterClass
+    public static void closeMockServer() {
+        clientAndServer.stop();
     }
 
     private void sendKafkaMessageToSimulateInsightsUploadProcess() throws ExecutionException, InterruptedException, IOException {
-        String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("platform.upload.xavier.json"), Charset.forName("UTF-8"));
-        body = body.replaceAll("http://172.17.0.1:9000", "http://www.myservice.com");
+        String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("platform.upload.xavier-with-targz.json"), Charset.forName("UTF-8"));
+        body = body.replaceAll("http://172.17.0.1:9000", "http://localhost:8000");
 
         final ProducerRecord<String, String> record = new ProducerRecord<>("platform.upload.xavier", body );
 
@@ -131,8 +157,6 @@ public class EndToEndIT {
     @Test
     public void end2endTest() throws Exception {
         
-        localConfigs().logToStdOut();
-        
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz");
         assertThat(resourceAsStream).isNotNull();
 
@@ -152,15 +176,23 @@ public class EndToEndIT {
                 "\n----------------------------378483299686133026113807--\n";
       
         SequenceInputStream sequenceInputStream = new SequenceInputStream(new SequenceInputStream(new ByteArrayInputStream(mimeHeader.getBytes()), resourceAsStream), new ByteArrayInputStream(mimeFooter.getBytes()));
+
+        /*
+        List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+        messageConverters.add(new ByteArrayHttpMessageConverter());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        ResponseEntity<byte[]> outputStream = new RestTemplate(messageConverters).exchange("http://localhost:8000/insights-upload-perm-test2", HttpMethod.GET, entity, byte[].class, "1");
+        GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(outputStream.getBody()));
+        System.out.println(" Descarga : " + IOUtils.toString(gzipInputStream, StandardCharsets.UTF_8));
+        */
         
-        String output = new RestTemplate().postForObject("http://www.myservice.com/api/ingress/v1/upload", IOUtils.toString(sequenceInputStream, "UTF-8"), String.class);
-        System.out.println("Output from hoverfly : " + output);
+        String output = new RestTemplate().postForObject("http://localhost:8000/api/ingress/v1/upload", IOUtils.toString(sequenceInputStream, "UTF-8"), String.class);
 
         camelContext.setTracing(true);
         camelContext.start();
         
-        sendKafkaMessageToSimulateInsightsUploadProcess();
-
         // Here we receive the message.
         UploadFormInputDataModel message = (UploadFormInputDataModel) jmsTemplate.receiveAndConvert("inputDataModel");
 
