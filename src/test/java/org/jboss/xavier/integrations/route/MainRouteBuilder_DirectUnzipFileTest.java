@@ -2,6 +2,7 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
@@ -54,14 +55,15 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         camelContext.start();
         camelContext.startRoute("unzip-file");
 
-        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("txt-files-samples.zip");
+        String nameOfFile = "txt-files-samples.zip";
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(nameOfFile);
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("Content-Type", "application/zip");
-        headers.put(Exchange.FILE_NAME, "txt-files-samples.zip");
+        headers.put(Exchange.FILE_NAME, nameOfFile);
 
         Map<String,Object> metadata = new HashMap<>();
-        metadata.put("filename", "txt-files-samples.zip");
+        metadata.put("filename", nameOfFile);
         metadata.put("dummy", "CID123");
         headers.put("MA_metadata", metadata);
 
@@ -85,14 +87,15 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         camelContext.start();
         camelContext.startRoute("unzip-file");
 
-        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz");
+        String nameOfFile = "cloudforms-export-v1-multiple-files.tar.gz";
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(nameOfFile);
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("Content-Type", "application/gzip");
-        headers.put(Exchange.FILE_NAME, "cloudforms-export-v1-multiple-files.tar.gz");
+        headers.put(Exchange.FILE_NAME, nameOfFile);
 
         Map<String,Object> metadata = new HashMap<>();
-        metadata.put("filename", "cloudforms-export-v1-multiple-files.tar.gz");
+        metadata.put("filename", nameOfFile);
         metadata.put("dummy", "CID123");
         headers.put("MA_metadata", metadata);        
         
@@ -115,14 +118,15 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         camelContext.start();
         camelContext.startRoute("unzip-file");
 
-        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz");
+        String nameOfFile = "cloudforms-export-v1-multiple-files.tar.gz";
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(nameOfFile);
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("Content-Type", "application/tar+gz");
-        headers.put(Exchange.FILE_NAME, "cloudforms-export-v1-multiple-files.tar.gz");
+        headers.put(Exchange.FILE_NAME, nameOfFile);
 
         Map<String,Object> metadata = new HashMap<>();
-        metadata.put("filename", "cloudforms-export-v1-multiple-files.tar.gz");
+        metadata.put("filename", nameOfFile);
         metadata.put("dummy", "CID123");
         headers.put("MA_metadata", metadata);        
         
@@ -145,14 +149,15 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         camelContext.start();
         camelContext.startRoute("unzip-file");
 
-        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-json");
+        String nameOfFile = "cloudforms-export-v1-json";
+        InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream(nameOfFile);
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("Content-Type", "text/plain");
-        headers.put(Exchange.FILE_NAME, "cloudforms-export-v1-multiple-files.tar.gz");
+        headers.put(Exchange.FILE_NAME, nameOfFile);
 
         Map<String,Object> metadata = new HashMap<>();
-        metadata.put("filename", "cloudforms-export-v1-json");
+        metadata.put("filename", nameOfFile);
         metadata.put("dummy", "CID123");
         headers.put("MA_metadata", metadata);
 
