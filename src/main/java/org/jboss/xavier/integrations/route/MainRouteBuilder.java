@@ -71,7 +71,7 @@ public class MainRouteBuilder extends RouteBuilder {
                         .end()
                     .endChoice()
                     .otherwise()
-                      .process(httpError400())                    
+                      .process(httpError400())
                     .end();
 
 
@@ -114,42 +114,42 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("unzip-file")
                 .log("new body: [${in.body}]")
                 .choice()
-                    .when().simple("${in.body} == null")
-                        .log(" BODY IS null")
-                    .otherwise()
-                        .log(" BODY IS NOT null")
+                .when().simple("${in.body} == null")
+                .log(" BODY IS null")
+                .otherwise()
+                .log(" BODY IS NOT null")
                 .end()
                 .choice()
-                    .when(isZippedFile("zip"))
-                        .split(new ZipSplitter())
-                        .streaming()
-                        .log("${headers} -- ${body}")
-                        .to("direct:calculate")
-                    .endChoice()
-                    .when(isZippedFile("tar.gz"))
-                        .unmarshal().gzip()
-                        .split(new TarSplitter())
-                        .streaming()
-                        .log("%%%%TAR.GZ %%%% ${headers} -- ${body}")
-                        .to("direct:calculate")
-                    .endChoice()
-                    .when(isZippedFile(".gz"))
-                        .unmarshal().gzip()
-                        .log("%%% GZ %%%% ${headers} -- ${body}")
-                        .to("direct:calculate")
-                    .endChoice()
-                    .otherwise()
-                        .log("((((((((((((( ${headers} -- ${body}")
-                        .to("direct:calculate")
+                .when(isZippedFile("zip"))
+                .split(new ZipSplitter())
+                .streaming()
+                .log("${headers} -- ${body}")
+                .to("direct:calculate")
+                .endChoice()
+                .when(isZippedFile("tar.gz"))
+                .unmarshal().gzip()
+                .split(new TarSplitter())
+                .streaming()
+                .log("%%%%TAR.GZ %%%% ${headers} -- ${body}")
+                .to("direct:calculate")
+                .endChoice()
+                .when(isZippedFile(".gz"))
+                .unmarshal().gzip()
+                .log("%%% GZ %%%% ${headers} -- ${body}")
+                .to("direct:calculate")
+                .endChoice()
+                .otherwise()
+                .log("((((((((((((( ${headers} -- ${body}")
+                .to("direct:calculate")
                 .end();
-        
+
         from("direct:calculate")
                 .id("calculate")
                 .doTry()
                     .convertBodyTo(String.class)
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                     .log("Message to send to AMQ : ${body}")
-                    .to("jms:queue:inputDataModel")
+                    .to("jms:queue:uploadFormInputDataModel")
                 .endDoTry()
                 .doCatch(Exception.class)
                     .to("log:error?showCaughtException=true&showStackTrace=true")
@@ -168,12 +168,12 @@ public class MainRouteBuilder extends RouteBuilder {
 
     private Processor httpError400() {
         return exchange -> {
-          exchange.getIn().setBody("{ \"error\": \"Bad Request\"}");
-          exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
-          exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+            exchange.getIn().setBody("{ \"error\": \"Bad Request\"}");
+            exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
+            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
         };
     }
-
+       
     private Predicate isAllExpectedParamsExist() {
         return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
     }
@@ -192,43 +192,43 @@ public class MainRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
-    public String getRHIdentity(String x_rh_identity_json_encoded, String filename, Map<String, Object> headers) throws IOException {
-        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_json_encoded)));
 
-        ObjectNode objectNode = (ObjectNode) node.get("identity").get("internal");
-        objectNode.put("filename", filename);
-        
-        // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
+        public String getRHIdentity(String x_rh_identity_json_encoded, String filename, Map<String, Object> headers) throws IOException {
+            JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_json_encoded)));
 
-        return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
-    }
+            ObjectNode objectNode = (ObjectNode) node.get("identity").get("internal");
+            objectNode.put("filename", filename);
 
-    private Predicate isZippedFile(String extension) {
-        System.out.println(" ------------- isZippedFile");
-        return exchange -> {
-            boolean zipContentType = isZipContentType(exchange);
-            System.out.println(" ------------- isZippedFile : zipcontent :" + zipContentType);
+            // we add all properties defined on the Insights Properties, that we should have as Headers of the message
+            insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
 
-            String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
-            System.out.println(" ------------- isZippedFile : filename :" + filename);
+            return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
+        }
 
-            boolean zipExtension = extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
-            System.out.println(" ------------- isZippedFile : extension :" + filename.substring(filename.length() - extension.length()) + " , " + (zipContentType && zipExtension));
-            return zipContentType && zipExtension;
-        };
-    }
-    
-    private boolean isZipContentType(Exchange exchange) {
-        String mimetype = exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString();
- 
-        return "application/zip".equalsIgnoreCase(mimetype) || "application/gzip".equalsIgnoreCase(mimetype) || "application/tar+gz".equalsIgnoreCase(mimetype);
-    }
+        private Predicate isZippedFile(String extension) {
+            System.out.println(" ------------- isZippedFile");
+            return exchange -> {
+                boolean zipContentType = isZipContentType(exchange);
+                System.out.println(" ------------- isZippedFile : zipcontent :" + zipContentType);
 
+                String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
+                System.out.println(" ------------- isZippedFile : filename :" + filename);
+
+                boolean zipExtension = extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
+                System.out.println(" ------------- isZippedFile : extension :" + filename.substring(filename.length() - extension.length()) + " , " + (zipContentType && zipExtension));
+                return zipContentType && zipExtension;
+            };
+        }
+
+        private boolean isZipContentType(Exchange exchange) {
+            String mimetype = exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString();
+
+            return "application/zip".equalsIgnoreCase(mimetype) || "application/gzip".equalsIgnoreCase(mimetype) || "application/tar+gz".equalsIgnoreCase(mimetype);
+        }
     private Processor processMultipart() {
         return exchange -> {
             Attachment body = exchange.getIn().getBody(Attachment.class);
-            
+
             DataHandler dataHandler = body.getDataHandler();
 
             exchange.getIn().setHeader(Exchange.FILE_NAME, dataHandler.getName());

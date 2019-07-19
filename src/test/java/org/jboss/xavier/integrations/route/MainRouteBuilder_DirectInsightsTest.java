@@ -8,7 +8,7 @@ import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
-import org.jboss.xavier.integrations.Application;
+import org.jboss.xavier.Application;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @MockEndpointsAndSkip("http4:{{insights.upload.host}}/api/ingress/v1/upload")
 @UseAdviceWith // Disables automatic start of Camel context
-@SpringBootTest(classes = {Application.class}) 
+@SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
 public class MainRouteBuilder_DirectInsightsTest {
     @Autowired
@@ -39,11 +39,11 @@ public class MainRouteBuilder_DirectInsightsTest {
 
     @Autowired
     MainRouteBuilder routeBuilder;
-    
+
     @Test
     public void mainRouteBuilder_routeDirectInsights_ContentGiven_ShouldStoreinLocalFile() throws Exception {
         //Given
-                
+
         String body = "this is a test body";
         String filename = "testfilename.txt";
         String customerid = "CID90765";
@@ -72,13 +72,13 @@ public class MainRouteBuilder_DirectInsightsTest {
         HttpEntity bodyResult = mockInsightsServiceHttp4.getExchanges().get(0).getIn().getBody(HttpEntity.class);
         String receivedBody = IOUtils.toString(bodyResult.getContent(), Charset.forName("UTF-8"));
         assertThat(receivedBody.indexOf(body)).isGreaterThanOrEqualTo(0);
-        
+
         String expectedRHIdentity = routeBuilder.getRHIdentity(Base64.getEncoder().encodeToString(rhidentity.getBytes(StandardCharsets.UTF_8)), filename, headers);
         assertThat(mockInsightsServiceHttp4.getExchanges().get(0).getIn().getHeader("x-rh-identity", String.class)).isEqualToIgnoringCase(expectedRHIdentity);
 
         camelContext.stop();
     }
-    
 
-    
+
+
 }

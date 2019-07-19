@@ -8,8 +8,9 @@ import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
+import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.jboss.xavier.integrations.Application;
+import org.jboss.xavier.integrations.migrationanalytics.business.Calculator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,20 +27,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("jms:queue:inputDataModel")
+@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel")
 @UseAdviceWith // Disables automatic start of Camel context
-@SpringBootTest(classes = {Application.class}) 
+@SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
 public class MainRouteBuilder_DirectCalculateTest {
     @Inject
     CamelContext camelContext;
-    
+
     @Inject
     MainRouteBuilder mainRouteBuilder;
 
-    @EndpointInject(uri = "mock:jms:queue:inputDataModel")
-    private MockEndpoint mockJmsQueue; 
-    
+    @EndpointInject(uri = "mock:jms:queue:uploadFormInputDataModel")
+    private MockEndpoint mockJmsQueue;
+
     @Test
     public void mainRouteBuilder_DirectCalculate_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
@@ -50,23 +51,24 @@ public class MainRouteBuilder_DirectCalculateTest {
         String fileName = "cloudforms-export-v1.json";
         Integer hypervisor = 2;
         Long totaldiskspace = 563902124032L;
-        Integer sourceproductindicator = 1;
+        Integer sourceproductindicator = null;
         Double year1hypervisorpercentage = 10D;
         Double year2hypervisorpercentage = 20D;
         Double year3hypervisorpercentage = 30D;
         Double growthratepercentage = 7D;
 
-        UploadFormInputDataModel expectedFormInputDataModelExpected = new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
+        UploadFormInputDataModel expectedFormInputDataModelExpected = new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, 
+                sourceproductindicator, year1hypervisorpercentage/100, year2hypervisorpercentage/100, 
+                year3hypervisorpercentage/100, growthratepercentage/100);
 
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("customerid", customerId);
         metadata.put("filename", fileName);
-        metadata.put("year1hypervisorpercentage", year1hypervisorpercentage);
-        metadata.put("year2hypervisorpercentage", year2hypervisorpercentage);
-        metadata.put("year3hypervisorpercentage", year3hypervisorpercentage);
-        metadata.put("growthratepercentage", growthratepercentage);
-        metadata.put("sourceproductindicator", sourceproductindicator);
-        
+        metadata.put("org_id", customerId);
+        metadata.put(Calculator.YEAR_1_HYPERVISORPERCENTAGE, year1hypervisorpercentage);
+        metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, year2hypervisorpercentage);
+        metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, year3hypervisorpercentage);
+        metadata.put(Calculator.GROWTHRATEPERCENTAGE, growthratepercentage);
+
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
 
@@ -81,8 +83,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
 
         camelContext.stop();
-    }    
-    
+    }
+
     @Test
     public void mainRouteBuilder_DirectCalculate_WrongJSONFileGiven_ShouldLogExceptionButNotCrash() throws Exception {
         //Given
@@ -95,7 +97,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         Map<String, Object> headers = new HashMap<>();
         headers.put("customerid", customerId);
         headers.put("filename", fileName);
-        
+
         //When
         camelContext.start();
         camelContext.startRoute("calculate");
@@ -124,11 +126,10 @@ public class MainRouteBuilder_DirectCalculateTest {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("filename", fileName);
         metadata.put("dummy", "dummy");
-        metadata.put("year1hypervisorpercentage", 10D);
-        metadata.put("year2hypervisorpercentage", 20D);
-        metadata.put("year3hypervisorpercentage", 30D);
-        metadata.put("growthratepercentage", 7D);
-        metadata.put("sourceproductindicator", 1);
+        metadata.put(Calculator.YEAR_1_HYPERVISORPERCENTAGE, 10D);
+        metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
+        metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
+        metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
         
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
@@ -147,8 +148,9 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         //Then
         mockJmsQueue.assertIsSatisfied();
-        assertThat(message.getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isGreaterThan(0);
+        assertThat(message.getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(563902124032L);
+        assertThat(message.getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
         camelContext.stop();
     }
-    
+
 }
