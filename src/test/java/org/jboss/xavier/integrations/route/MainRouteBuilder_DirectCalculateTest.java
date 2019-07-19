@@ -9,7 +9,7 @@ import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.jboss.xavier.integrations.Application;
+import org.jboss.xavier.Application;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,18 +28,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @MockEndpointsAndSkip("jms:queue:inputDataModel")
 @UseAdviceWith // Disables automatic start of Camel context
-@SpringBootTest(classes = {Application.class}) 
+@SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
 public class MainRouteBuilder_DirectCalculateTest {
     @Inject
     CamelContext camelContext;
-    
+
     @Inject
     MainRouteBuilder mainRouteBuilder;
 
     @EndpointInject(uri = "mock:jms:queue:inputDataModel")
-    private MockEndpoint mockJmsQueue; 
-    
+    private MockEndpoint mockJmsQueue;
+
     @Test
     public void mainRouteBuilder_DirectCalculate_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
@@ -66,7 +66,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put("year3hypervisorpercentage", year3hypervisorpercentage);
         metadata.put("growthratepercentage", growthratepercentage);
         metadata.put("sourceproductindicator", sourceproductindicator);
-        
+
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
 
@@ -81,8 +81,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
 
         camelContext.stop();
-    }    
-    
+    }
+
     @Test
     public void mainRouteBuilder_DirectCalculate_WrongJSONFileGiven_ShouldLogExceptionButNotCrash() throws Exception {
         //Given
@@ -95,7 +95,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         Map<String, Object> headers = new HashMap<>();
         headers.put("customerid", customerId);
         headers.put("filename", fileName);
-        
+
         //When
         camelContext.start();
         camelContext.startRoute("calculate");
@@ -150,5 +150,5 @@ public class MainRouteBuilder_DirectCalculateTest {
         assertThat(message.getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isGreaterThan(0);
         camelContext.stop();
     }
-    
+
 }

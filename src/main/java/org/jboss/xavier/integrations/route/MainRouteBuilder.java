@@ -71,7 +71,7 @@ public class MainRouteBuilder extends RouteBuilder {
                         .end()
                     .endChoice()
                     .otherwise()
-                      .process(httpError400())                    
+                      .process(httpError400())
                     .end();
 
 
@@ -124,14 +124,14 @@ public class MainRouteBuilder extends RouteBuilder {
                     .otherwise()
                         .to("direct:calculate")
                 .end();
-        
+
         from("direct:calculate")
                 .id("calculate")
                 .doTry()
                     .convertBodyTo(String.class)
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                     .log("Message to send to AMQ : ${body}")
-                    .to("jms:queue:inputDataModel")
+                    .to("jms:queue:uploadFormInputDataModel")
                 .endDoTry()
                 .doCatch(Exception.class)
                     .to("log:error?showCaughtException=true&showStackTrace=true")
@@ -174,12 +174,12 @@ public class MainRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
-    public String getRHIdentity(String x_rh_identity_json_encoded, String filename, Map<String, Object> headers) throws IOException {
-        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_json_encoded)));
+    public String getRHIdentity(String x_rh_identity_base64, String filename, Map<String, Object> headers) throws IOException {
+        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
 
         ObjectNode objectNode = (ObjectNode) node.get("identity").get("internal");
         objectNode.put("filename", filename);
-        
+
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
         insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
 
@@ -203,7 +203,7 @@ public class MainRouteBuilder extends RouteBuilder {
     private Processor processMultipart() {
         return exchange -> {
             Attachment body = exchange.getIn().getBody(Attachment.class);
-            
+
             DataHandler dataHandler = body.getDataHandler();
 
             exchange.getIn().setHeader(Exchange.FILE_NAME, dataHandler.getName());
