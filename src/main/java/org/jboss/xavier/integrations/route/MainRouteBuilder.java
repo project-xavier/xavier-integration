@@ -106,41 +106,29 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setBody(constant(""))
                 .to("http4://oldhost?headerFilterStrategy=#noFilter")
-                .log("************* ${headers} --- ${body}")
                 .removeHeader("Exchange.HTTP_URI")
                 .to("direct:unzip-file");
 
         from("direct:unzip-file")
                 .id("unzip-file")
-                .log("new body: [${in.body}]")
                 .choice()
-                .when().simple("${in.body} == null")
-                .log(" BODY IS null")
-                .otherwise()
-                .log(" BODY IS NOT null")
-                .end()
-                .choice()
-                .when(isZippedFile("zip"))
-                .split(new ZipSplitter())
-                .streaming()
-                .log("${headers} -- ${body}")
-                .to("direct:calculate")
-                .endChoice()
-                .when(isZippedFile("tar.gz"))
-                .unmarshal().gzip()
-                .split(new TarSplitter())
-                .streaming()
-                .log("%%%%TAR.GZ %%%% ${headers} -- ${body}")
-                .to("direct:calculate")
-                .endChoice()
-                .when(isZippedFile(".gz"))
-                .unmarshal().gzip()
-                .log("%%% GZ %%%% ${headers} -- ${body}")
-                .to("direct:calculate")
-                .endChoice()
-                .otherwise()
-                .log("((((((((((((( ${headers} -- ${body}")
-                .to("direct:calculate")
+                    .when(isZippedFile("zip"))
+                        .split(new ZipSplitter())
+                        .streaming()
+                        .to("direct:calculate")
+                    .endChoice()
+                    .when(isZippedFile("tar.gz"))
+                        .unmarshal().gzip()
+                        .split(new TarSplitter())
+                        .streaming()
+                        .to("direct:calculate")
+                    .endChoice()
+                    .when(isZippedFile(".gz"))
+                        .unmarshal().gzip()
+                        .to("direct:calculate")
+                    .endChoice()
+                    .otherwise()
+                        .to("direct:calculate")
                 .end();
 
         from("direct:calculate")
@@ -175,7 +163,7 @@ public class MainRouteBuilder extends RouteBuilder {
     }
        
     private Predicate isAllExpectedParamsExist() {
-        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
+        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String) (exchange.getIn().getHeader("MA_metadata", new HashMap<String, Object>(), Map.class)).get(e)));
     }
 
     private Predicate isFilePart() {

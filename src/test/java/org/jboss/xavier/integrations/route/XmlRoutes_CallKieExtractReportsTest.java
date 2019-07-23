@@ -7,8 +7,8 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
-import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.Application;
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.DecisionServerHelper;
 import org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel;
 import org.junit.Before;
@@ -43,10 +43,10 @@ public class XmlRoutes_CallKieExtractReportsTest {
 
     @Before
     public void setup() throws Exception {
-        camelContext.getRouteDefinition("call-kie-extract-reports").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+        camelContext.getRouteDefinition("route-ma").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
-                replaceFromWith("direct:inputDataModel");
+                replaceFromWith("direct:uploadFormInputDataModel");
                 weaveById("decisionserver").after().process(exchange -> exchange.getIn().setBody(new ServiceResponse<ExecutionResults>()));
             }
         });
@@ -62,9 +62,9 @@ public class XmlRoutes_CallKieExtractReportsTest {
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         camelContext.start();
-        camelContext.startRoute("call-kie-extract-reports");
+        camelContext.startRoute("route-ma");
 
-        camelContext.createProducerTemplate().sendBody("direct:inputDataModel", getInputDataModelSample());
+        camelContext.createProducerTemplate().sendBody("direct:uploadFormInputDataModel", getInputDataModelSample());
 
         mockJPA.assertIsSatisfied();
 

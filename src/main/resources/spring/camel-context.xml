@@ -77,6 +77,7 @@
             </get>
         </rest>
 
+        <!--
         <route id="call-kie-extract-reports" trace="true">
             <from uri="jms:queue:inputDataModel" />
             <log message="Message received" />
@@ -95,7 +96,7 @@
             <to id="route-to-new-jms" uri="jms:queue:uploadFormInputDataModel" />
             <log message="Message with sample UploadFormInputDataModel sent" />
         </route>
-
+        -->
         <route id="route-ma">
             <from uri="jms:queue:uploadFormInputDataModel" />
             <log message="Message received" />
