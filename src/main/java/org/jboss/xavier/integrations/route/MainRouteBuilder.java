@@ -194,16 +194,13 @@ public class MainRouteBuilder extends RouteBuilder {
         }
 
         private Predicate isZippedFile(String extension) {
-            System.out.println(" ------------- isZippedFile");
             return exchange -> {
                 boolean zipContentType = isZipContentType(exchange);
-                System.out.println(" ------------- isZippedFile : zipcontent :" + zipContentType);
 
                 String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
-                System.out.println(" ------------- isZippedFile : filename :" + filename);
 
                 boolean zipExtension = extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
-                System.out.println(" ------------- isZippedFile : extension :" + filename.substring(filename.length() - extension.length()) + " , " + (zipContentType && zipExtension));
+
                 return zipContentType && zipExtension;
             };
         }
