@@ -102,7 +102,7 @@
             <log message="Message received" />
             <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
             <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
-            <to uri="direct:decisionserver"/>
+            <to id="decisionserver" uri="direct:decisionserver"/>
             <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
 <!--            <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
             <to uri="jpa:org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel" />-->

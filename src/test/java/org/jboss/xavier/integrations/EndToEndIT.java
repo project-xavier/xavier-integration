@@ -62,7 +62,6 @@ import static org.mockserver.model.HttpResponse.response;
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ContextConfiguration(initializers = EndToEndIT.Initializer.class)
 @ActiveProfiles("test")
-//@Ignore
 public class EndToEndIT {
 
     @ClassRule
@@ -103,6 +102,8 @@ public class EndToEndIT {
     JmsTemplate jmsTemplate;
 
     private static ClientAndServer clientAndServer;
+    
+
     
     @Before
     public void setupMockServer() {

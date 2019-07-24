@@ -6,8 +6,8 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
-import org.jboss.xavier.Application;
 import org.apache.commons.codec.binary.Base64;
+import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("http4:oldhost|direct:unzip-file")
+@MockEndpointsAndSkip("http4:oldhost.*|direct:unzip-file")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
