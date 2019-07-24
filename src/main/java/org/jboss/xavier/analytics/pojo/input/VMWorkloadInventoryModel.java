@@ -32,12 +32,12 @@ public class VMWorkloadInventoryModel
     private Integer nicsCount;
     //hardware/disks/filename
     private Collection<String> vmDiskFilenames;
-    private Collection<Collection<Map<String, String>>> systemServices;
-    private Collection<Collection<Map<String,String>>> files;
+    private Collection<String> systemServicesNames;
+    private Collection<Map<String,String>> files;
 
     public VMWorkloadInventoryModel()
     {
-        this.systemServices = new ArrayList<> ();
+        this.systemServicesNames = new ArrayList<> ();
         this.files = new ArrayList<>();
         this.vmDiskFilenames = new ArrayList<>();
         nicsCount = 0;
@@ -152,28 +152,28 @@ public class VMWorkloadInventoryModel
         this.vmDiskFilenames.add(vmDiskFilename);
     }
 
-    public Collection<Collection<Map<String, String>>> getSystemServices() {
-        return systemServices;
+    public Collection<String> getSystemServicesNames() {
+        return systemServicesNames;
     }
 
-    public void setSystemServices(Collection<Collection<Map<String, String>>> systemServices) {
-        this.systemServices = systemServices;
+    public void setSystemServicesNames(Collection<String> systemServicesNames) {
+        this.systemServicesNames = systemServicesNames;
     }
 
-    public void addSystemService(Collection<Map<String, String>> systemService) {
-        this.systemServices.add(systemService);
+    public void addSystemService(String systemServiceName) {
+        this.systemServicesNames.add(systemServiceName);
     }
 
-    public Collection<Collection<Map<String, String>>> getFiles() {
+    public Collection<Map<String, String>> getFiles() {
         return files;
     }
 
 
-    public void setFiles(Collection<Collection<Map<String, String>>> files) {
+    public void setFiles(Collection<Map<String, String>> files) {
         this.files = files;
     }
 
-    public void addFile(Collection<Map<String, String>> file) {
+    public void addFile(Map<String, String> file) {
         this.files.add(file);
     }
 }
