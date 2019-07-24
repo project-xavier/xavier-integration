@@ -3,6 +3,7 @@ package org.jboss.xavier.analytics.pojo.input;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -33,12 +34,12 @@ public class VMWorkloadInventoryModel
     //hardware/disks/filename
     private Collection<String> vmDiskFilenames;
     private Collection<String> systemServicesNames;
-    private Collection<Map<String,String>> files;
+    private Map<String,String> files;
 
     public VMWorkloadInventoryModel()
     {
         this.systemServicesNames = new ArrayList<> ();
-        this.files = new ArrayList<>();
+        this.files = new HashMap<>();
         this.vmDiskFilenames = new ArrayList<>();
         nicsCount = 0;
         diskSpace = new BigDecimal(0);
@@ -164,16 +165,16 @@ public class VMWorkloadInventoryModel
         this.systemServicesNames.add(systemServiceName);
     }
 
-    public Collection<Map<String, String>> getFiles() {
+    public Map<String, String> getFiles() {
         return files;
     }
 
 
-    public void setFiles(Collection<Map<String, String>> files) {
+    public void setFiles(Map<String, String> files) {
         this.files = files;
     }
 
-    public void addFile(Map<String, String> file) {
-        this.files.add(file);
+    public void addFile(String name, String contents) {
+        this.files.put(name,contents);
     }
 }
