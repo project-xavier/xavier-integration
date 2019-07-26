@@ -98,7 +98,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.start();
         camelContext.startRoute("report-get-details");
         Map<String, Long> variables = new HashMap<>();
-        Long one = new Long(1);
+        Long one = 1L;
         variables.put("id", one);
         restTemplate.getForEntity(camel_context + "report/{id}", String.class, variables);
 
