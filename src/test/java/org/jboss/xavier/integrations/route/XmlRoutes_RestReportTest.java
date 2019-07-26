@@ -117,7 +117,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.start();
         camelContext.startRoute("reports-get-details");
         Map<String, Object> variables = new HashMap<>();
-        Long one = new Long(1);
+        Long one = 1L;
         variables.put("id", one);
         restTemplate.getForEntity(camel_context + "report/{id}/initial-saving-estimation", String.class, variables);
 
@@ -136,7 +136,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.start();
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
-        Long one = new Long(1);
+        Long one = 1L;
         variables.put("id", one);
         int page = 2;
         variables.put("page", page);
@@ -159,7 +159,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.start();
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
-        Long one = new Long(1);
+        Long one = 1L;
         variables.put("id", one);
         restTemplate.getForEntity(camel_context + "report/{id}/workload-inventory", String.class, variables);
 
