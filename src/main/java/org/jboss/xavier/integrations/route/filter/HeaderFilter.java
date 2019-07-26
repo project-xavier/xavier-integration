@@ -9,7 +9,7 @@ public class HeaderFilter implements HeaderFilterStrategy {
 
     @Override
     public boolean applyFilterToCamelHeaders(String arg0, Object arg1, Exchange arg2) {
-        return true;
+        return false;
     }
 
     @Override
