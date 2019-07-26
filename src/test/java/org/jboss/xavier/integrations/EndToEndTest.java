@@ -117,14 +117,14 @@ public class EndToEndTest {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    return response().withStatusCode(202).withBody("success").withHeader("Content-Type", "application/zip");
+                    return response().withStatusCode(200).withBody("success").withHeader("Content-Type", "application/zip");
                 });
         
         clientAndServer.when(request()
                                 .withPath("/insights-upload-perm-test/440c88f9-5930-416e-9799-fa01d156df29"))
                         .respond(myrequest -> {
                             try {
-                                BinaryBody body = new BinaryBody(IOUtils.resourceToByteArray("cloudforms-export-v1.zip", EndToEndTest.class.getClassLoader()));
+                                BinaryBody body = new BinaryBody(IOUtils.resourceToByteArray("cloudforms-export-v1.tar.gz", EndToEndTest.class.getClassLoader()));
                                 return response()
                                         .withHeader("Content-Type", "application/zip")
                                         .withHeader("Accept-Ranges", "bytes")
@@ -214,7 +214,7 @@ public class EndToEndTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set("x-rh-insights-request-id", "2544925e825b4f3f9418c88556541776");
-        headers.set("x-rh-identity", "eyJlbnRpdGxlbWVudHMiOnsiaW5zaWdodHMiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJvcGVuc2hpZnQiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJzbWFydF9tYW5hZ2VtZW50Ijp7ImlzX2VudGl0bGVkIjpmYWxzZX0sImh5YnJpZF9jbG91ZCI6eyJpc19lbnRpdGxlZCI6dHJ1ZX19LCJpZGVudGl0eSI6eyJpbnRlcm5hbCI6eyJhdXRoX3RpbWUiOjAsImF1dGhfdHlwZSI6Imp3dC1hdXRoIiwib3JnX2lkIjoiNjM0MDA1NiJ9LCJhY2NvdW50X251bWJlciI6IjE0NjAyOTAiLCJ1c2VyIjp7ImZpcnN0X25hbWUiOiJNYXJjbyIsImlzX2FjdGl2ZSI6dHJ1ZSwiaXNfaW50ZXJuYWwiOnRydWUsImxhc3RfbmFtZSI6IlJpenppIiwibG9jYWxlIjoiZW5fVVMiLCJpc19vcmdfYWRtaW4iOmZhbHNlLCJ1c2VybmFtZSI6Im1yaXp6aUByZWRoYXQuY29tIiwiZW1haWwiOiJtcml6emkrcWFAcmVkaGF0LmNvbSJ9LCJ0eXBlIjoiVXNlciJ9fQ==");
+        headers.set("x-rh-identity", "eyJlbnRpdGxlbWVudHMiOnsiaW5zaWdodHMiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJvcGVuc2hpZnQiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJzbWFydF9tYW5hZ2VtZW50Ijp7ImlzX2VudGl0bGVkIjpmYWxzZX0sImh5YnJpZF9jbG91ZCI6eyJpc19lbnRpdGxlZCI6dHJ1ZX19LCJpZGVudGl0eSI6eyJpbnRlcm5hbCI6eyJhdXRoX3RpbWUiOjAsImF1dGhfdHlwZSI6Imp3dC1hdXRoIiwib3JnX2lkIjoiNjM0MDA1NiIsICJmaWxlbmFtZSI6ImNsb3VkZm9ybXMtZXhwb3J0LXYxLnRhci5neiIsIm9yaWdpbiI6Im1hLXhhdmllciIsImN1c3RvbWVyaWQiOiJDSUQ4ODgifSwiYWNjb3VudF9udW1iZXIiOiIxNDYwMjkwIiwgInVzZXIiOnsiZmlyc3RfbmFtZSI6Ik1hcmNvIiwiaXNfYWN0aXZlIjp0cnVlLCJpc19pbnRlcm5hbCI6dHJ1ZSwibGFzdF9uYW1lIjoiUml6emkiLCJsb2NhbGUiOiJlbl9VUyIsImlzX29yZ19hZG1pbiI6ZmFsc2UsInVzZXJuYW1lIjoibXJpenppQHJlZGhhdC5jb20iLCJlbWFpbCI6Im1yaXp6aStxYUByZWRoYXQuY29tIn0sInR5cGUiOiJVc2VyIn19");
 
         // Body
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
