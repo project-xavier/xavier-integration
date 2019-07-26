@@ -60,9 +60,9 @@ import static org.mockserver.model.HttpResponse.response;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@ContextConfiguration(initializers = EndToEndIT.Initializer.class)
+@ContextConfiguration(initializers = EndToEndTest.Initializer.class)
 @ActiveProfiles("test")
-public class EndToEndIT {
+public class EndToEndTest {
 
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
@@ -124,7 +124,7 @@ public class EndToEndIT {
                                 .withPath("/insights-upload-perm-test/440c88f9-5930-416e-9799-fa01d156df29"))
                         .respond(myrequest -> {
                             try {
-                                BinaryBody body = new BinaryBody(IOUtils.resourceToByteArray("cloudforms-export-v1.zip", EndToEndIT.class.getClassLoader()));
+                                BinaryBody body = new BinaryBody(IOUtils.resourceToByteArray("cloudforms-export-v1.zip", EndToEndTest.class.getClassLoader()));
                                 return response()
                                         .withHeader("Content-Type", "application/zip")
                                         .withHeader("Accept-Ranges", "bytes")
@@ -142,7 +142,7 @@ public class EndToEndIT {
                                 return response()
                                         .withHeader("Content-Type", "text/xml")
                                         .withStatusCode(200)
-                                        .withBody(IOUtils.resourceToString("kie-server-response.xml", StandardCharsets.UTF_8, EndToEndIT.class.getClassLoader()));
+                                        .withBody(IOUtils.resourceToString("kie-server-response.xml", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()));
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 return notFoundResponse();
@@ -224,7 +224,7 @@ public class EndToEndIT {
         LinkedMultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
         fileMap.add(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=filex; filename=" +filename);
         fileMap.add("Content-type", "application/zip");
-        body.add("file", new HttpEntity<>(IOUtils.resourceToByteArray(filename, EndToEndIT.class.getClassLoader()), fileMap));
+        body.add("file", new HttpEntity<>(IOUtils.resourceToByteArray(filename, EndToEndTest.class.getClassLoader()), fileMap));
         
         // params Body parts
         body.add("dummy", "CID12345");
