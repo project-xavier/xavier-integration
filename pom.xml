@@ -22,6 +22,9 @@
         <!-- maven plugin versions -->
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
+
+        <fabric8.generator.name>analytics-integration</fabric8.generator.name>
+        <fabric8.generator.alias>analytics-integration</fabric8.generator.alias>
     </properties>
 
     <dependencyManagement>
