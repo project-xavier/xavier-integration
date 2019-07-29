@@ -67,6 +67,9 @@
                         <when>
                             <simple>${body} != null</simple>
                             <bean ref="analysisService" method="deleteById(${header.id})" />
+                            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                                <constant>204</constant>
+                            </setHeader>
                         </when>
                         <otherwise>
                             <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">

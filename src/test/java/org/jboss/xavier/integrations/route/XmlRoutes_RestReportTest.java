@@ -219,7 +219,8 @@ public class XmlRoutes_RestReportTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}" , HttpMethod.DELETE, null, String.class, variables);
 
         //Then
-        Assert.assertEquals(response.getStatusCodeValue(), 200);
+        Assert.assertEquals(response.getStatusCodeValue(), 204);
+        Assert.assertNull(response.getBody());
         verify(analysisService).findById(one);
         verify(analysisService).deleteById(one);
         camelContext.stop();
