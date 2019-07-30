@@ -128,7 +128,6 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .multicast()
-                  .parallelProcessing()
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory")
                 .end();
                 
