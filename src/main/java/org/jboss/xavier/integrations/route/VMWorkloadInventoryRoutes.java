@@ -7,6 +7,7 @@ import javax.inject.Named;
 
 @Named
 public class VMWorkloadInventoryRoutes extends RouteBuilder {
+   
     @Override
     public void configure() {
         from("direct:calculate-vmworkloadinventory")
@@ -24,7 +25,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
         from ("jms:queue:vm-workload-inventory")
                 .id("extract-vmworkloadinventory")
             .to("log:INFO?showBody=true&showHeaders=true")
-            .transform().method("decisionServerHelper", "generateCommands(${body}, \"get WorkloadInventoryReports\", \"kiesession0\")")
+            .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
             .to("direct:decisionserver")
             .transform().method("decisionServerHelper", "extractReports")
             .transform().method("analysisModel", "setWorkloadInventoryReportModels(${body})")
