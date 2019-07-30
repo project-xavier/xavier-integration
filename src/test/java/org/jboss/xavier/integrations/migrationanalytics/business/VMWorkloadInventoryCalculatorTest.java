@@ -35,7 +35,7 @@ public class VMWorkloadInventoryCalculatorTest {
         Map<String, Object> headers = new HashMap<>();
         
         Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
-        assertThat(Integer.valueOf(modelList.size())).isEqualTo(24);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(21);
         assertThat(modelList.stream().filter(e -> e.getNicsCount() == 2).count()).isEqualTo(4);
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy")).count()).isEqualTo(2);
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST")).count()).isEqualTo(1);

@@ -40,7 +40,7 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
     private MockEndpoint mockJmsQueue;
 
     @Test
-    public void mainRouteBuilder_DirectCalculate_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
+    public void mainRouteBuilder_DirectCalculate_JSONGiven_ShouldReturnExpectedCalculatedValues() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
