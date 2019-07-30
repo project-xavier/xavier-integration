@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -218,7 +219,7 @@ public class XmlRoutes_RestReportTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}" , HttpMethod.DELETE, null, String.class, variables);
 
         //Then
-        Assert.assertEquals(response.getStatusCodeValue(), 404);
+        Assert.assertEquals(response.getStatusCodeValue(), HttpServletResponse.SC_NOT_FOUND);
         verify(analysisService).findById(one);
         verify(analysisService, never()).deleteById(one);
         camelContext.stop();
@@ -243,7 +244,8 @@ public class XmlRoutes_RestReportTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}" , HttpMethod.DELETE, null, String.class, variables);
 
         //Then
-        Assert.assertEquals(response.getStatusCodeValue(), 200);
+        Assert.assertEquals(response.getStatusCodeValue(), HttpServletResponse.SC_NO_CONTENT);
+        Assert.assertNull(response.getBody());
         verify(analysisService).findById(one);
         verify(analysisService).deleteById(one);
         camelContext.stop();
