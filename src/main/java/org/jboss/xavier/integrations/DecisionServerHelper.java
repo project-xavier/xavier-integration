@@ -61,7 +61,7 @@ public class DecisionServerHelper {
         return uploadFormInputDataModel;
     }
 
-    private BatchExecutionCommand generateCommands(Object insert, String retrieveQueryId, String kiseSessionId)
+    public BatchExecutionCommand generateCommands(Object insert, String retrieveQueryId, String kiseSessionId)
     {
         List<Command<?>> cmds = new ArrayList<Command<?>>();
         KieCommands commands = KieServices.Factory.get().getCommands();

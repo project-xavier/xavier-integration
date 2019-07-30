@@ -22,11 +22,12 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                 .end();
         
         from ("jms:queue:vm-workload-inventory")
+                .id("extract-vmworkloadinventory")
             .to("log:INFO?showBody=true&showHeaders=true")
-            .transform().method("decisionServerHelper", "createMigrationAnalyticsCommand(${body})")
+            .transform().method("decisionServerHelper", "generateCommands(${body}, \"get WorkloadInventoryReports\", \"kiesession0\")")
             .to("direct:decisionserver")
-            .transform().method("decisionServerHelper", "extractInitialSavingsEstimationReportModel")
-            .transform().method("analysisModel", "setInitialSavingsEstimationReportModel(${body})")
+            .transform().method("decisionServerHelper", "extractReports")
+            .transform().method("analysisModel", "setWorkloadInventoryReportModels(${body})")
             .setBody().simple("${ref:analysisModel}")
             .to("jpa:org.jboss.xavier.analytics.pojo.output.AnalysisModel");
             
