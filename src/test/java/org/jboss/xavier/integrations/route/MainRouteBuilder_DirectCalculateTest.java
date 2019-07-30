@@ -74,10 +74,10 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         //When
         camelContext.start();
-        camelContext.startRoute("calculate");
+        camelContext.startRoute("calculate-costsavings");
         InputStream body = getClass().getClassLoader().getResourceAsStream(fileName);
         
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate", body, headers);
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate-costsavings", body, headers);
 
         //Then
         assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
@@ -100,10 +100,10 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         //When
         camelContext.start();
-        camelContext.startRoute("calculate");
+        camelContext.startRoute("calculate-costsavings");
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
-        Exchange message = camelContext.createProducerTemplate().request("direct:calculate", exchange -> {
+        Exchange message = camelContext.createProducerTemplate().request("direct:calculate-costsavings", exchange -> {
             exchange.getIn().setBody("{ \"ñkajsñlkj\" : " + body);
             exchange.getIn().setHeaders(headers);
         });
@@ -138,7 +138,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         //When
         camelContext.start();
         camelContext.startRoute("unzip-file");
-        camelContext.startRoute("calculate");
+        camelContext.startRoute("calculate-costsavings");
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
         Exchange message = camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {

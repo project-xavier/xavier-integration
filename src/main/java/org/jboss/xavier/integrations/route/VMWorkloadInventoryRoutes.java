@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
 
 import javax.inject.Named;
 
@@ -12,7 +13,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                 .id("calculate-vmworkloadinventory")
                 .doTry()
                     .convertBodyTo(String.class)
-                    .transform().method("vmWorkloadInventoryCalculator", "calculate(${body}, ${header.MA_metadata})")
+                    .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
                     .to("jms:queue:vm-workload-inventory")
                 .endDoTry()
                 .doCatch(Exception.class)

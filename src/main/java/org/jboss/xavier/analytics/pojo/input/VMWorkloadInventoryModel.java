@@ -1,11 +1,9 @@
 package org.jboss.xavier.analytics.pojo.input;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 
 public class VMWorkloadInventoryModel
 {
@@ -18,9 +16,9 @@ public class VMWorkloadInventoryModel
     //vms/name
     private String vmName;
     //sum of vms/hardware/disks/size_on_disk
-    private BigDecimal diskSpace;
+    private Long diskSpace;
     //vms/ram_size_in_bytes
-    private Integer memory;
+    private Long memory;
     //vms/num_cpu
     private Integer cpuCores;
     //vms/operating_system/product_name
@@ -42,7 +40,7 @@ public class VMWorkloadInventoryModel
         this.files = new HashMap<>();
         this.vmDiskFilenames = new ArrayList<>();
         nicsCount = 0;
-        diskSpace = new BigDecimal(0);
+        diskSpace = 0L;
     }
 
     public String getProvider() {
@@ -77,23 +75,23 @@ public class VMWorkloadInventoryModel
         this.vmName = vmName;
     }
 
-    public BigDecimal getDiskSpace() {
+    public Long getDiskSpace() {
         return diskSpace;
     }
 
-    public void setDiskSpace(BigDecimal diskSpace) {
+    public void setDiskSpace(Long diskSpace) {
         this.diskSpace = diskSpace;
     }
 
-    public void addDiskSpace(BigDecimal nextDiskSpace) {
-        this.diskSpace.add(nextDiskSpace);
+    public void addDiskSpace(Long nextDiskSpace) {
+        this.diskSpace += nextDiskSpace;
     }
 
-    public Integer getMemory() {
+    public Long getMemory() {
         return memory;
     }
 
-    public void setMemory(Integer memory) {
+    public void setMemory(Long memory) {
         this.memory = memory;
     }
 
