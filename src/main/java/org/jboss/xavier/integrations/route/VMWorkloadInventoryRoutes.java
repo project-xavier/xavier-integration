@@ -22,7 +22,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                 .end();
         
         from ("jms:queue:vm-workload-inventory")
-            .to("log:INFO?showBody=true&amp;showHeaders=true")
+            .to("log:INFO?showBody=true&showHeaders=true")
             .transform().method("decisionServerHelper", "createMigrationAnalyticsCommand(${body})")
             .to("direct:decisionserver")
             .transform().method("decisionServerHelper", "extractInitialSavingsEstimationReportModel")

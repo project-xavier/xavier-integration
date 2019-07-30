@@ -19905,7 +19905,7 @@
           },
           {
             "id": 833,
-            "name": "dev-windows-server-2008",
+            "name": "dev-windows-server-2008-TEST",
             "type": "ManageIQ::Providers::Vmware::InfraManager::Vm",
             "ems_ref": "vm-156",
             "archived": false,
@@ -19925,7 +19925,7 @@
             "v_datastore_path": "NFS_Datastore/dev-windows-server-2008/dev-windows-server-2008.vmx",
             "operating_system": {
               "product_type": "ServerNT",
-              "product_name": "Windows Server 2008 R2 Enterprise",
+              "product_name": "",
               "distribution": null
             },
             "hardware": {

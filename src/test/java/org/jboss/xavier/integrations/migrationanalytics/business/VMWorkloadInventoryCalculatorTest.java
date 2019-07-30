@@ -38,20 +38,23 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(Integer.valueOf(modelList.size())).isEqualTo(24);
         assertThat(modelList.stream().filter(e -> e.getNicsCount() == 2).count()).isEqualTo(4);
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy")).count()).isEqualTo(2);
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST")).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("Microsoft Windows Server 2008 R2 (64-bit)")).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getDiskSpace() == (17179869184L + 10737418240L)).count()).isEqualTo(2);
         
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
-        expectedModel.setVmName("dev-windows-server-2008");
+        expectedModel.setVmName("dev-windows-server-2008-TEST");
         expectedModel.setProvider("VMware");
-        expectedModel.setOsProductName("Windows Server 2008 R2 Enterprise");
+        expectedModel.setOsProductName("ServerNT");
         expectedModel.setNicsCount(1);
         expectedModel.setMemory(4294967296L);
         expectedModel.setHasRdmDisk(false);
-        expectedModel.setGuestOSFullName("Windows Server 2008 R2 Enterprise");
+        expectedModel.setGuestOSFullName("Microsoft Windows Server 2008 R2 (64-bit)");
         expectedModel.setDiskSpace(7437787136L);
         expectedModel.setDatacenter("V2V-DC");
         expectedModel.setCpuCores(1);
         expectedModel.setCluster("V2V_Cluster");
-        
-        assertThat(modelList.stream()).containsOnlyOnce( expectedModel);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST")).findFirst().get()).isEqualToComparingFieldByField(expectedModel);
     }
 }

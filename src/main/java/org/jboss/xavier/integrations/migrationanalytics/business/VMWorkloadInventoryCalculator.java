@@ -63,7 +63,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         model.setMemory(readValueFromExpandedEnvVarPath(RAMSIZEINBYTES, vmStructMap));
         model.setCpuCores(readValueFromExpandedEnvVarPath(NUMCPUPATH, vmStructMap));
         model.setOsProductName(readValueFromExpandedEnvVarPath(PRODUCTNAMEPATH, vmStructMap));
-        model.setGuestOSFullName(StringUtils.defaultString(readValueFromExpandedEnvVarPath(GUESTOSFULLNAMEPATH, vmStructMap ), readValueFromExpandedEnvVarPath(GUESTOSFULLNAME_FALLBACKPATH, vmStructMap )));
+        model.setGuestOSFullName(StringUtils.defaultIfEmpty(readValueFromExpandedEnvVarPath(GUESTOSFULLNAMEPATH, vmStructMap ), readValueFromExpandedEnvVarPath(GUESTOSFULLNAME_FALLBACKPATH, vmStructMap )));
         model.setHasRdmDisk(readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap));
 
         List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);

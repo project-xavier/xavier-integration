@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel")
+@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|direct:calculate-vmworkloadinventory")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
@@ -138,18 +138,19 @@ public class MainRouteBuilder_DirectCalculateTest {
         //When
         camelContext.start();
         camelContext.startRoute("unzip-file");
+        camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
-        Exchange message = camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
+        camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
             exchange.getIn().setBody(body);
             exchange.getIn().setHeaders(headers);
         });
 
         //Then
         mockJmsQueue.assertIsSatisfied();
-        assertThat(message.getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(563902124032L);
-        assertThat(message.getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
+        assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(563902124032L);
+        assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
         camelContext.stop();
     }
 
