@@ -26,6 +26,10 @@
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
+        <dataFormats>
+            <bindy id="workloadInventoryReportModelBindyDataformat" type="Csv" classType="org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel"/>
+        </dataFormats>
+
         <restConfiguration apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
             <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
@@ -73,6 +77,16 @@
                     <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id}, ${header.page}, ${header.size})" />
                 </route>
             </get>
+            <get uri="/{id}/workload-inventory/csv">
+                <description>Get the Workload Inventory Reports in CSV format</description>
+                <route id="workload-inventory-report-get-details-as-csv">
+                    <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id})" />
+                    <to uri="direct:toWorkloadInventoryReportCsv" />
+                    <setHeader headerName="Content-Type">
+                        <constant>text/csv</constant>
+                    </setHeader>
+                </route>
+            </get>
         </rest>
 
         <rest path="/user">
@@ -84,6 +98,11 @@
                 </route>
             </get>
         </rest>
+
+        <route id="workload-inventory-report-model-to-csv">
+            <from uri="direct:toWorkloadInventoryReportCsv" />
+            <marshal ref="workloadInventoryReportModelBindyDataformat" />
+        </route>
 
         <route id="call-kie-extract-reports" trace="true">
             <from uri="jms:queue:inputDataModel" />

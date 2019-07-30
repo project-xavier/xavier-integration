@@ -7,6 +7,7 @@ import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -165,6 +168,28 @@ public class XmlRoutes_RestReportTest {
 
         //Then
         verify(workloadInventoryReportService).findByAnalysisId(one, 0, 10);
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnCsv() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("workload-inventory-report-get-details-as-csv");
+        camelContext.startRoute("workload-inventory-report-model-to-csv");
+        Map<String, Object> variables = new HashMap<>();
+        Long one = 1L;
+        variables.put("id", one);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/csv" , HttpMethod.GET, null, String.class, variables);
+
+        //Then
+        verify(workloadInventoryReportService).findByAnalysisId(one);
+        Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
+        Assert.assertNotNull(response.getBody());
         camelContext.stop();
     }
 
