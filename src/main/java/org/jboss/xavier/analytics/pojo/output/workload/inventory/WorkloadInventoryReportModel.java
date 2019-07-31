@@ -13,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.transaction.Transactional;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -46,8 +45,8 @@ public class WorkloadInventoryReportModel
     private String vmName;
     private String osName;
     private String osDescription;
-    private BigDecimal diskSpace;
-    private Integer memory;
+    private Long diskSpace;
+    private Long memory;
     private Integer cpuCores;
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> workloads;
@@ -130,19 +129,19 @@ public class WorkloadInventoryReportModel
         this.osDescription = osDescription;
     }
 
-    public BigDecimal getDiskSpace() {
+    public Long getDiskSpace() {
         return diskSpace;
     }
 
-    public void setDiskSpace(BigDecimal diskSpace) {
+    public void setDiskSpace(Long diskSpace) {
         this.diskSpace = diskSpace;
     }
 
-    public Integer getMemory() {
+    public Long getMemory() {
         return memory;
     }
 
-    public void setMemory(Integer memory) {
+    public void setMemory(Long memory) {
         this.memory = memory;
     }
 
