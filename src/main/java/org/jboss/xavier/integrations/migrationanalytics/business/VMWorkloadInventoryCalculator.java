@@ -2,7 +2,7 @@ package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.xavier.analytics.pojo.input.VMWorkloadInventoryModel;
+import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
