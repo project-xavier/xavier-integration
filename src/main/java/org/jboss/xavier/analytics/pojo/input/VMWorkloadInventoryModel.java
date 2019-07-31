@@ -1,12 +1,12 @@
 package org.jboss.xavier.analytics.pojo.input;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VMWorkloadInventoryModel
-{
+public class VMWorkloadInventoryModel implements Serializable {
     //common/name
     private String provider;
     //common/ems_clusters/v_parent_datacenter
