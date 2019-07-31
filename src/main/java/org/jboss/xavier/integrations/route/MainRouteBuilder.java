@@ -127,6 +127,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:calculate")
                 .id("calculate")
+                .convertBodyTo(String.class)
                 .multicast()
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory")
                 .end();
@@ -135,7 +136,6 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate-costsavings")
                 .id("calculate-costsavings")
                 .doTry()
-                    .convertBodyTo(String.class)
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                     .log("Message to send to AMQ : ${body}")
                     .to("jms:queue:uploadFormInputDataModel")
