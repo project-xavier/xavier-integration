@@ -6,6 +6,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
+import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.VMWorkloadInventoryModel;
 import org.jboss.xavier.integrations.migrationanalytics.business.Calculator;
@@ -16,9 +17,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,15 +80,15 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
         //When
         camelContext.start();
         camelContext.startRoute("calculate-vmworkloadinventory");
-        InputStream body = getClass().getClassLoader().getResourceAsStream(fileName);
+        String body = IOUtils.resourceToString(fileName, StandardCharsets.UTF_8, this.getClass().getClassLoader());
         
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate-vmworkloadinventory", body, headers);
 
         Thread.sleep(5000);
         
         //Then
-        assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody(List.class).get(0)).isEqualToComparingFieldByFieldRecursively(expectedVmWorkloadInventoryModel);
-        assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody(List.class).size()).isEqualTo(21);
+        assertThat(mockJmsQueue.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class)).isEqualToComparingFieldByFieldRecursively(expectedVmWorkloadInventoryModel);
+        assertThat(mockJmsQueue.getExchanges().size()).isEqualTo(21);
 
         camelContext.stop();
     }
