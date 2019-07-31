@@ -46,7 +46,7 @@ public class DecisionServerAutoConfiguration {
         xstream.aliasPackage(MIGRATION_ANALYTICS_INPUT_MODELS_PACKAGE_NAME + ".workload.inventory", VMWorkloadInventoryModel.class.getPackage().getName());
         xstream.aliasPackage(MIGRATION_ANALYTICS_OUTPUT_MODELS_PACKAGE_NAME, ReportDataModel.class.getPackage().getName());
         xstream.aliasPackage(MIGRATION_ANALYTICS_OUTPUT_MODELS_PACKAGE_NAME, InitialSavingsEstimationReportModel.class.getPackage().getName());
-        xstream.aliasPackage(MIGRATION_ANALYTICS_OUTPUT_MODELS_PACKAGE_NAME , WorkloadInventoryReportModel.class.getPackage().getName());
+        xstream.aliasPackage(MIGRATION_ANALYTICS_OUTPUT_MODELS_PACKAGE_NAME + ".workload.inventory" , WorkloadInventoryReportModel.class.getPackage().getName());
         xstream.alias("response", org.kie.server.api.model.ServiceResponse.class);
 
         return new XStreamDataFormat(xstream);

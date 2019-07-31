@@ -18,6 +18,7 @@ package org.jboss.xavier.integrations;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel;
 import org.kie.api.KieServices;
 import org.kie.api.command.BatchExecutionCommand;
@@ -103,6 +104,19 @@ public class DecisionServerHelper {
         report.getRhvSavingsModel().setReport(report);
         /*report.getRhvAdditionalContainerCapacityModel().setReport(report);
         report.getRhvOrderFormModel().setReport(report);*/
+        return report;
+    }
+
+    public WorkloadInventoryReportModel extractWorkloadInventoryReportModel(KieServiceResponse<ExecutionResults> response) {
+        ExecutionResults res = response.getResult();
+        WorkloadInventoryReportModel report = null;
+        if (res != null) {
+            QueryResults queryResults = (QueryResults) res.getValue("output");
+            for (QueryResultsRow queryResult : queryResults) {
+                report = (WorkloadInventoryReportModel) queryResult.get("report");
+                break;
+            }
+        }
         return report;
     }
 
