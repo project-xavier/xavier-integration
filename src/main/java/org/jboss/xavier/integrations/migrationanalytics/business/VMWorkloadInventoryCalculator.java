@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -34,6 +35,11 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     private static final String PRODUCTNAMEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.productNamePath";
     private static final String DISKSIZEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.diskSizePath";
     private static final String EMSCLUSTERIDPATH = "cloudforms.manifest.{version}.vmworkloadinventory.emsClusterIdPath";
+    private static final String VMDISKSFILENAMESPATH = "cloudforms.manifest.{version}.vmworkloadinventory.vmDiskFileNamesPath";
+    private static final String SYSTEMSERVICESNAMESPATH = "cloudforms.manifest.{version}.vmworkloadinventory.systemServicesNamesPath";
+    private static final String FILESCONTENTPATH = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPath"; 
+    private static final String FILESCONTENTPATH_FILENAME = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathName"; 
+    private static final String FILESCONTENTPATH_CONTENTS = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathContents"; 
 
     @Autowired
     private Environment env;
@@ -71,13 +77,23 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap));
         
+        model.setFiles(readMapValuesFromExpandedEnvVarPath(FILESCONTENTPATH, vmStructMap, env.getProperty(FILESCONTENTPATH_FILENAME), "contents"));
+        model.setSystemServicesNames(readListValuesFromExpandedEnvVarPath(SYSTEMSERVICESNAMESPATH, vmStructMap));
+        model.setVmDiskFilenames(readListValuesFromExpandedEnvVarPath(VMDISKSFILENAMESPATH, vmStructMap));
+        
         return model;
     }
 
+    private Map<String, String> readMapValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, String keyfield, String valuefield) {
+        String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
+        List<Map> value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
+        Map<String,String> files = new HashMap<>();
+        value.stream().forEach(e-> files.put((String) e.get(keyfield), (String) e.get(valuefield)));
+        return files;
+    }
+
     private <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
-        String envVarPathWithExpandedVersion = expandVersionInExpression(envVarPath);
-        String path = env.getProperty(envVarPathWithExpandedVersion);
-        String expandParamsInPath = expandParamsInPath(path, vmStructMap);
+        String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
 
         Object value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
         if (value instanceof Collection) {
@@ -88,9 +104,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     }
         
     private <T> List<T> readListValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
-        String envVarPathWithExpandedVersion = expandVersionInExpression(envVarPath);
-        String path = env.getProperty(envVarPathWithExpandedVersion);
-        String expandParamsInPath = expandParamsInPath(path, vmStructMap);
+        String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
 
         Object value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
         if (value instanceof Collection) {
@@ -99,7 +113,13 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
             return Collections.singletonList((T) value);
         }    
     }
-    
+
+    private String getExpandedPath(String envVarPath, Map vmStructMap) {
+        String envVarPathWithExpandedVersion = expandVersionInExpression(envVarPath);
+        String path = env.getProperty(envVarPathWithExpandedVersion);
+        return expandParamsInPath(path, vmStructMap);
+    }
+
     private String expandVersionInExpression(String path) {
         String replace = path.replace("{version}", manifestVersion);
         System.out.printf("Replace %s : %s \n", path, replace);
