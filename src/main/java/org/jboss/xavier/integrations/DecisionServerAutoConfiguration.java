@@ -21,7 +21,7 @@ import org.apache.camel.spi.DataFormatFactory;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
-import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel;
 import org.kie.internal.runtime.helper.BatchExecutionHelper;
 import org.springframework.context.annotation.Bean;

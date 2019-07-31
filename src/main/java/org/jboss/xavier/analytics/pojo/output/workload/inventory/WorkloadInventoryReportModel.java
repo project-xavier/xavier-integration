@@ -1,8 +1,9 @@
-package org.jboss.xavier.analytics.pojo.output;
+package org.jboss.xavier.analytics.pojo.output.workload.inventory;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -13,10 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
