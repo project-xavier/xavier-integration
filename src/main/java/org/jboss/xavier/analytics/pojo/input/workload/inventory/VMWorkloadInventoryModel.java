@@ -1,4 +1,4 @@
-package org.jboss.xavier.analytics.pojo.input;
+package org.jboss.xavier.analytics.pojo.input.workload.inventory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
