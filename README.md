@@ -85,4 +85,11 @@ To enable the `DEBUG` level for logging, please add the environment variable `lo
 # Sonar
 1.  https://sonarcloud.io/dashboard?id=project-xavier_xavier-integration
 2. mvn clean verify -Psonar -Dsonar.login={{token generated for the user on SonarCloud}}
+
 # References
+
+# Testing
+For the End2End test a docker container test framework is used : [TestContainers](www.testcontainers.org).  
+If using the Fedora docker package it is needed to set the *ryuk.container.privileged=true* property in the local ~/.testcontainers.properties file in order to allow [Ryuk to be a privileged container](https://www.testcontainers.org/features/configuration/#customizing-ryuk-resource-reaper).
+
+ 
