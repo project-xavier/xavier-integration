@@ -28,7 +28,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
             .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
             .to("direct:decisionserver")
             .transform().method("decisionServerHelper", "extractReports")
-            .transform().method("analysisModel", "setWorkloadInventoryReportModels(${body})")
+            .transform().method("analysisModel", "addWorkloadInventoryReportModel(${body})")
             .setBody().simple("${ref:analysisModel}")
             .to("jpa:org.jboss.xavier.analytics.pojo.output.AnalysisModel");
             
