@@ -55,9 +55,13 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setDatacenter("V2V-DC");
         expectedModel.setCpuCores(1);
         expectedModel.setCluster("V2V_Cluster");
-        expectedModel.setSystemServicesNames(Arrays.asList("",""));
-        expectedModel.setVmDiskFilenames();
-        expectedModel.setFiles();
+        expectedModel.setSystemServicesNames(Arrays.asList("{02B0078E-2148-45DD-B7D3-7E37AAB3B31D}","xmlprov","wudfsvc"));
+        expectedModel.setVmDiskFilenames(Arrays.asList("[NFS_Datastore] dev-windows-server-2008/dev-windows-server-2008.vmdk"));
+        
+        HashMap<String, String> files = new HashMap<>();
+        files.put("/root/.bash_profile","# .bash_profile\n\n# Get the aliases and functions\nif [ -f ~/.bashrc ]; then\n\t. ~/.bashrc\nfi\n\n# User specific environment and startup programs\n\nPATH=$PATH:$HOME/bin\nexport PATH\nexport JAVA_HOME=/usr/java/jdk1.5.0_07/bin/java\nexport WAS_HOME=/opt/IBM/WebSphere/AppServer\n");
+        files.put("/opt/IBM", null);
+        expectedModel.setFiles(files);
 
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST")).findFirst().get()).isEqualToComparingFieldByField(expectedModel);
     }

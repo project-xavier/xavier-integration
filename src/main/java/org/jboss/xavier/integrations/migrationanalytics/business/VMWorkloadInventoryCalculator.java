@@ -86,9 +86,9 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
 
     private Map<String, String> readMapValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, String keyfield, String valuefield) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
-        List<Map> value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
+        List value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
         Map<String,String> files = new HashMap<>();
-        value.stream().forEach(e-> files.put((String) e.get(keyfield), (String) e.get(valuefield)));
+        value.stream().filter(e -> !((Collection) e).isEmpty())..forEach(e -> files.put((String) ((Map)e).get(keyfield), (String) ((Map)e).get(valuefield)));
         return files;
     }
 
