@@ -102,8 +102,8 @@ public class DecisionServerHelper {
         report.getRhvRampUpCostsModel().setReport(report);
         report.getRhvYearByYearCostsModel().setReport(report);
         report.getRhvSavingsModel().setReport(report);
-        /*report.getRhvAdditionalContainerCapacityModel().setReport(report);
-        report.getRhvOrderFormModel().setReport(report);*/
+        report.getRhvAdditionalContainerCapacityModel().setReport(report);
+//        report.getRhvOrderFormModel().setReport(report);
         return report;
     }
 
