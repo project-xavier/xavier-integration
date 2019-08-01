@@ -77,7 +77,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap));
         
-        model.setFiles(readMapValuesFromExpandedEnvVarPath(FILESCONTENTPATH, vmStructMap, env.getProperty(FILESCONTENTPATH_FILENAME), "contents"));
+        model.setFiles(readMapValuesFromExpandedEnvVarPath(FILESCONTENTPATH, vmStructMap, env.getProperty(getExpandedPath(FILESCONTENTPATH_FILENAME, vmStructMap)), env.getProperty(getExpandedPath(FILESCONTENTPATH_CONTENTS, vmStructMap))));
         model.setSystemServicesNames(readListValuesFromExpandedEnvVarPath(SYSTEMSERVICESNAMESPATH, vmStructMap));
         model.setVmDiskFilenames(readListValuesFromExpandedEnvVarPath(VMDISKSFILENAMESPATH, vmStructMap));
         

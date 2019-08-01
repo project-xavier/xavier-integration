@@ -14,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +55,9 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setDatacenter("V2V-DC");
         expectedModel.setCpuCores(1);
         expectedModel.setCluster("V2V_Cluster");
+        expectedModel.setSystemServicesNames(Arrays.asList("",""));
+        expectedModel.setVmDiskFilenames();
+        expectedModel.setFiles();
 
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST")).findFirst().get()).isEqualToComparingFieldByField(expectedModel);
     }

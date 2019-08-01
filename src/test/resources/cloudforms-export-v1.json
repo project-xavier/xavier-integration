@@ -19957,7 +19957,16 @@
               ]
             },
             "files": [
-
+              {
+                "id": 181,
+                "name": "/root/.bash_profile",
+                "contents": "# .bash_profile\n\n# Get the aliases and functions\nif [ -f ~/.bashrc ]; then\n\t. ~/.bashrc\nfi\n\n# User specific environment and startup programs\n\nPATH=$PATH:$HOME/bin\nexport PATH\nexport JAVA_HOME=/usr/java/jdk1.5.0_07/bin/java\nexport WAS_HOME=/opt/IBM/WebSphere/AppServer\n"
+              },
+              {
+                "id": 180,
+                "name": "/opt/IBM",
+                "contents": null
+              }
             ],
             "system_services": [
               {
