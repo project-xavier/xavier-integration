@@ -42,7 +42,7 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST")).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("Microsoft Windows Server 2008 R2 (64-bit)")).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getDiskSpace() == (17179869184L + 10737418240L)).count()).isEqualTo(2);
-        
+  
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
         expectedModel.setVmName("dev-windows-server-2008-TEST");
         expectedModel.setProvider("VMware");

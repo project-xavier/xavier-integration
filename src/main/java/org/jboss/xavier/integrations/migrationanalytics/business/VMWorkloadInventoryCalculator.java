@@ -76,8 +76,8 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         model.setDiskSpace(diskSpaceList.stream().filter(e -> e != null).mapToLong(Number::longValue).sum());
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap));
-        
-        model.setFiles(readMapValuesFromExpandedEnvVarPath(FILESCONTENTPATH, vmStructMap, env.getProperty(getExpandedPath(FILESCONTENTPATH_FILENAME, vmStructMap)), env.getProperty(getExpandedPath(FILESCONTENTPATH_CONTENTS, vmStructMap))));
+
+        model.setFiles(readMapValuesFromExpandedEnvVarPath(FILESCONTENTPATH, vmStructMap, getExpandedPath(FILESCONTENTPATH_FILENAME, vmStructMap), getExpandedPath(FILESCONTENTPATH_CONTENTS, vmStructMap)));
         model.setSystemServicesNames(readListValuesFromExpandedEnvVarPath(SYSTEMSERVICESNAMESPATH, vmStructMap));
         model.setVmDiskFilenames(readListValuesFromExpandedEnvVarPath(VMDISKSFILENAMESPATH, vmStructMap));
         
@@ -86,9 +86,13 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
 
     private Map<String, String> readMapValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, String keyfield, String valuefield) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
-        List value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
         Map<String,String> files = new HashMap<>();
-        value.stream().filter(e -> !((Collection) e).isEmpty())..forEach(e -> files.put((String) ((Map)e).get(keyfield), (String) ((Map)e).get(valuefield)));
+        try {
+            List<List<Map>> value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
+            value.stream().flatMap(Collection::stream).collect(Collectors.toList()).forEach(e-> files.put((String) e.get(keyfield), (String) e.get(valuefield)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return files;
     }
 
