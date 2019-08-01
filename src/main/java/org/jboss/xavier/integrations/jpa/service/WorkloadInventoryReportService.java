@@ -2,13 +2,16 @@ package org.jboss.xavier.integrations.jpa.service;
 
 import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
+import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportSpecs;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
+import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
@@ -40,7 +43,12 @@ public class WorkloadInventoryReportService
         return result;
     };
 
-    public Page<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean) {
+    public Page<WorkloadInventoryReportModel> findByAnalysisId(
+            Long analysisId,
+            PageBean pageBean,
+            SortBean sortBean,
+            WorkloadInventoryFilterBean filterBean
+    ) {
         // Sort
         Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         String orderBy = mapToSupportedSortField.apply(sortBean.getOrderBy());
@@ -51,6 +59,9 @@ public class WorkloadInventoryReportService
         int size = pageBean.getSize();
         Pageable pageable = new PageRequest(page, size, sort);
 
-        return reportRepository.findByAnalysisId(analysisId, pageable);
+        // Filtering
+        Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisIdAndFilterBean(analysisId, filterBean);
+
+        return reportRepository.findAll(specification, pageable);
     }
 }

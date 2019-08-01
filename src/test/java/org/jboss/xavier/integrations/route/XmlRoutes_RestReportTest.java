@@ -11,6 +11,7 @@ import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportS
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
+import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +28,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.mockito.Matchers.anyInt;
@@ -148,6 +151,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.start();
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
         Long one = 1L;
@@ -161,8 +165,9 @@ public class XmlRoutes_RestReportTest {
         //Then
         PageBean pageBean = new PageBean(page, size);
         SortBean sortBean = new SortBean("id", false);
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
-        verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean);
+        verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean, filterBean);
         camelContext.stop();
     }
 
@@ -176,6 +181,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.start();
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
         Long one = 1L;
@@ -185,8 +191,9 @@ public class XmlRoutes_RestReportTest {
         //Then
         PageBean pageBean = new PageBean(0, 10);
         SortBean sortBean = new SortBean("id", false);
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
-        verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean);
+        verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean, filterBean);
         camelContext.stop();
     }
 
@@ -200,6 +207,7 @@ public class XmlRoutes_RestReportTest {
         camelContext.start();
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
         Long one = 1L;
@@ -213,8 +221,94 @@ public class XmlRoutes_RestReportTest {
         //Then
         PageBean pageBean = new PageBean(0, 10);
         SortBean sortBean = new SortBean(orderBy, orderAsc);
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
-        verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean);
+        verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean, filterBean);
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_FiltersGiven_ShouldCallFindByAnalysisId() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
+        camelContext.startRoute("workload-inventory-report-get-details");
+
+        Map<String, Object> variables = new HashMap<>();
+
+        Long one = 1L;
+        variables.put("id", one);
+
+        String provider = "my provider";
+        variables.put("provider", provider);
+
+        String cluster = "my cluster";
+        variables.put("cluster", cluster);
+
+        String datacenter = "my datacenter";
+        variables.put("datacenter", datacenter);
+
+        String vmName = "my vmName";
+        variables.put("vmName", vmName);
+
+        String osName = "my osName";
+        variables.put("osName", osName);
+
+        String workload1 = "my workload1";
+        variables.put("workload1", workload1);
+        String workload2 = "my workload2";
+        variables.put("workload2", workload2);
+
+        String recommendedTarget1 = "my recommendedTarget1";
+        variables.put("recommendedTarget1", recommendedTarget1);
+        String recommendedTarget2 = "my recommendedTarget2";
+        variables.put("recommendedTarget2", recommendedTarget2);
+
+        String flag1 = "my flag1";
+        variables.put("flag1", flag1);
+        String flag2 = "my flag2";
+        variables.put("flag2", flag2);
+
+        String complexity = "my complexity";
+        variables.put("complexity", complexity);
+
+        StringBuilder sb = new StringBuilder(camel_context + "report/{id}/workload-inventory?")
+                .append("provider={provider}&")
+                .append("cluster={cluster}&")
+                .append("datacenter={datacenter}&")
+                .append("vmName={vmName}&")
+                .append("osName={osName}&")
+                .append("workloads={workload1}&")
+                .append("workloads={workload2}&")
+                .append("recommendedTargetsIMS={recommendedTarget1}&")
+                .append("recommendedTargetsIMS={recommendedTarget2}&")
+                .append("flagsIMS={flag1}&")
+                .append("flagsIMS={flag2}&")
+                .append("complexity={complexity}");
+
+        restTemplate.getForEntity(sb.toString(), String.class, variables);
+
+        //Then
+        PageBean pageBean = new PageBean(0, 10);
+        SortBean sortBean = new SortBean("id", false);
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
+        filterBean.setProvider(provider);
+        filterBean.setCluster(cluster);
+        filterBean.setDatacenter(datacenter);
+        filterBean.setVmName(vmName);
+        filterBean.setOsName(osName);
+        filterBean.setWorkloads(new HashSet<>(Arrays.asList(workload1, workload2)));
+        filterBean.setRecommendedTargetsIMS(new HashSet<>(Arrays.asList(recommendedTarget1, recommendedTarget2)));
+        filterBean.setFlagsIMS(new HashSet<>(Arrays.asList(flag1, flag2)));
+        filterBean.setComplexity(complexity);
+
+        verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean, filterBean);
         camelContext.stop();
     }
 
