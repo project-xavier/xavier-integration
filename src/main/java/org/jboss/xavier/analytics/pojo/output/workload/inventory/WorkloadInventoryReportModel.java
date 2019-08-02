@@ -1,4 +1,4 @@
-package org.jboss.xavier.analytics.pojo.output;
+package org.jboss.xavier.analytics.pojo.output.workload.inventory;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
@@ -7,14 +7,18 @@ import org.apache.camel.dataformat.bindy.annotation.FormatFactories;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.jboss.xavier.analytics.pojo.BindyStringSetFormatFactory;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -25,23 +29,31 @@ import java.util.Set;
 @CsvRecord(separator = ",", crlf = "UNIX", generateHeaderColumns = true)
 @Entity
 @Transactional
+@Table(
+        indexes = {
+                @Index(name = "WorkloadInventoryReportModel_" +
+                        WorkloadInventoryReportModel.ANALYSIS_ID + "_index",
+                        columnList = WorkloadInventoryReportModel.ANALYSIS_ID, unique = false)
+        }
+)
 public class WorkloadInventoryReportModel
 {
     static final long serialVersionUID = 1L;
+    static final String ANALYSIS_ID = "analysis_id";
 
     @Id
-    @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO, generator = "WORLOADINVENTORYREPORTMODEL_ID_GENERATOR")
+    @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO, generator = "WORKLOADINVENTORYREPORTMODEL_ID_GENERATOR")
     @GenericGenerator(
-            name = "WORLOADINVENTORYREPORTMODEL_ID_GENERATOR",
+            name = "WORKLOADINVENTORYREPORTMODEL_ID_GENERATOR",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
             parameters = {
-                    @Parameter(name = "sequence_name", value = "WORLOADINVENTORYREPORT_SEQUENCE")
+                    @Parameter(name = "sequence_name", value = "WORKLOADINVENTORYREPORT_SEQUENCE")
             }
     )
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "analysis_id")
+    @JoinColumn(name = ANALYSIS_ID)
     @JsonBackReference
     private AnalysisModel analysis;
 
@@ -64,16 +76,21 @@ public class WorkloadInventoryReportModel
     private String osDescription;
 
     @DataField(pos = 7, precision = 2, columnName = "Disk space")
-    private BigDecimal diskSpace;
+    private Long diskSpace;
 
     @DataField(pos = 8, columnName = "Memory")
-    private Integer memory;
+    private Long memory;
 
     @DataField(pos = 9, columnName = "CPU cores")
     private Integer cpuCores;
 
     @DataField(pos = 10, columnName = "Workloads")
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            indexes = {
+                    @Index(columnList = "workload_inventory_report_model_id", unique = false)
+            }
+    )
     private Set<String> workloads;
 
     @DataField(pos = 11, columnName = "Complexity")
@@ -83,10 +100,20 @@ public class WorkloadInventoryReportModel
     // with "IMS" suffix in case one day we will have
     // their "AMM" counterparts
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            indexes = {
+                    @Index(columnList = "workload_inventory_report_model_id", unique = false)
+            }
+    )
     private Set<String> recommendedTargetsIMS;
 
     @DataField(pos = 13, columnName = "Flags")
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            indexes = {
+                    @Index(columnList = "workload_inventory_report_model_id", unique = false)
+            }
+    )
     private Set<String> flagsIMS;
 
     private Date creationDate;
@@ -161,19 +188,19 @@ public class WorkloadInventoryReportModel
         this.osDescription = osDescription;
     }
 
-    public BigDecimal getDiskSpace() {
+    public Long getDiskSpace() {
         return diskSpace;
     }
 
-    public void setDiskSpace(BigDecimal diskSpace) {
+    public void setDiskSpace(Long diskSpace) {
         this.diskSpace = diskSpace;
     }
 
-    public Integer getMemory() {
+    public Long getMemory() {
         return memory;
     }
 
-    public void setMemory(Integer memory) {
+    public void setMemory(Long memory) {
         this.memory = memory;
     }
 
