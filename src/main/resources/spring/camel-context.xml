@@ -27,7 +27,7 @@
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
         <dataFormats>
-            <bindy id="workloadInventoryReportModelBindyDataformat" type="Csv" classType="org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel"/>
+            <bindy id="workloadInventoryReportModelBindyDataformat" type="Csv" classType="org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel"/>
         </dataFormats>
 
         <restConfiguration apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
