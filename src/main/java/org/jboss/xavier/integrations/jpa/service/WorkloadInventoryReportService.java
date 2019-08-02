@@ -1,7 +1,7 @@
 package org.jboss.xavier.integrations.jpa.service;
 
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportFiltersModel;
-import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportSpecs;
 import org.jboss.xavier.integrations.route.model.PageBean;
