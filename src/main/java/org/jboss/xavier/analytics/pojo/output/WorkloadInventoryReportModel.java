@@ -61,6 +61,7 @@ public class WorkloadInventoryReportModel
     private Integer cpuCores;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_workloads",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
@@ -71,6 +72,7 @@ public class WorkloadInventoryReportModel
     // their "AMM" counterparts
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_recommended_targetsims",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
@@ -78,6 +80,7 @@ public class WorkloadInventoryReportModel
     private Set<String> recommendedTargetsIMS;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_flagsims",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }

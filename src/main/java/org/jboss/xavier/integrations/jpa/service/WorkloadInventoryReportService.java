@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.jpa.service;
 
+import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportFiltersModel;
 import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportSpecs;
@@ -63,5 +64,18 @@ public class WorkloadInventoryReportService
         Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisIdAndFilterBean(analysisId, filterBean);
 
         return reportRepository.findAll(specification, pageable);
+    }
+
+    public WorkloadInventoryReportFiltersModel findAvailableFiltersByAnalysisId(Long analysisId) {
+        WorkloadInventoryReportFiltersModel filters = new WorkloadInventoryReportFiltersModel();
+        filters.setProviders(reportRepository.findAllDistinctProvidersByAnalysisId(analysisId));
+        filters.setClusters(reportRepository.findAllDistinctClustersByAnalysisId(analysisId));
+        filters.setDatacenters(reportRepository.findAllDistinctDatacentersByAnalysisId(analysisId));
+        filters.setComplexities(reportRepository.findAllDistinctComplexitiesByAnalysisId(analysisId));
+        filters.setWorkloads(reportRepository.findAllDistinctWorkloadsByAnalysisId(analysisId));
+        filters.setRecommendedTargetsIMS(reportRepository.findAllDistinctRecommendedTargetsIMSByAnalysisId(analysisId));
+        filters.setFlagsIMS(reportRepository.findAllDistinctFlagsIMSByAnalysisId(analysisId));
+
+        return filters;
     }
 }

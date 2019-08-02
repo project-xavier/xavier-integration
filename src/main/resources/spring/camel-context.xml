@@ -110,6 +110,12 @@
                     <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
                 </route>
             </get>
+            <get uri="/{id}/workload-inventory/available-filters">
+                <description>Get available filters</description>
+                <route id="workload-inventory-report-available-filters">
+                    <bean ref="workloadInventoryReportService" method="findAvailableFiltersByAnalysisId(${header.id})" />
+                </route>
+            </get>
         </rest>
 
         <rest path="/user">
