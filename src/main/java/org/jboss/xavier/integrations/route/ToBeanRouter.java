@@ -71,44 +71,50 @@ public class ToBeanRouter extends RouteBuilder {
                     public void process(Exchange exchange) throws Exception {
                         // extract the name parameter from the Camel message which we want to use
                         Object providerByHeader = exchange.getIn().getHeader("provider");
-                        String provider = providerByHeader != null ? (String) providerByHeader : null;
+                        List<String> providerList = ConversionUtils.toList(providerByHeader);
+                        Set<String> provider = providerList != null ? new HashSet<>(providerList) : null;
 
                         Object datacenterHeader = exchange.getIn().getHeader("datacenter");
-                        String datacenter = datacenterHeader != null ? (String) datacenterHeader : null;
+                        List<String> datacenterList = ConversionUtils.toList(datacenterHeader);
+                        Set<String> datacenter = datacenterList != null ? new HashSet<>(datacenterList) : null;
 
                         Object clusterHeader = exchange.getIn().getHeader("cluster");
-                        String cluster = clusterHeader != null ? (String) clusterHeader : null;
+                        List<String> clusterList = ConversionUtils.toList(clusterHeader);
+                        Set<String> cluster = clusterList != null ? new HashSet<>(clusterList) : null;
 
                         Object vmNameHeader = exchange.getIn().getHeader("vmName");
-                        String vmName = vmNameHeader != null ? (String) vmNameHeader : null;
+                        List<String> vmNameList = ConversionUtils.toList(vmNameHeader);
+                        Set<String> vmName = vmNameList != null ? new HashSet<>(vmNameList) : null;
 
                         Object osNameHeader = exchange.getIn().getHeader("osName");
-                        String osName = osNameHeader != null ? (String) osNameHeader : null;
+                        List<String> osNameList = ConversionUtils.toList(osNameHeader);
+                        Set<String> osName = osNameList != null ? new HashSet<>(osNameList) : null;
 
-                        Object workloadsHeader = exchange.getIn().getHeader("workloads");
+                        Object workloadsHeader = exchange.getIn().getHeader("workload");
                         List<String> workloadsList = ConversionUtils.toList(workloadsHeader);
                         Set<String> workloads = workloadsList != null ? new HashSet<>(workloadsList) : null;
 
                         Object complexityHeader = exchange.getIn().getHeader("complexity");
-                        String complexity = complexityHeader != null ? (String) complexityHeader : null;
+                        List<String> complexityList = ConversionUtils.toList(complexityHeader);
+                        Set<String> complexity = complexityList != null ? new HashSet<>(complexityList) : null;
 
-                        Object recommendedTargetsHeader = exchange.getIn().getHeader("recommendedTargetsIMS");
+                        Object recommendedTargetsHeader = exchange.getIn().getHeader("recommendedTargetIMS");
                         List<String> recommendedTargetsList = ConversionUtils.toList(recommendedTargetsHeader);
                         Set<String> recommendedTargets = recommendedTargetsList != null ? new HashSet<>(recommendedTargetsList) : null;
 
-                        Object flagsHeader = exchange.getIn().getHeader("flagsIMS");
+                        Object flagsHeader = exchange.getIn().getHeader("flagIMS");
                         List<String> flagsList = ConversionUtils.toList(flagsHeader);
                         Set<String> flags = flagsList != null ? new HashSet<>(flagsList) : null;
 
                         // create pagination header
                         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
-                        filterBean.setProvider(provider);
-                        filterBean.setDatacenter(datacenter);
-                        filterBean.setCluster(cluster);
-                        filterBean.setVmName(vmName);
-                        filterBean.setOsName(osName);
+                        filterBean.setProviders(provider);
+                        filterBean.setDatacenters(datacenter);
+                        filterBean.setClusters(cluster);
+                        filterBean.setVmNames(vmName);
+                        filterBean.setOsNames(osName);
                         filterBean.setWorkloads(workloads);
-                        filterBean.setComplexity(complexity);
+                        filterBean.setComplexities(complexity);
                         filterBean.setRecommendedTargetsIMS(recommendedTargets);
                         filterBean.setFlagsIMS(flags);
 

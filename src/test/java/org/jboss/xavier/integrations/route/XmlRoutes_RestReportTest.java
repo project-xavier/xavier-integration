@@ -245,20 +245,30 @@ public class XmlRoutes_RestReportTest {
         Long one = 1L;
         variables.put("id", one);
 
-        String provider = "my provider";
-        variables.put("provider", provider);
+        String provider1 = "my provider1";
+        variables.put("provider1", provider1);
+        String provider2 = "my provider2";
+        variables.put("provider2", provider2);
 
-        String cluster = "my cluster";
-        variables.put("cluster", cluster);
+        String cluster1 = "my cluster1";
+        variables.put("cluster1", cluster1);
+        String cluster2 = "my cluster2";
+        variables.put("cluster2", cluster2);
 
-        String datacenter = "my datacenter";
-        variables.put("datacenter", datacenter);
+        String datacenter1 = "my datacenter1";
+        variables.put("datacenter1", datacenter1);
+        String datacenter2 = "my datacenter2";
+        variables.put("datacenter2", datacenter2);
 
-        String vmName = "my vmName";
-        variables.put("vmName", vmName);
+        String vmName1 = "my vmName1";
+        variables.put("vmName1", vmName1);
+        String vmName2 = "my vmName2";
+        variables.put("vmName2", vmName2);
 
-        String osName = "my osName";
-        variables.put("osName", osName);
+        String osName1 = "my osName1";
+        variables.put("osName1", osName1);
+        String osName2 = "my osName2";
+        variables.put("osName2", osName2);
 
         String workload1 = "my workload1";
         variables.put("workload1", workload1);
@@ -275,22 +285,30 @@ public class XmlRoutes_RestReportTest {
         String flag2 = "my flag2";
         variables.put("flag2", flag2);
 
-        String complexity = "my complexity";
-        variables.put("complexity", complexity);
+        String complexity1 = "my complexity1";
+        variables.put("complexity1", complexity1);
+        String complexity2 = "my complexity2";
+        variables.put("complexity2", complexity2);
 
         StringBuilder sb = new StringBuilder(camel_context + "report/{id}/workload-inventory?")
-                .append("provider={provider}&")
-                .append("cluster={cluster}&")
-                .append("datacenter={datacenter}&")
-                .append("vmName={vmName}&")
-                .append("osName={osName}&")
-                .append("workloads={workload1}&")
-                .append("workloads={workload2}&")
-                .append("recommendedTargetsIMS={recommendedTarget1}&")
-                .append("recommendedTargetsIMS={recommendedTarget2}&")
-                .append("flagsIMS={flag1}&")
-                .append("flagsIMS={flag2}&")
-                .append("complexity={complexity}");
+                .append("provider={provider1}&")
+                .append("provider={provider2}&")
+                .append("cluster={cluster1}&")
+                .append("cluster={cluster2}&")
+                .append("datacenter={datacenter1}&")
+                .append("datacenter={datacenter2}&")
+                .append("vmName={vmName1}&")
+                .append("vmName={vmName2}&")
+                .append("osName={osName1}&")
+                .append("osName={osName2}&")
+                .append("workload={workload1}&")
+                .append("workload={workload2}&")
+                .append("recommendedTargetIMS={recommendedTarget1}&")
+                .append("recommendedTargetIMS={recommendedTarget2}&")
+                .append("flagIMS={flag1}&")
+                .append("flagIMS={flag2}&")
+                .append("complexity={complexity1}&")
+                .append("complexity={complexity2}");
 
         restTemplate.getForEntity(sb.toString(), String.class, variables);
 
@@ -298,15 +316,15 @@ public class XmlRoutes_RestReportTest {
         PageBean pageBean = new PageBean(0, 10);
         SortBean sortBean = new SortBean("id", false);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
-        filterBean.setProvider(provider);
-        filterBean.setCluster(cluster);
-        filterBean.setDatacenter(datacenter);
-        filterBean.setVmName(vmName);
-        filterBean.setOsName(osName);
+        filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));
+        filterBean.setClusters(new HashSet<>(Arrays.asList(cluster1, cluster2)));
+        filterBean.setDatacenters(new HashSet<>(Arrays.asList(datacenter1, datacenter2)));;
+        filterBean.setVmNames(new HashSet<>(Arrays.asList(vmName1, vmName2)));;
+        filterBean.setOsNames(new HashSet<>(Arrays.asList(osName1, osName2)));;
         filterBean.setWorkloads(new HashSet<>(Arrays.asList(workload1, workload2)));
         filterBean.setRecommendedTargetsIMS(new HashSet<>(Arrays.asList(recommendedTarget1, recommendedTarget2)));
         filterBean.setFlagsIMS(new HashSet<>(Arrays.asList(flag1, flag2)));
-        filterBean.setComplexity(complexity);
+        filterBean.setComplexities(new HashSet<>(Arrays.asList(complexity1, complexity2)));
 
         verify(workloadInventoryReportService).findByAnalysisId(one, pageBean, sortBean, filterBean);
         camelContext.stop();

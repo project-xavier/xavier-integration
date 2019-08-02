@@ -99,10 +99,10 @@
                 <param name="cluster" type="query" required="false" description="Define a filter" />
                 <param name="vmName" type="query" required="false" description="Define a filter" />
                 <param name="osName" type="query" required="false" description="Define a filter" />
-                <param name="workloads" type="query" required="false" description="Define a filter" />
+                <param name="workload" type="query" required="false" description="Define a filter" />
                 <param name="complexity" type="query" required="false" description="Define a filter" />
-                <param name="recommendedTargetsIMS" type="query" required="false" description="Define a filter" />
-                <param name="flagsIMS" type="query" required="false" description="Define a filter" />
+                <param name="recommendedTargetIMS" type="query" required="false" description="Define a filter" />
+                <param name="flagIMS" type="query" required="false" description="Define a filter" />
                 <route id="workload-inventory-report-get-details">
                     <to uri="direct:to-paginationBean"/>
                     <to uri="direct:to-sortBean"/>

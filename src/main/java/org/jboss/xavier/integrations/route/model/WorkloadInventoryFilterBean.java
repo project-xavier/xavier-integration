@@ -5,54 +5,54 @@ import java.util.Set;
 
 public class WorkloadInventoryFilterBean {
 
-    private String provider;
-    private String datacenter;
-    private String cluster;
-    private String vmName;
-    private String osName;
+    private Set<String> providers;
+    private Set<String> datacenters;
+    private Set<String> clusters;
+    private Set<String> vmNames;
+    private Set<String> osNames;
     private Set<String> workloads;
-    private String complexity;
+    private Set<String> complexities;
     private Set<String> recommendedTargetsIMS;
     private Set<String> flagsIMS;
 
-    public String getProvider() {
-        return provider;
+    public Set<String> getProviders() {
+        return providers;
     }
 
-    public void setProvider(String provider) {
-        this.provider = provider;
+    public void setProviders(Set<String> providers) {
+        this.providers = providers;
     }
 
-    public String getDatacenter() {
-        return datacenter;
+    public Set<String> getDatacenters() {
+        return datacenters;
     }
 
-    public void setDatacenter(String datacenter) {
-        this.datacenter = datacenter;
+    public void setDatacenters(Set<String> datacenters) {
+        this.datacenters = datacenters;
     }
 
-    public String getCluster() {
-        return cluster;
+    public Set<String> getClusters() {
+        return clusters;
     }
 
-    public void setCluster(String cluster) {
-        this.cluster = cluster;
+    public void setClusters(Set<String> clusters) {
+        this.clusters = clusters;
     }
 
-    public String getVmName() {
-        return vmName;
+    public Set<String> getVmNames() {
+        return vmNames;
     }
 
-    public void setVmName(String vmName) {
-        this.vmName = vmName;
+    public void setVmNames(Set<String> vmNames) {
+        this.vmNames = vmNames;
     }
 
-    public String getOsName() {
-        return osName;
+    public Set<String> getOsNames() {
+        return osNames;
     }
 
-    public void setOsName(String osName) {
-        this.osName = osName;
+    public void setOsNames(Set<String> osNames) {
+        this.osNames = osNames;
     }
 
     public Set<String> getWorkloads() {
@@ -63,12 +63,12 @@ public class WorkloadInventoryFilterBean {
         this.workloads = workloads;
     }
 
-    public String getComplexity() {
-        return complexity;
+    public Set<String> getComplexities() {
+        return complexities;
     }
 
-    public void setComplexity(String complexity) {
-        this.complexity = complexity;
+    public void setComplexities(Set<String> complexities) {
+        this.complexities = complexities;
     }
 
     public Set<String> getRecommendedTargetsIMS() {
@@ -92,19 +92,19 @@ public class WorkloadInventoryFilterBean {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WorkloadInventoryFilterBean that = (WorkloadInventoryFilterBean) o;
-        return Objects.equals(provider, that.provider) &&
-                Objects.equals(datacenter, that.datacenter) &&
-                Objects.equals(cluster, that.cluster) &&
-                Objects.equals(vmName, that.vmName) &&
-                Objects.equals(osName, that.osName) &&
+        return Objects.equals(providers, that.providers) &&
+                Objects.equals(datacenters, that.datacenters) &&
+                Objects.equals(clusters, that.clusters) &&
+                Objects.equals(vmNames, that.vmNames) &&
+                Objects.equals(osNames, that.osNames) &&
                 Objects.equals(workloads, that.workloads) &&
-                Objects.equals(complexity, that.complexity) &&
+                Objects.equals(complexities, that.complexities) &&
                 Objects.equals(recommendedTargetsIMS, that.recommendedTargetsIMS) &&
                 Objects.equals(flagsIMS, that.flagsIMS);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(provider, datacenter, cluster, vmName, osName, workloads, complexity, recommendedTargetsIMS, flagsIMS);
+        return Objects.hash(providers, datacenters, clusters, vmNames, osNames, workloads, complexities, recommendedTargetsIMS, flagsIMS);
     }
 }
