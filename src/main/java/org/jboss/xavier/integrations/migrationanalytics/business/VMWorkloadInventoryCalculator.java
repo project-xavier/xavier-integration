@@ -126,12 +126,10 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
 
     private String expandVersionInExpression(String path) {
         String replace = path.replace("{version}", manifestVersion);
-        System.out.printf("Replace %s : %s \n", path, replace);
         return replace;
     }
     
     private String expandParamsInPath(String path, Map vmStructMap) {
-        System.out.printf("Path : %s \n", path);
         Pattern p = Pattern.compile("\\{[a-zA-Z1-9_]+\\}");
         Matcher m = p.matcher(path);
         while (m.find() && vmStructMap != null) {
