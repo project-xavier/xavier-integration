@@ -135,16 +135,8 @@
             <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
             <to id="decisionserver" uri="direct:decisionserver"/>
             <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
-<!--            <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
-            <to uri="jpa:org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel" />-->
             <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
-            <bean ref="analysisModel" method="setInitialSavingsEstimationReportModel(${body})" />
-            <setBody>
-                <simple>${ref:analysisModel}</simple>
-            </setBody>
-            <log message="######## AnalysisModel ${body}" />
-            <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
-            <to uri="jpa:org.jboss.xavier.analytics.pojo.output.AnalysisModel" />
+            <bean ref="analysisService" method="setInitialSavingsEstimationReportModel(${body}, ${header.MA_metadata.analysisId})" />
         </route>
 
         <!--

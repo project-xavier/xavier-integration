@@ -1,12 +1,18 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
+import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Map;
 
 @Named
 public class VMWorkloadInventoryRoutes extends RouteBuilder {
+   @Inject
+    AnalysisService analysisService;
    
     @Override
     public void configure() {
@@ -28,9 +34,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
             .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
             .to("direct:decisionserver")
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel")
-            .transform().method("analysisModel", "addWorkloadInventoryReportModel(${body})")
-            .setBody().simple("${ref:analysisModel}")
-            .to("jpa:org.jboss.xavier.analytics.pojo.output.AnalysisModel");
-            
+            .process(e -> analysisService.addWorkloadInventoryReportModel(e.getIn().getBody(WorkloadInventoryReportModel.class), (Long) e.getIn().getHeader("MA_metadata", Map.class).get("analysisId")));
     }
 }

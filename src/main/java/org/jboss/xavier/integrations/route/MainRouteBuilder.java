@@ -16,12 +16,15 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -49,6 +52,9 @@ public class MainRouteBuilder extends RouteBuilder {
 
     @Value("#{'${insights.properties}'.split(',')}")
     protected List<String> insightsProperties;
+    
+    @Inject
+    private AnalysisService analysisService;
 
     public void configure() {
         getContext().setTracing(true);
@@ -57,8 +63,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("rest-upload")
                 .to("direct:upload");
 
-        from("direct:upload")
-                .id("direct-upload")
+        from("direct:upload").id("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .choice()
                     .when(isAllExpectedParamsExist())
@@ -73,12 +78,17 @@ public class MainRouteBuilder extends RouteBuilder {
                     .otherwise()
                       .process(httpError400())
                     .end();
+        
+        from("direct:analysis-model").id("analysys-model-creation")
+                .process(e -> analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
+                        (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
+                        (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName")))
+                .process(e-> e.getIn().getHeader("MA_metadata", Map.class).put("analysis_id", e.getIn().getBody(AnalysisModel.class).getId()));
 
-
-        from("direct:store")
-                .id("direct-store")
+        from("direct:store").id("direct-store")
                 .convertBodyTo(String.class)
                 .to("file:./upload")
+                .to("direct:analysis-model")
                 .to("direct:insights");
 
         from("direct:insights")
