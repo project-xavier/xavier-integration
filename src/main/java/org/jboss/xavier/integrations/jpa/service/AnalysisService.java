@@ -1,6 +1,8 @@
 package org.jboss.xavier.integrations.jpa.service;
 
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
+import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,5 +29,17 @@ public class AnalysisService
         analysisModel.setReportDescription(reportDescription);
         analysisModel.setReportName(reportName);
         return analysisRepository.saveAndFlush(analysisModel);
+    }
+    
+    public void setInitialSavingsEstimationReportModel(InitialSavingsEstimationReportModel reportModel, Long id) {
+        AnalysisModel analysisModel = findById(id);
+        analysisModel.setInitialSavingsEstimationReportModel(reportModel);
+        analysisRepository.saveAndFlush(analysisModel);
+    }
+    
+    public void addWorkloadInventoryReportModel(WorkloadInventoryReportModel reportModel, Long id) {
+        AnalysisModel analysisModel = findById(id);
+        analysisModel.addWorkloadInventoryReportModel(reportModel);
+        analysisRepository.saveAndFlush(analysisModel);        
     }
 }
