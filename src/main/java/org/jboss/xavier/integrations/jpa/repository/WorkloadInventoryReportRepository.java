@@ -31,13 +31,25 @@ public interface WorkloadInventoryReportRepository extends JpaRepository<Workloa
     @Query(value = "select distinct wir.complexity from WorkloadInventoryReportModel wir where wir.analysis.id = :analysisId")
     Set<String> findAllDistinctComplexitiesByAnalysisId(@Param("analysisId") Long analysisId);
 
-    @Query(value = "select distinct workloads from workload_inventory_report_model_workloads where workload_inventory_report_model_id = :analysisId", nativeQuery = true)
+    @Query(value = "SELECT DISTINCT workload_inventory_report_model_workloads.workloads " +
+            "FROM workload_inventory_report_model_workloads " +
+            "INNER JOIN workload_inventory_report_model ON workload_inventory_report_model_workloads.workload_inventory_report_model_id = workload_inventory_report_model.id " +
+            "INNER JOIN analysis_model ON workload_inventory_report_model.analysis_id = analysis_model.id " +
+            "WHERE analysis_model.id = :analysisId", nativeQuery = true)
     Set<String> findAllDistinctWorkloadsByAnalysisId(@Param("analysisId") Long analysisId);
 
-    @Query(value = "select distinct recommended_targetsims from workload_inventory_report_model_recommended_targetsims where workload_inventory_report_model_id = :analysisId", nativeQuery = true)
+    @Query(value = "SELECT DISTINCT workload_inventory_report_model_recommended_targetsims.recommended_targetsims " +
+            "FROM workload_inventory_report_model_recommended_targetsims " +
+            "INNER JOIN workload_inventory_report_model ON workload_inventory_report_model_recommended_targetsims.workload_inventory_report_model_id = workload_inventory_report_model.id " +
+            "INNER JOIN analysis_model ON workload_inventory_report_model.analysis_id = analysis_model.id " +
+            "WHERE analysis_model.id = :analysisId", nativeQuery = true)
     Set<String> findAllDistinctRecommendedTargetsIMSByAnalysisId(@Param("analysisId") Long analysisId);
 
-    @Query(value = "select distinct flagsims from workload_inventory_report_model_flagsims where workload_inventory_report_model_id = :analysisId", nativeQuery = true)
+    @Query(value = "SELECT DISTINCT workload_inventory_report_model_flagsims.flagsims " +
+            "FROM workload_inventory_report_model_flagsims " +
+            "INNER JOIN workload_inventory_report_model ON workload_inventory_report_model_flagsims.workload_inventory_report_model_id = workload_inventory_report_model.id " +
+            "INNER JOIN analysis_model ON workload_inventory_report_model.analysis_id = analysis_model.id " +
+            "WHERE analysis_model.id = :analysisId", nativeQuery = true)
     Set<String> findAllDistinctFlagsIMSByAnalysisId(@Param("analysisId") Long analysisId);
 
 }
