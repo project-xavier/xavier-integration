@@ -2,7 +2,7 @@ package org.jboss.xavier.integrations.jpa.service;
 
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
-import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
