@@ -20,4 +20,12 @@ public class AnalysisService
     {
         analysisRepository.delete(id);
     }
+    
+    public AnalysisModel buildAndSave(String reportName, String reportDescription, String payloadName) {
+        AnalysisModel analysisModel = new AnalysisModel();
+        analysisModel.setPayloadName(payloadName);
+        analysisModel.setReportDescription(reportDescription);
+        analysisModel.setReportName(reportName);
+        return analysisRepository.saveAndFlush(analysisModel);
+    }
 }

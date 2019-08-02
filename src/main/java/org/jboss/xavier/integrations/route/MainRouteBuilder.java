@@ -73,7 +73,9 @@ public class MainRouteBuilder extends RouteBuilder {
                     .otherwise()
                       .process(httpError400())
                     .end();
-
+        
+        from("direct:analysis-model").id("analysys-model-creation")
+                .transform().method("analysisService", "")
 
         from("direct:store")
                 .id("direct-store")
