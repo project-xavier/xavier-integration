@@ -142,7 +142,7 @@ public class EndToEndTest {
                                 return response()
                                         .withHeader("Content-Type", "text/xml")
                                         .withStatusCode(200)
-                                        .withBody(IOUtils.resourceToString("kie-server-response.xml", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()));
+                                        .withBody(IOUtils.resourceToString("kie-server-response-initialcostsavingsreport.xml", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()));
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 return notFoundResponse();
@@ -233,6 +233,9 @@ public class EndToEndTest {
         body.add("year3hypervisorpercentage", "10");
         body.add("growthratepercentage", "10");
         body.add("sourceproductindicator", "10");
+        body.add("reportName", "report name test");
+        body.add("reportDescription", "report desc test");
+        body.add("payloadName", "payloadname");
 
 
         return new HttpEntity<>(body, headers);

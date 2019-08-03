@@ -80,10 +80,12 @@ public class MainRouteBuilder extends RouteBuilder {
                     .end();
         
         from("direct:analysis-model").id("analysys-model-creation")
-                .process(e -> analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
-                        (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
-                        (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName")))
-                .process(e-> e.getIn().getHeader("MA_metadata", Map.class).put("analysis_id", e.getIn().getBody(AnalysisModel.class).getId()));
+                .process(e -> {
+                    AnalysisModel persistedModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
+                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
+                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("payloadName"));
+                    e.getIn().getHeader("MA_metadata", Map.class).put("analysis_id", persistedModel.getId());
+                });
 
         from("direct:store").id("direct-store")
                 .convertBodyTo(String.class)

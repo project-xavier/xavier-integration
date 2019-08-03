@@ -69,7 +69,7 @@ public class XmlRoutes_CallKieExtractReportsTest {
 
     @NotNull
     private ServiceResponse<ExecutionResults> getKieServiceResponse() throws IOException {
-        ServiceResponse<ExecutionResults> response = (ServiceResponse<ExecutionResults>) xStreamDataFormat.getXstream().fromXML(IOUtils.resourceToString("kie-server-response.xml", StandardCharsets.UTF_8, XmlRoutes_CallKieExtractReportsTest.class.getClassLoader()));
+        ServiceResponse<ExecutionResults> response = (ServiceResponse<ExecutionResults>) xStreamDataFormat.getXstream().fromXML(IOUtils.resourceToString("kie-server-response-initialcostsavingsreport.xml", StandardCharsets.UTF_8, XmlRoutes_CallKieExtractReportsTest.class.getClassLoader()));
         return response;
     }
 
