@@ -22,24 +22,25 @@ public class AnalysisService
     {
         analysisRepository.delete(id);
     }
-    
+
     public AnalysisModel buildAndSave(String reportName, String reportDescription, String payloadName) {
         AnalysisModel analysisModel = new AnalysisModel();
         analysisModel.setPayloadName(payloadName);
         analysisModel.setReportDescription(reportDescription);
         analysisModel.setReportName(reportName);
-        return analysisRepository.saveAndFlush(analysisModel);
+
+        return analysisRepository.save(analysisModel);
     }
-    
+
     public void setInitialSavingsEstimationReportModel(InitialSavingsEstimationReportModel reportModel, Long id) {
         AnalysisModel analysisModel = findById(id);
         analysisModel.setInitialSavingsEstimationReportModel(reportModel);
-        analysisRepository.saveAndFlush(analysisModel);
+        analysisRepository.save(analysisModel);
     }
-    
+
     public void addWorkloadInventoryReportModel(WorkloadInventoryReportModel reportModel, Long id) {
         AnalysisModel analysisModel = findById(id);
         analysisModel.addWorkloadInventoryReportModel(reportModel);
-        analysisRepository.saveAndFlush(analysisModel);        
+        analysisRepository.save(analysisModel);
     }
 }

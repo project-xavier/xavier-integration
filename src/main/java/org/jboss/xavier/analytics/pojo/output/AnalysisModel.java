@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Component
 public class AnalysisModel
 {
     @Id
@@ -31,7 +29,7 @@ public class AnalysisModel
     )
     private Long id;
 
-    @OneToOne(mappedBy = "analysis", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "analysis", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private InitialSavingsEstimationReportModel initialSavingsEstimationReportModel;
 
@@ -43,8 +41,6 @@ public class AnalysisModel
     private String reportDescription;
     private String payloadName;
     private String status;
-
-    public AnalysisModel() {}
 
     public Long getId() {
         return id;
