@@ -29,11 +29,11 @@ public class AnalysisModel
     )
     private Long id;
 
-    @OneToOne(mappedBy = "analysis", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "analysis", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
     private InitialSavingsEstimationReportModel initialSavingsEstimationReportModel;
 
-    @OneToMany(mappedBy = "analysis", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "analysis", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
     private List<WorkloadInventoryReportModel> workloadInventoryReportModels;
 

@@ -13,7 +13,7 @@ import java.util.Map;
 public class VMWorkloadInventoryRoutes extends RouteBuilder {
    @Inject
     AnalysisService analysisService;
-   
+
     @Override
     public void configure() {
         from("direct:calculate-vmworkloadinventory")
@@ -27,13 +27,12 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                     .to("log:error?showCaughtException=true&showStackTrace=true")
                     .setBody(simple("Exception on parsing Cloudforms file"))
                 .end();
-        
-        from ("jms:queue:vm-workload-inventory")
-                .id("extract-vmworkloadinventory")
+
+        from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
             .to("log:INFO?showBody=true&showHeaders=true")
             .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
-            .to("direct:decisionserver")
+            .to("direct:decisionserver").id("workload-decisionserver")
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel")
-            .process(e -> analysisService.addWorkloadInventoryReportModel(e.getIn().getBody(WorkloadInventoryReportModel.class), (Long) e.getIn().getHeader("MA_metadata", Map.class).get("analysisId")));
+            .process(e -> analysisService.addWorkloadInventoryReportModel(e.getIn().getBody(WorkloadInventoryReportModel.class), (Long) e.getIn().getHeader("MA_metadata", Map.class).get("analysis_id")));
     }
 }
