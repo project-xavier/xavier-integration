@@ -52,7 +52,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
     @Value("#{'${insights.properties}'.split(',')}")
     protected List<String> insightsProperties;
-    
+
     @Inject
     private AnalysisService analysisService;
 
@@ -78,12 +78,14 @@ public class MainRouteBuilder extends RouteBuilder {
                     .otherwise()
                       .process(httpError400())
                     .end();
-        
-        from("direct:analysis-model").id("analysys-model-creation")
-                .process(e -> analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
-                        (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
-                        (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName")))
-                .process(e-> e.getIn().getHeader("MA_metadata", Map.class).put("analysis_id", e.getIn().getBody(AnalysisModel.class).getId()));
+
+        from("direct:analysis-model").id("analysis-model-creation")
+                .process(e -> {
+                    AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
+                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
+                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("file"));
+                    e.getIn().getHeader("MA_metadata", Map.class).put("analysis_id", analysisModel.getId());
+                });
 
         from("direct:store").id("direct-store")
                 .convertBodyTo(String.class)
@@ -141,8 +143,8 @@ public class MainRouteBuilder extends RouteBuilder {
                 .multicast()
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory")
                 .end();
-                
-                
+
+
         from("direct:calculate-costsavings")
                 .id("calculate-costsavings")
                 .doTry()
@@ -211,7 +213,7 @@ public class MainRouteBuilder extends RouteBuilder {
             return zipContentType && zipExtension;
         };
     }
-    
+
     private boolean isZipContentType(Exchange exchange) {
         String mimetype = exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString();
         return "application/zip".equalsIgnoreCase(mimetype) || "application/gzip".equalsIgnoreCase(mimetype) || "application/tar+gz".equalsIgnoreCase(mimetype);
