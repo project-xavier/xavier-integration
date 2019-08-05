@@ -58,7 +58,7 @@ public class MainRouteBuilder_DirectStoreAnalysisModelTest {
         headers.put("Content-Type", "application/zip");
         headers.put(Exchange.FILE_NAME, "fichero.txt");
 
-        Map<String,Object> metadata = new HashMap<>();
+        Map<String,String> metadata = new HashMap<>();
         metadata.put("filename", "fichero.txt");
         metadata.put("dummy", "CID123");
         metadata.put("reportName", "CID123");
@@ -73,7 +73,7 @@ public class MainRouteBuilder_DirectStoreAnalysisModelTest {
 
         List<AnalysisModel> list = analysisRepository.findAll();
         assertThat(list.size()).isEqualTo(1);
-        assertThat(((Map) mockInsights.getExchanges().get(0).getIn().getHeader("MA_metadata")).get("analysis_id")).isEqualTo(list.get(0).getId());
+        assertThat(((Map) mockInsights.getExchanges().get(0).getIn().getHeader("MA_metadata")).get("analysis_id")).isEqualTo(list.get(0).getId().toString());
         camelContext.stop();
     }
 

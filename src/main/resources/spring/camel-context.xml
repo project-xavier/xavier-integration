@@ -131,11 +131,14 @@
             <from uri="jms:queue:uploadFormInputDataModel" />
             <log message="Message received" />
             <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
+            <setHeader headerName="analysis_id">
+                <simple>${body.analysis_id}</simple>
+            </setHeader>
             <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
             <to uri="direct:decisionserver" id="route-ma-decisionserver"/>
             <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
             <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
-            <bean ref="analysisService" method="setInitialSavingsEstimationReportModel(${body}, ${header.MA_metadata['analysis_id']})" />
+            <bean ref="analysisService" method="setInitialSavingsEstimationReportModel(${body}, ${header.analysis_id})" />
         </route>
 
         <!--

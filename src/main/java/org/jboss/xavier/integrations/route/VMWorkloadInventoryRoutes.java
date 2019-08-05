@@ -30,9 +30,10 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
 
         from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
             .to("log:INFO?showBody=true&showHeaders=true")
+            .setHeader(MainRouteBuilder.ANALYSIS_ID, simple("${body." + MainRouteBuilder.ANALYSIS_ID + "}"))
             .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
             .to("direct:decisionserver").id("workload-decisionserver")
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel")
-            .process(e -> analysisService.addWorkloadInventoryReportModel(e.getIn().getBody(WorkloadInventoryReportModel.class), (Long) e.getIn().getHeader("MA_metadata", Map.class).get("analysis_id")));
+            .process(e -> analysisService.addWorkloadInventoryReportModel(e.getIn().getBody(WorkloadInventoryReportModel.class), (Long) e.getIn().getHeader(MainRouteBuilder.ANALYSIS_ID)));
     }
 }
