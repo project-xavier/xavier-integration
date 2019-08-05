@@ -38,6 +38,8 @@ import java.util.Map;
 @Component
 public class MainRouteBuilder extends RouteBuilder {
 
+    public static String ANALYSIS_ID = "analysis_id";
+
     @Value("${insights.upload.host}")
     private String uploadHost;
 
@@ -83,8 +85,8 @@ public class MainRouteBuilder extends RouteBuilder {
                 .process(e -> {
                     AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
                             (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
-                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("file"));
-                    e.getIn().getHeader("MA_metadata", Map.class).put("analysis_id", analysisModel.getId());
+                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("filename"));
+                    e.getIn().getHeader("MA_metadata", Map.class).put(ANALYSIS_ID, analysisModel.getId());
                 });
 
         from("direct:store").id("direct-store")
@@ -200,7 +202,14 @@ public class MainRouteBuilder extends RouteBuilder {
         objectNode.put("filename", filename);
 
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,Object>) headers.get("MA_metadata")).get(e).toString()));
+        insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,String>) headers.get("MA_metadata")).get(e)));
+        // add the 'analysis_id' value
+        String analysisId = ((Map<String,String>) headers.get("MA_metadata")).get(ANALYSIS_ID);
+        if (analysisId == null)
+        {
+            throw new IllegalArgumentException("'" + ANALYSIS_ID + "' field not available but it's mandatory");
+        }
+        objectNode.put(ANALYSIS_ID, analysisId);
 
         return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
     }
