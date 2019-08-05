@@ -16,12 +16,15 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -50,6 +53,9 @@ public class MainRouteBuilder extends RouteBuilder {
     @Value("#{'${insights.properties}'.split(',')}")
     protected List<String> insightsProperties;
 
+    @Inject
+    private AnalysisService analysisService;
+
     public void configure() {
         getContext().setTracing(true);
 
@@ -57,8 +63,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("rest-upload")
                 .to("direct:upload");
 
-        from("direct:upload")
-                .id("direct-upload")
+        from("direct:upload").id("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .choice()
                     .when(isAllExpectedParamsExist())
@@ -74,11 +79,18 @@ public class MainRouteBuilder extends RouteBuilder {
                       .process(httpError400())
                     .end();
 
+        from("direct:analysis-model").id("analysis-model-creation")
+                .process(e -> {
+                    AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
+                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
+                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("file"));
+                    e.getIn().getHeader("MA_metadata", Map.class).put("analysis_id", analysisModel.getId());
+                });
 
-        from("direct:store")
-                .id("direct-store")
+        from("direct:store").id("direct-store")
                 .convertBodyTo(String.class)
                 .to("file:./upload")
+                .to("direct:analysis-model")
                 .to("direct:insights");
 
         from("direct:insights")
@@ -131,8 +143,8 @@ public class MainRouteBuilder extends RouteBuilder {
                 .multicast()
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory")
                 .end();
-                
-                
+
+
         from("direct:calculate-costsavings")
                 .id("calculate-costsavings")
                 .doTry()
@@ -201,7 +213,7 @@ public class MainRouteBuilder extends RouteBuilder {
             return zipContentType && zipExtension;
         };
     }
-    
+
     private boolean isZipContentType(Exchange exchange) {
         String mimetype = exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString();
         return "application/zip".equalsIgnoreCase(mimetype) || "application/gzip".equalsIgnoreCase(mimetype) || "application/tar+gz".equalsIgnoreCase(mimetype);
