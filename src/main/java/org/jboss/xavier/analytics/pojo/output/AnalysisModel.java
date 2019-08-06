@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -41,6 +42,8 @@ public class AnalysisModel
     private String reportDescription;
     private String payloadName;
     private String status;
+    private Date inserted;
+    private Date lastUpdate;
 
     public Long getId() {
         return id;
@@ -105,5 +108,21 @@ public class AnalysisModel
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Date getInserted() {
+        return inserted;
+    }
+
+    public void setInserted(Date inserted) {
+        this.inserted = inserted;
+    }
+
+    public Date getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(Date lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 }

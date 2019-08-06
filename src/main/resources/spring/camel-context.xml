@@ -45,7 +45,7 @@
                     <choice>
                         <when>
                             <simple>${header.summary} == 'false'</simple>
-                            <bean ref="initialSavingsEstimationReportService" method="findReports()" />
+                            <bean ref="analysisService" method="findReports(${header.page}, ${header.size})" />
                         </when>
                         <otherwise>
                             <bean ref="initialSavingsEstimationReportService" method="findReportSummary(${header.page}, ${header.size})" />
@@ -56,7 +56,7 @@
             <get uri="/{id}">
                 <description>Get the details of a report</description>
                 <route id="report-get-details">
-                    <bean ref="initialSavingsEstimationReportService" method="findReportSummaryById(${header.id})" />
+                    <bean ref="analysisService" method="findById(${header.id})" />
                 </route>
             </get>
             <delete uri="/{id}">
@@ -85,7 +85,7 @@
             <get uri="/{id}/initial-saving-estimation">
                 <description>Get the Initial Cost Saving report</description>
                 <route id="reports-get-details">
-                    <bean ref="initialSavingsEstimationReportService" method="findReportDetails(${header.id})" />
+                    <bean ref="initialSavingsEstimationReportService" method="findOneByAnalysisId(${header.id})" />
                 </route>
             </get>
             <get uri="/{id}/workload-inventory">

@@ -5,7 +5,13 @@ import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportMode
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+
+import java.util.Date;
 
 @Component
 public class AnalysisService
@@ -28,6 +34,8 @@ public class AnalysisService
         analysisModel.setPayloadName(payloadName);
         analysisModel.setReportDescription(reportDescription);
         analysisModel.setReportName(reportName);
+        analysisModel.setInserted(new Date());
+        analysisModel.setLastUpdate(new Date());
 
         return analysisRepository.save(analysisModel);
     }
@@ -42,5 +50,11 @@ public class AnalysisService
         AnalysisModel analysisModel = findById(id);
         analysisModel.addWorkloadInventoryReportModel(reportModel);
         analysisRepository.save(analysisModel);
+    }
+
+    public Page<AnalysisModel> findReports(int page, int size)
+    {
+        Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
+        return analysisRepository.findAll(pageable);
     }
 }
