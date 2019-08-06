@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: analytics-integration
+  name: ${project.fabric8.name}
 spec:
   ports:
     - name: http
@@ -9,6 +9,6 @@ spec:
       port: 8080
       targetPort: 8080
   selector:
-    deploymentconfig: analytics-integration
+    deploymentconfig: ${project.fabric8.name}
   type: ClusterIP
   sessionAffinity: None

@@ -67,6 +67,18 @@ Instructions from https://access.redhat.com/documentation/en-us/red_hat_fuse/7.3
 1. once the import has finished, click the `Build & Install` button from the upper right `Build` menu
 1. once the build has been successfully done, click on the `Deploy` button
 
+# Development
+
+## How to deploy local code to local OKD instance
+build an image with your local code: 
+
+`mvn -gs ./configuration/settings.xml clean package fabric8:deploy -DskipTests`
+
+once the it finishes, the deployment of a new integration pod to run the new image will start automatically in your OKD instance
+
+**NOTE: Do not use this method for deploying your code to production.**
+
+
 # Manage
 
 ## PostgreSQL

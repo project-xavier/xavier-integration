@@ -1,10 +1,10 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: analytics-integration
+  name: ${project.fabric8.name}
 spec:
   port:
     targetPort: http
   to:
     kind: Service
-    name: analytics-integration
+    name: ${project.fabric8.name}
