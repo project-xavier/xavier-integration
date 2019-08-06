@@ -101,20 +101,4 @@ public class MainRouteBuilder_RestUploadTest {
         // Then
         assertThat(headers).isEqualTo(headersExpected);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
