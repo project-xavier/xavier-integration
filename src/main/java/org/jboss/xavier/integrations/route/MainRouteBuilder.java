@@ -85,7 +85,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .process(e -> {
                     AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
                             (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
-                            (String) e.getIn().getHeader("filename"));
+                            (String) e.getIn().getHeader("CamelFileName"));
                     e.getIn().getHeader("MA_metadata", Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
                 });
 
