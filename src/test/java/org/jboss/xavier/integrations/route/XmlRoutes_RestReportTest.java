@@ -76,7 +76,7 @@ public class XmlRoutes_RestReportTest {
         restTemplate.getForEntity(camel_context + "report?summary={summary}", String.class, variables);
 
         //Then
-        verify(initialSavingsEstimationReportService).findReportSummary(anyInt(), anyInt());
+        verify(analysisService).findReports(0, 10);
         camelContext.stop();
     }
 

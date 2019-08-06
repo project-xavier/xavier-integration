@@ -48,7 +48,7 @@
                             <bean ref="analysisService" method="findReports(${header.page}, ${header.size})" />
                         </when>
                         <otherwise>
-                            <bean ref="initialSavingsEstimationReportService" method="findReportSummary(${header.page}, ${header.size})" />
+                            <bean ref="analysisService" method="findReports(${header.page}, ${header.size})" />
                         </otherwise>
                     </choice>
                 </route>

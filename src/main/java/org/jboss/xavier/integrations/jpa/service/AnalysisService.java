@@ -36,6 +36,7 @@ public class AnalysisService
         analysisModel.setReportName(reportName);
         analysisModel.setInserted(new Date());
         analysisModel.setLastUpdate(new Date());
+        analysisModel.setStatus("IN_PROGRESS");
 
         return analysisRepository.save(analysisModel);
     }
@@ -43,6 +44,8 @@ public class AnalysisService
     public void setInitialSavingsEstimationReportModel(InitialSavingsEstimationReportModel reportModel, Long id) {
         AnalysisModel analysisModel = findById(id);
         analysisModel.setInitialSavingsEstimationReportModel(reportModel);
+        // TODO remove this since it's just a temporary workaround to change the status
+        analysisModel.setStatus("CREATED");
         analysisRepository.save(analysisModel);
     }
 
