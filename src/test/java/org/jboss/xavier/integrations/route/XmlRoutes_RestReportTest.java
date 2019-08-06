@@ -74,7 +74,7 @@ public class XmlRoutes_RestReportTest {
         restTemplate.getForEntity(camel_context + "report", String.class);
 
         //Then
-        verify(analysisService).findReports(anyInt(), anyInt());
+        verify(analysisService).findReports(0, 10);
         camelContext.stop();
     }
 
