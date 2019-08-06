@@ -68,23 +68,14 @@ public class XmlRoutes_RouteMaTest {
         headers.put("Content-Type", "application/zip");
         headers.put(Exchange.FILE_NAME, "fichero.txt");
 
-        Map<String,Object> metadata = new HashMap<>();
-        metadata.put("filename", "fichero.txt");
-        metadata.put("dummy", "CID123");
-        metadata.put("reportName", "report name");
-        metadata.put("reportDescription", "report description");
-        metadata.put("file", "fichero.txt");
-        metadata.put("analysis_id", analysisModel.getId());
-        headers.put("MA_metadata", metadata);
-
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:route-ma", getInputDataModelSample(), headers);
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:route-ma", getInputDataModelSample(analysisModel.getId()), headers);
 
         assertThat(analysisService.findById(analysisModel.getId()).getInitialSavingsEstimationReportModel()).isNotNull();
 
         camelContext.stop();
     }
 
-    private UploadFormInputDataModel getInputDataModelSample() {
+    private UploadFormInputDataModel getInputDataModelSample(Long analysisId) {
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
         Integer hypervisor = 1;
@@ -94,6 +85,6 @@ public class XmlRoutes_RouteMaTest {
         Double year2hypervisorpercentage = 20D;
         Double year3hypervisorpercentage = 30D;
         Double growthratepercentage = 7D;
-        return new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
+        return new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage, analysisId);
     }
 }

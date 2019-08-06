@@ -49,7 +49,7 @@ public class MainRouteBuilder_DirectInsightsTest {
         String customerid = "CID90765";
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("dummy", customerid);
-        metadata.put("analysis_id", "30");
+        metadata.put("analysisId", "30");
 
         Map<String,Object> headers = new HashMap<>();
         headers.put("CamelFileName", filename);

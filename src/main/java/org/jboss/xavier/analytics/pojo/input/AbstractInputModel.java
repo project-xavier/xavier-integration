@@ -1,7 +1,12 @@
 package org.jboss.xavier.analytics.pojo.input;
 
-public abstract class AbstractInputModel
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+
+import java.io.Serializable;
+
+public abstract class AbstractInputModel implements Serializable
 {
+    @XStreamOmitField
     private Long analysisId;
 
     public AbstractInputModel() {}

@@ -38,7 +38,7 @@ import java.util.Map;
 @Component
 public class MainRouteBuilder extends RouteBuilder {
 
-    public static String ANALYSIS_ID = "analysis_id";
+    public static String ANALYSIS_ID = "analysisId";
 
     @Value("${insights.upload.host}")
     private String uploadHost;

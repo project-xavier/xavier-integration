@@ -80,14 +80,14 @@ public class MainRouteBuilder_DirectWorkloadInventoryTest {
         metadata.put("analysis_id", analysisModel.getId());
         headers.put("MA_metadata", metadata);
 
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:vm-workload-inventory", getInputDataModelSample(), headers);
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:vm-workload-inventory", getInputDataModelSample(analysisModel.getId()), headers);
 
         assertThat(analysisService.findById(analysisModel.getId()).getWorkloadInventoryReportModels().size()).isGreaterThan(0);
 
         camelContext.stop();
     }
 
-    private UploadFormInputDataModel getInputDataModelSample() {
+    private UploadFormInputDataModel getInputDataModelSample(Long analysisId) {
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
         Integer hypervisor = 1;
@@ -97,6 +97,6 @@ public class MainRouteBuilder_DirectWorkloadInventoryTest {
         Double year2hypervisorpercentage = 20D;
         Double year3hypervisorpercentage = 30D;
         Double growthratepercentage = 7D;
-        return new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage);
+        return new UploadFormInputDataModel(customerId, fileName, hypervisor, totaldiskspace, sourceproductindicator, year1hypervisorpercentage, year2hypervisorpercentage, year3hypervisorpercentage, growthratepercentage, analysisId);
     }
 }
