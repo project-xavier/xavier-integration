@@ -74,7 +74,7 @@ public class WorkloadInventoryReportModel
     @Column(name = VM_NAME)
     private String vmName;
 
-    @DataField(pos = 5, columnName = "OS name")
+    @DataField(pos = 5, columnName = "OS type")
     @Column(name = OS_NAME)
     private String osName;
 
