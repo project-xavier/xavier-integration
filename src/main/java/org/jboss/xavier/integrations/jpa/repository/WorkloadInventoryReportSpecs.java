@@ -90,7 +90,7 @@ public class WorkloadInventoryReportSpecs {
         }
 
         if (filterBean.getOsNames() != null && !filterBean.getOsNames().isEmpty()) {
-            specifications.add(getLikeSpecification("osName", filterBean.getOsNames()));
+            specifications.add(getEqualSpecification("osName", filterBean.getOsNames()));
         }
 
         if (filterBean.getWorkloads() != null && !filterBean.getWorkloads().isEmpty()) {

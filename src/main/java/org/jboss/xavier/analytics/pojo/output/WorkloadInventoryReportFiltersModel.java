@@ -11,6 +11,7 @@ public class WorkloadInventoryReportFiltersModel {
     private Set<String> complexities;
     private Set<String> recommendedTargetsIMS;
     private Set<String> flagsIMS;
+    private Set<String> osNames;
 
     public Set<String> getProviders() {
         return providers;
@@ -66,5 +67,13 @@ public class WorkloadInventoryReportFiltersModel {
 
     public void setFlagsIMS(Set<String> flagsIMS) {
         this.flagsIMS = flagsIMS;
+    }
+
+    public Set<String> getOsNames() {
+        return osNames;
+    }
+
+    public void setOsNames(Set<String> osNames) {
+        this.osNames = osNames;
     }
 }

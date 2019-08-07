@@ -52,4 +52,7 @@ public interface WorkloadInventoryReportRepository extends JpaRepository<Workloa
             "WHERE analysis_model.id = :analysisId", nativeQuery = true)
     Set<String> findAllDistinctFlagsIMSByAnalysisId(@Param("analysisId") Long analysisId);
 
+    @Query(value = "select distinct wir.osName from WorkloadInventoryReportModel wir where wir.analysis.id = :analysisId")
+    Set<String> findAllDistinctOsNamesByAnalysisId(@Param("analysisId") Long analysisId);
+
 }

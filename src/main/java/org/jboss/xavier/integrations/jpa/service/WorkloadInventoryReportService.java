@@ -75,6 +75,7 @@ public class WorkloadInventoryReportService
         filters.setWorkloads(reportRepository.findAllDistinctWorkloadsByAnalysisId(analysisId));
         filters.setRecommendedTargetsIMS(reportRepository.findAllDistinctRecommendedTargetsIMSByAnalysisId(analysisId));
         filters.setFlagsIMS(reportRepository.findAllDistinctFlagsIMSByAnalysisId(analysisId));
+        filters.setOsNames(reportRepository.findAllDistinctOsNamesByAnalysisId(analysisId));
 
         return filters;
     }
