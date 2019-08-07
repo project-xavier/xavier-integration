@@ -21,6 +21,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -30,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
 
@@ -305,11 +306,16 @@ public class XmlRoutes_RestReportTest {
         Map<String, Object> variables = new HashMap<>();
         Long one = 1L;
         variables.put("id", one);
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/csv" , HttpMethod.GET, null, String.class, variables);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("whatever", "this header should not be copied");
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/csv" , HttpMethod.GET, entity, String.class, variables);
 
         //Then
         verify(workloadInventoryReportService).findByAnalysisId(one);
         Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
+        Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
+        Assert.assertNull(response.getHeaders().get("whatever"));
         Assert.assertNotNull(response.getBody());
         camelContext.stop();
     }

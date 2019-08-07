@@ -31,10 +31,6 @@
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
-        <dataFormats>
-            <bindy id="workloadInventoryReportModelBindyDataformat" type="Csv" classType="org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel"/>
-        </dataFormats>
-
         <restConfiguration apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
             <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
@@ -109,16 +105,13 @@
                     <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id}, ${header.pageBean}, ${header.sortBean})" />
                 </route>
             </get>
-            <get uri="/{id}/workload-inventory/csv">
+            <get uri="/{id}/workload-inventory/csv" produces="text/csv">
                 <description>Get the Workload Inventory Reports in CSV format</description>
                 <route id="workload-inventory-report-get-details-as-csv">
                     <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id})" />
                     <to uri="direct:toWorkloadInventoryReportCsv" />
                     <setHeader headerName="Content-Disposition">
-                        <simple>attachment;filename=workloadInventory.csv</simple>
-                    </setHeader>
-                    <setHeader headerName="Content-Type">
-                        <constant>text/csv</constant>
+                        <simple>attachment;filename=workloadInventory_${header.id}.csv</simple>
                     </setHeader>
                 </route>
             </get>
@@ -136,7 +129,9 @@
 
         <route id="workload-inventory-report-model-to-csv">
             <from uri="direct:toWorkloadInventoryReportCsv" />
-            <marshal ref="workloadInventoryReportModelBindyDataformat" />
+            <marshal>
+                <bindy id="workloadInventoryReportModelBindyDataformat" type="Csv" classType="org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel"/>
+            </marshal>
         </route>
 
         <route id="call-kie-extract-reports" trace="true">
