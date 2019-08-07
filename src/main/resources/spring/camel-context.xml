@@ -20,8 +20,13 @@
         <property name="connectionFactory" ref="artemisConnectionFactory"/>
     </bean>
 
-    <bean id="restResponseHeaderRemover" class="org.apache.camel.impl.DefaultHeaderFilterStrategy">
+    <bean id="restResponseHeaderRemover" class="org.jboss.xavier.integrations.route.filter.RestHeaderFilterStrategy">
         <property name="outFilterPattern" value=".*" />
+        <property name="outAllowFilter">
+            <set>
+                <value>Content-Disposition</value>
+            </set>
+        </property>
     </bean>
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
@@ -105,6 +110,9 @@
                 <route id="workload-inventory-report-get-details-as-csv">
                     <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id})" />
                     <to uri="direct:toWorkloadInventoryReportCsv" />
+                    <setHeader headerName="Content-Disposition">
+                        <simple>attachment;filename=workloadInventory.csv</simple>
+                    </setHeader>
                     <setHeader headerName="Content-Type">
                         <constant>text/csv</constant>
                     </setHeader>
