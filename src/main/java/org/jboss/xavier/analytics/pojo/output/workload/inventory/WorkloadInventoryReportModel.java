@@ -114,7 +114,7 @@ public class WorkloadInventoryReportModel
     )
     private Set<String> recommendedTargetsIMS;
 
-    @DataField(pos = 13, columnName = "Flags")
+    @DataField(pos = 13, columnName = "Flags IMS")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             indexes = {
