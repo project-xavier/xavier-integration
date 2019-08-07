@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
-public class ToBeanRouter_DirectToPaginationBean {
+public class ToBeanRouter_DirectToPaginationBeanTest {
 
     @Autowired
     CamelContext camelContext;
