@@ -42,6 +42,10 @@ public class WorkloadInventoryReportService
         return result;
     };
 
+    public List<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId) {
+        return reportRepository.findByAnalysisId(analysisId);
+    }
+
     public Page<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean) {
         // Sort
         Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
