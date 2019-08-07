@@ -78,7 +78,7 @@ public class WorkloadInventoryReportModel
     @Column(name = OS_NAME)
     private String osName;
 
-    @DataField(pos = 6, columnName = "OS description")
+    @DataField(pos = 6, columnName = "Operating system description")
     private String osDescription;
 
     @DataField(pos = 7, precision = 2, columnName = "Disk space")
