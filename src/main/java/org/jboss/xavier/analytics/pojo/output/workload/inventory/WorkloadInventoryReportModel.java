@@ -99,7 +99,7 @@ public class WorkloadInventoryReportModel
     )
     private Set<String> workloads;
 
-    @DataField(pos = 11, columnName = "Complexity")
+    @DataField(pos = 11, columnName = "Effort")
     @Column(name = COMPLEXITY)
     private String complexity;
 
