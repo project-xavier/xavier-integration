@@ -90,7 +90,7 @@ public class WorkloadInventoryReportModel
     @DataField(pos = 9, columnName = "CPU cores")
     private Integer cpuCores;
 
-    @DataField(pos = 10, columnName = "Workloads")
+    @DataField(pos = 10, columnName = "Workload")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             indexes = {
