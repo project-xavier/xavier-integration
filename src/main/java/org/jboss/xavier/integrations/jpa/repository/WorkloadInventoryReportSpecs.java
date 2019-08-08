@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.jpa.repository;
 
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
 import org.springframework.data.jpa.domain.Specification;
@@ -64,8 +65,8 @@ public class WorkloadInventoryReportSpecs {
 
         // analysisId
         Specification<WorkloadInventoryReportModel> analysisIdSpec = (root, query, cb) -> {
-            Join<Object, Object> analysis = root.join("analysis");
-            return cb.equal(analysis.get("id"), analysis);
+            Join<WorkloadInventoryReportModel, AnalysisModel> analysis = root.join("analysis", JoinType.INNER);
+            return cb.equal(analysis.get("id"), analysisId);
         };
 
         // filterBean
