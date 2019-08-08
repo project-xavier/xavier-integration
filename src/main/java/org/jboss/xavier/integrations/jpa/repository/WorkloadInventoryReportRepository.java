@@ -10,11 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 import java.util.Set;
 
 @Repository
 public interface WorkloadInventoryReportRepository extends JpaRepository<WorkloadInventoryReportModel, Long>, JpaSpecificationExecutor<WorkloadInventoryReportModel>
 {
+    List<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId);
+
     Page<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId, Pageable pageable);
 
     Page<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId, Specification<WorkloadInventoryReportModel> specification, Pageable pageable);

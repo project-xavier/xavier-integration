@@ -1,7 +1,7 @@
 package org.jboss.xavier.integrations.jpa.service;
 
-import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportFiltersModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportSpecs;
 import org.jboss.xavier.integrations.route.model.PageBean;
@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -43,6 +44,24 @@ public class WorkloadInventoryReportService
         }
         return result;
     };
+
+    public List<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId) {
+        return reportRepository.findByAnalysisId(analysisId);
+    }
+
+    public Page<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean) {
+        // Sort
+        Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
+        String orderBy = mapToSupportedSortField.apply(sortBean.getOrderBy());
+        Sort sort = new Sort(sortDirection, orderBy);
+
+        // Pagination
+        int page = pageBean.getPage();
+        int size = pageBean.getSize();
+        Pageable pageable = new PageRequest(page, size, sort);
+
+        return reportRepository.findByAnalysisId(analysisId, pageable);
+    }
 
     public Page<WorkloadInventoryReportModel> findByAnalysisId(
             Long analysisId,

@@ -13,6 +13,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.jboss.xavier.utils.ConversionUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 public class ToBeanRouter extends RouteBuilder {

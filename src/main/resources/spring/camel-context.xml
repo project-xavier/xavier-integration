@@ -20,8 +20,13 @@
         <property name="connectionFactory" ref="artemisConnectionFactory"/>
     </bean>
 
-    <bean id="restResponseHeaderRemover" class="org.apache.camel.impl.DefaultHeaderFilterStrategy">
+    <bean id="restResponseHeaderRemover" class="org.jboss.xavier.integrations.route.filter.RestHeaderFilterStrategy">
         <property name="outFilterPattern" value=".*" />
+        <property name="outAllowFilter">
+            <set>
+                <value>Content-Disposition</value>
+            </set>
+        </property>
     </bean>
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
@@ -37,18 +42,18 @@
             <description>Report REST API</description>
             <get uri="/">
                 <description>Get the list of all the reports</description>
-                <param name="summary" type="query" defaultValue="true" required="false" description="Disable the output objects to have only the fields needed in the reports summary page setting the parameter 'summary=false'" />
                 <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" />
                 <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
+                <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
                 <route id="reports-get-all">
                     <log message="${headers} ${body}" />
                     <choice>
                         <when>
-                            <simple>${header.summary} == 'false'</simple>
-                            <bean ref="initialSavingsEstimationReportService" method="findReports()" />
+                            <simple>${header.filterText} == null</simple>
+                            <bean ref="analysisService" method="findReports(${header.page}, ${header.size})" />
                         </when>
                         <otherwise>
-                            <bean ref="initialSavingsEstimationReportService" method="findReportSummary(${header.page}, ${header.size})" />
+                            <bean ref="analysisService" method="findReports(${header.filterText}, ${header.page}, ${header.size})" />
                         </otherwise>
                     </choice>
                 </route>
@@ -56,7 +61,7 @@
             <get uri="/{id}">
                 <description>Get the details of a report</description>
                 <route id="report-get-details">
-                    <bean ref="initialSavingsEstimationReportService" method="findReportSummaryById(${header.id})" />
+                    <bean ref="analysisService" method="findById(${header.id})" />
                 </route>
             </get>
             <delete uri="/{id}">
@@ -85,13 +90,13 @@
             <get uri="/{id}/initial-saving-estimation">
                 <description>Get the Initial Cost Saving report</description>
                 <route id="reports-get-details">
-                    <bean ref="initialSavingsEstimationReportService" method="findReportDetails(${header.id})" />
+                    <bean ref="initialSavingsEstimationReportService" method="findOneByAnalysisId(${header.id})" />
                 </route>
             </get>
             <get uri="/{id}/workload-inventory">
                 <description>Get the Workload Inventory Reports</description>
-                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
-                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
+                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" />
+                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
                 <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
                 <param name="orderAsc" type="query" defaultValue="false" required="false" description="Define if sort is ascending" dataType="boolean" />
                 <param name="provider" type="query" required="false" description="Define a filter" />
@@ -108,6 +113,16 @@
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
+                </route>
+            </get>
+            <get uri="/{id}/workload-inventory/csv" produces="text/csv">
+                <description>Get the Workload Inventory Reports in CSV format</description>
+                <route id="workload-inventory-report-get-details-as-csv">
+                    <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id})" />
+                    <to uri="direct:toWorkloadInventoryReportCsv" />
+                    <setHeader headerName="Content-Disposition">
+                        <simple>attachment;filename=workloadInventory_${header.id}.csv</simple>
+                    </setHeader>
                 </route>
             </get>
             <get uri="/{id}/workload-inventory/available-filters">
@@ -127,6 +142,13 @@
                 </route>
             </get>
         </rest>
+
+        <route id="workload-inventory-report-model-to-csv">
+            <from uri="direct:toWorkloadInventoryReportCsv" />
+            <marshal>
+                <bindy id="workloadInventoryReportModelBindyDataformat" type="Csv" classType="org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel"/>
+            </marshal>
+        </route>
 
         <route id="call-kie-extract-reports" trace="true">
             <from uri="jms:queue:inputDataModel" />
@@ -151,19 +173,14 @@
             <from uri="jms:queue:uploadFormInputDataModel" />
             <log message="Message received" />
             <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
+            <setHeader headerName="analysisId">
+                <simple>${body.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.ANALYSIS_ID}}</simple>
+            </setHeader>
             <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
-            <to uri="direct:decisionserver"/>
+            <to uri="direct:decisionserver" id="route-ma-decisionserver"/>
             <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
-<!--            <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
-            <to uri="jpa:org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel" />-->
             <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
-            <bean ref="analysisModel" method="setInitialSavingsEstimationReportModel(${body})" />
-            <setBody>
-                <simple>${ref:analysisModel}</simple>
-            </setBody>
-            <log message="######## AnalysisModel ${body}" />
-            <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
-            <to uri="jpa:org.jboss.xavier.analytics.pojo.output.AnalysisModel" />
+            <bean ref="analysisService" method="setInitialSavingsEstimationReportModel(${body}, ${header.analysisId})" />
         </route>
 
         <!--
