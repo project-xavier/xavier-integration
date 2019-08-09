@@ -11,5 +11,6 @@ import java.util.Set;
 @Repository
 public interface SummaryRepository  extends JpaRepository<SummaryModel, Long>
 {
+    // this name has to match the value after the '.' in the @NamedNativeQuery annotation
     List<SummaryModel> calculateSummaryModels(@Param("analysisId") Long analysisId);
 }

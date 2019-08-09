@@ -49,8 +49,8 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 int attempts = 0;
                 for (; workloadInventoryReportModels.size() < expectedSize && attempts < maxAttempts; attempts++)
                 {
-                    Thread.sleep(delay);
                     logger.warning("workloadInventoryReportModels.size() < expectedSize since " + workloadInventoryReportModels.size()  + " < " + expectedSize);
+                    Thread.sleep(delay);
                     workloadInventoryReportModels  = workloadInventoryReportService.findByAnalysisId(Long.parseLong(analysisId));
                 }
                 if (maxAttempts == attempts) throw new CamelExecutionException("Unable to find the expected " + expectedSize + " WorkloadInventoryReportModels in the DB", exchange);
@@ -61,15 +61,18 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
             .id("calculate-workloadsummaryreportmodel")
             .process(exchange -> {
                 Long analysisId = Long.parseLong(((Map<String, String>) exchange.getIn().getHeader("MA_metadata")).get(MainRouteBuilder.ANALYSIS_ID));
-                List<SummaryModel> summaryModels = summaryService.calculateSummaryModels(analysisId);
-                // TODO Calculate the other parts of the Workload Summary Report
-
-                // Set the components into the WorkloadSummaryReportModel bean
                 WorkloadSummaryReportModel workloadSummaryReportModel = new WorkloadSummaryReportModel();
+
+                //retrieve each model one after the other
+                List<SummaryModel> summaryModels = summaryService.calculateSummaryModels(analysisId);
+                // Set the components into the WorkloadSummaryReportModel bean
                 workloadSummaryReportModel.setSummaryModels(summaryModels);
+
+                // TODO Calculate the other parts of the Workload Summary Report
+                // and set them into the workloadSummaryReportModel bean
+
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
-            })
-            .to("log:INFO?showBody=true&showHeaders=true");
+            });
     }
 }
