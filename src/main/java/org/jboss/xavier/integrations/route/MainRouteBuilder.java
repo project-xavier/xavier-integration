@@ -90,7 +90,6 @@ public class MainRouteBuilder extends RouteBuilder {
                 });
 
         from("direct:store").id("direct-store")
-                .convertBodyTo(String.class)
                 .to("file:./upload")
                 .to("direct:analysis-model")
                 .to("direct:insights");
@@ -190,8 +189,8 @@ public class MainRouteBuilder extends RouteBuilder {
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
 
-        String file = exchange.getIn().getBody(String.class);
-        multipartEntityBuilder.addPart("file", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
+        byte[] file = exchange.getIn().getBody(byte[].class);
+        multipartEntityBuilder.addPart("file", new ByteArrayBody(file, ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
