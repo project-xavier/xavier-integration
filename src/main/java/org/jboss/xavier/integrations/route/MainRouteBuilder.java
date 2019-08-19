@@ -90,7 +90,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 });
 
         from("direct:store").id("direct-store")
-                .convertBodyTo(String.class)
+       //         .convertBodyTo(String.class)
                 .to("file:./upload")
                 .to("direct:analysis-model")
                 .to("direct:insights");
