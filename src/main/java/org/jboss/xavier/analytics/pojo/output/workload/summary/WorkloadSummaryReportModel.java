@@ -53,6 +53,12 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<SummaryModel> summaryModels;
 
+    private ComplexityModel complexityModel;
+
+    private RecommendedTargetsIMSModel recommendedTargetsIMSModel;
+
+    private WorkloadModel workloadModel;
+
     public WorkloadSummaryReportModel() {}
 
     public Long getId() {
@@ -78,5 +84,29 @@ public class WorkloadSummaryReportModel
     public void setSummaryModels(List<SummaryModel> summaryModels) {
         summaryModels.forEach(model -> model.setReport(this));
         this.summaryModels = summaryModels;
+    }
+
+    public ComplexityModel getComplexityModel() {
+        return complexityModel;
+    }
+
+    public void setComplexityModel(ComplexityModel complexityModel) {
+        this.complexityModel = complexityModel;
+    }
+
+    public RecommendedTargetsIMSModel getRecommendedTargetsIMSModel() {
+        return recommendedTargetsIMSModel;
+    }
+
+    public void setRecommendedTargetsIMSModel(RecommendedTargetsIMSModel recommendedTargetsIMSModel) {
+        this.recommendedTargetsIMSModel = recommendedTargetsIMSModel;
+    }
+
+    public WorkloadModel getWorkloadModel() {
+        return workloadModel;
+    }
+
+    public void setWorkloadModel(WorkloadModel workloadModel) {
+        this.workloadModel = workloadModel;
     }
 }

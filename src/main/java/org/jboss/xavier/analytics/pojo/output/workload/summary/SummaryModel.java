@@ -57,6 +57,9 @@ public class SummaryModel
     private Integer clusters;
     private Long sockets;
     private Integer vms;
+    private Integer hosts;
+    private String product;
+    private String version;
 
     public SummaryModel() {}
 
@@ -113,6 +116,30 @@ public class SummaryModel
 
     public void setVms(Integer vms) {
         this.vms = vms;
+    }
+
+    public Integer getHosts() {
+        return hosts;
+    }
+
+    public void setHosts(Integer hosts) {
+        this.hosts = hosts;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     @Override
