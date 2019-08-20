@@ -1,5 +1,8 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
+import java.beans.Transient;
+
+
 public class ComplexityModel {
 
     private Long id;

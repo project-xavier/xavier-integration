@@ -17,6 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.transaction.Transactional;
+import java.beans.Transient;
 import java.util.List;
 
 @Entity
@@ -53,11 +54,9 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<SummaryModel> summaryModels;
 
-    private ComplexityModel complexityModel;
-
-    private RecommendedTargetsIMSModel recommendedTargetsIMSModel;
-
-    private WorkloadModel workloadModel;
+    transient ComplexityModel complexityModel;
+    transient RecommendedTargetsIMSModel recommendedTargetsIMSModel;
+    transient WorkloadModel workloadModel;
 
     public WorkloadSummaryReportModel() {}
 
@@ -86,26 +85,27 @@ public class WorkloadSummaryReportModel
         this.summaryModels = summaryModels;
     }
 
+    @Transient
     public ComplexityModel getComplexityModel() {
         return complexityModel;
     }
-
+    @Transient
     public void setComplexityModel(ComplexityModel complexityModel) {
         this.complexityModel = complexityModel;
     }
-
+    @Transient
     public RecommendedTargetsIMSModel getRecommendedTargetsIMSModel() {
         return recommendedTargetsIMSModel;
     }
-
+    @Transient
     public void setRecommendedTargetsIMSModel(RecommendedTargetsIMSModel recommendedTargetsIMSModel) {
         this.recommendedTargetsIMSModel = recommendedTargetsIMSModel;
     }
-
+    @Transient
     public WorkloadModel getWorkloadModel() {
         return workloadModel;
     }
-
+    @Transient
     public void setWorkloadModel(WorkloadModel workloadModel) {
         this.workloadModel = workloadModel;
     }
