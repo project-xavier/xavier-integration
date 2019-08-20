@@ -8,9 +8,11 @@ import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
+import org.jboss.xavier.integrations.jpa.repository.FlagRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadSummaryReportRepository;
 import org.junit.Assert;
@@ -23,11 +25,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @RunWith(CamelSpringBootRunner.class)
@@ -46,6 +44,9 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
     AnalysisRepository analysisRepository;
 
     @Autowired
+    FlagRepository flagRepository;
+
+    @Autowired
     WorkloadSummaryReportRepository workloadSummaryReportRepository;
 
     private Long analysisId;
@@ -54,6 +55,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
     @Before
     public void setup()
     {
+
         final AnalysisModel analysisModel = analysisRepository.save(new AnalysisModel());
         analysisId = analysisModel.getId();
         IntStream.range(0, collectionSize).forEach(value -> {
@@ -62,6 +64,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
             workloadInventoryReportModel.setProvider("Provider" + (value % 2));
             workloadInventoryReportModel.setCluster("Cluster" + (value % 3));
             workloadInventoryReportModel.setCpuCores(value % 4);
+            workloadInventoryReportModel.setOsName("OsName" + (value % 2));
+            workloadInventoryReportModel.setFlagsIMS(new HashSet<>(Arrays.asList("Flag" + (value % 2), "Flag" + (value % 3))));
             System.out.println("Saved WorkloadInventoryReportModel with ID #" + workloadInventoryReportRepository.save(workloadInventoryReportModel).getId());
         });
     }
@@ -105,6 +109,46 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertEquals(10L, summaryModels.get(1).getSockets(), 0);
         Assert.assertEquals(3, summaryModels.get(0).getVms(), 0);
         Assert.assertEquals(3, summaryModels.get(1).getVms(), 0);
+
+        camelContext.stop();
+    }
+
+    @Test
+    public void DirectCalculateVMWorkloadInventoryModel_ShouldPersistWorkloadFlagReportModel() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("calculate-workloadsummaryreportmodel");
+
+        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
+        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("MA_metadata", metadata);
+
+        Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
+            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        AnalysisModel analysisModel = analysisRepository.findOne(analysisId);
+        Assert.assertNotNull(analysisModel);
+        WorkloadSummaryReportModel workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
+        Assert.assertNotNull(workloadSummaryReportModel);
+
+        List<FlagModel> flags = flagRepository.findByReportAnalysisId(analysisId);
+        Assert.assertNotNull(flags);
+        Assert.assertEquals(6, flags.size());
+        Assert.assertEquals("Flag0", flags.get(0).getFlag());
+        Assert.assertEquals("OsName0", flags.get(0).getOsName());
+        Assert.assertEquals(3, (int) flags.get(0).getClusters());
+        Assert.assertEquals(3, (int) flags.get(0).getVms());
 
         camelContext.stop();
     }
