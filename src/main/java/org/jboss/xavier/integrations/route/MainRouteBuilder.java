@@ -90,13 +90,12 @@ public class MainRouteBuilder extends RouteBuilder {
                 });
 
         from("direct:store").id("direct-store")
+                .convertBodyTo(byte[].class) // we need this to fully read the stream and close it
                 .to("file:./upload")
                 .to("direct:analysis-model")
                 .to("direct:insights");
 
-        from("direct:insights")
-                .id("call-insights-upload-service")
-                .convertBodyTo(byte[].class)
+        from("direct:insights").id("call-insights-upload-service")
                 .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
