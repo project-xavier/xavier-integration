@@ -72,7 +72,7 @@ public class AnalysisService
     public Page<AnalysisModel> findReports(String filterText, int page, int size)
     {
         Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
-        return analysisRepository.findByReportNameIgnoreCaseContaining(filterText.trim(), pageable);
+        return analysisRepository.findFirstByReportNameIgnoreCaseContaining(filterText.trim(), pageable);
     }
 
 }
