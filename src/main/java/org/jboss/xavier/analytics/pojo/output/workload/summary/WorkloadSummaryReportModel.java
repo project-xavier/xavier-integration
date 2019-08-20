@@ -57,6 +57,7 @@ public class WorkloadSummaryReportModel
     transient ComplexityModel complexityModel;
     transient RecommendedTargetsIMSModel recommendedTargetsIMSModel;
     transient WorkloadModel workloadModel;
+    transient List<ScanRunModel> scanRuns;
 
     public WorkloadSummaryReportModel() {}
 
