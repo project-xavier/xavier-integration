@@ -96,11 +96,11 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:insights")
                 .id("call-insights-upload-service")
+                .convertBodyTo(byte[].class)
                 .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
                 .removeHeaders("Camel*")
-                .convertBodyTo(byte[].class)
                 .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                 .to("log:INFO?showBody=true&showHeaders=true")
                 .end();
