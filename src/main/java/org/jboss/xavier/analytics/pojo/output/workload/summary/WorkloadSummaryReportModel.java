@@ -56,7 +56,7 @@ public class WorkloadSummaryReportModel
 
     transient ComplexityModel complexityModel;
     transient RecommendedTargetsIMSModel recommendedTargetsIMSModel;
-    transient WorkloadModel workloadModel;
+    transient WorkloadsDetected workloadsDetected;
     transient List<ScanRunModel> scanRuns;
 
     public WorkloadSummaryReportModel() {}
@@ -86,28 +86,35 @@ public class WorkloadSummaryReportModel
         this.summaryModels = summaryModels;
     }
 
-    @Transient
     public ComplexityModel getComplexityModel() {
         return complexityModel;
     }
-    @Transient
+
     public void setComplexityModel(ComplexityModel complexityModel) {
         this.complexityModel = complexityModel;
     }
-    @Transient
+
     public RecommendedTargetsIMSModel getRecommendedTargetsIMSModel() {
         return recommendedTargetsIMSModel;
     }
-    @Transient
+
     public void setRecommendedTargetsIMSModel(RecommendedTargetsIMSModel recommendedTargetsIMSModel) {
         this.recommendedTargetsIMSModel = recommendedTargetsIMSModel;
     }
-    @Transient
-    public WorkloadModel getWorkloadModel() {
-        return workloadModel;
+
+    public WorkloadsDetected getWorkloadsDetected() {
+        return workloadsDetected;
     }
-    @Transient
-    public void setWorkloadModel(WorkloadModel workloadModel) {
-        this.workloadModel = workloadModel;
+
+    public void setWorkloadsDetected(WorkloadsDetected workloadsDetected) {
+        this.workloadsDetected = workloadsDetected;
+    }
+
+    public List<ScanRunModel> getScanRuns() {
+        return scanRuns;
+    }
+
+    public void setScanRuns(List<ScanRunModel> scanRuns) {
+        this.scanRuns = scanRuns;
     }
 }
