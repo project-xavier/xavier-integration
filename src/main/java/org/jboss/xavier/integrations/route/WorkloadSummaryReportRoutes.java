@@ -76,7 +76,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 // TODO Calculate the other parts of the Workload Summary Report
                 // and set them into the workloadSummaryReportModel bean
                 RecommendedTargetsIMSModel recommendedTargetsIMSModel = recommendedTargetsIMSService.calculateRecommendedTargetsIMS(analysisId);
-                workloadSummaryReportModel.setRecommendedTargetsIMS(recommendedTargetsIMSModel);
+                workloadSummaryReportModel.setRecommendedTargetsIMSModel(recommendedTargetsIMSModel);
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);

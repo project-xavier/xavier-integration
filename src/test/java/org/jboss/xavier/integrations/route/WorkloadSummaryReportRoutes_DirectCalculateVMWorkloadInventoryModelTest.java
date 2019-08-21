@@ -145,7 +145,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         WorkloadSummaryReportModel workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
         Assert.assertNotNull(workloadSummaryReportModel);
         workloadSummaryReportModel = workloadSummaryReportRepository.findOne(workloadSummaryReportModel.getId());
-        RecommendedTargetsIMSModel recommendedTargetsIMS = workloadSummaryReportModel.getRecommendedTargetsIMS();
+        RecommendedTargetsIMSModel recommendedTargetsIMS = workloadSummaryReportModel.getRecommendedTargetsIMSModel();
         Assert.assertNotNull(recommendedTargetsIMS);
         Assert.assertEquals(6, (int) recommendedTargetsIMS.getTotal());
         Assert.assertEquals(2, (int) recommendedTargetsIMS.getRhv());

@@ -56,7 +56,7 @@ public class WorkloadSummaryReportModel
 
     @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private RecommendedTargetsIMSModel recommendedTargetsIMS;
+    private RecommendedTargetsIMSModel recommendedTargetsIMSModel;
 
     public WorkloadSummaryReportModel() {}
 
@@ -85,12 +85,12 @@ public class WorkloadSummaryReportModel
         this.summaryModels = summaryModels;
     }
 
-    public RecommendedTargetsIMSModel getRecommendedTargetsIMS() {
-        return recommendedTargetsIMS;
+    public RecommendedTargetsIMSModel getRecommendedTargetsIMSModel() {
+        return recommendedTargetsIMSModel;
     }
 
-    public void setRecommendedTargetsIMS(RecommendedTargetsIMSModel recommendedTargetsIMS) {
-        recommendedTargetsIMS.setReport(this);
-        this.recommendedTargetsIMS = recommendedTargetsIMS;
+    public void setRecommendedTargetsIMSModel(RecommendedTargetsIMSModel recommendedTargetsIMSModel) {
+        recommendedTargetsIMSModel.setReport(this);
+        this.recommendedTargetsIMSModel = recommendedTargetsIMSModel;
     }
 }
