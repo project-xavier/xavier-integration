@@ -12,6 +12,7 @@ import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -95,15 +96,26 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("direct:analysis-model")
                 .to("direct:insights");
 
-        from("direct:insights")
-                .id("call-insights-upload-service")
-                .process(this::createMultipartToSendToInsights)
-                .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
-                .removeHeaders("Camel*")
-                .to("http4://" + uploadHost + "/api/ingress/v1/upload")
-                .to("log:INFO?showBody=true&showHeaders=true")
+        from("direct:insights").id("call-insights-upload-service")
+                .doTry()
+                    .process(this::createMultipartToSendToInsights)
+                    .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+                    .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
+                    .removeHeaders("Camel*")
+                    .to("http4://" + uploadHost + "/api/ingress/v1/upload")
+                    .choice()
+                        .when(header(Exchange.HTTP_RESPONSE_CODE).isNotEqualTo(HttpStatus.SC_OK))
+                            .to("direct:mark-analysis-fail").end()
+                .endDoTry()
+                .doCatch(Exception.class)
+                    .to("log:error?showCaughtException=true&showStackTrace=true")
+                    .to("direct:mark-analysis-fail")
                 .end();
+
+        from("direct:mark-analysis-fail").id("markAnalysisFail")
+                .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAIL.toString(), (Long) e.getIn().getHeader("MA_metadata", Map.class).get(ANALYSIS_ID)))
+                .end();
+
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
                 .id("kafka-upload-message")
