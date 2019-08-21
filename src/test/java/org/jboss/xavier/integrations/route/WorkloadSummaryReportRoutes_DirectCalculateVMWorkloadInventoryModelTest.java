@@ -55,15 +55,6 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
     @Before
     public void setup()
     {
-        List<Set<String>> workloads = new ArrayList<>(Arrays.asList(
-                new HashSet<>(Collections.singletonList("Workload0")),
-                new HashSet<>(Arrays.asList("Workload0", "Workload1")),
-                new HashSet<>(Arrays.asList("Workload0", "Workload1", "Workload3")),
-                new HashSet<>(Arrays.asList("Workload0", "Workload1")),
-                new HashSet<>(Collections.singletonList("Workload0")),
-                new HashSet<>()
-        ));
-
         final AnalysisModel analysisModel = analysisRepository.save(new AnalysisModel());
         analysisId = analysisModel.getId();
         IntStream.range(0, collectionSize).forEach(value -> {
@@ -73,7 +64,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
             workloadInventoryReportModel.setCluster("Cluster" + (value % 3));
             workloadInventoryReportModel.setCpuCores(value % 4);
             workloadInventoryReportModel.setOsName("OSName" + (value % 2));
-            workloadInventoryReportModel.setWorkloads(workloads.get(value));
+            workloadInventoryReportModel.setWorkloads(new HashSet<>(Arrays.asList("Workload" + (value % 2), "Workload" + (value % 3))));
 
             System.out.println("Saved WorkloadInventoryReportModel with ID #" + workloadInventoryReportRepository.save(workloadInventoryReportModel).getId());
         });
@@ -150,11 +141,10 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertNotNull(analysisModel);
         WorkloadSummaryReportModel workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
         Assert.assertNotNull(workloadSummaryReportModel);
-        workloadSummaryReportModel = workloadSummaryReportRepository.findOne(workloadSummaryReportModel.getId());
 
         List<WorkloadModel> workloads = workloadRepository.findByReportAnalysisId(analysisId);
         Assert.assertNotNull(workloads);
-        Assert.assertEquals(5, workloads.size());
+        Assert.assertEquals(6, workloads.size());
         Assert.assertEquals("Workload0", workloads.get(0).getWorkload());
         Assert.assertEquals("OSName0", workloads.get(0).getOsName());
         Assert.assertEquals(3, (int) workloads.get(0).getClusters());

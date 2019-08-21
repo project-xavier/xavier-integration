@@ -54,7 +54,7 @@ public class WorkloadSummaryReportModel
     private List<SummaryModel> summaryModels;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<WorkloadModel> workloads;
+    private List<WorkloadModel> workloadModels;
 
     public WorkloadSummaryReportModel() {}
 
@@ -83,12 +83,12 @@ public class WorkloadSummaryReportModel
         this.summaryModels = summaryModels;
     }
 
-    public List<WorkloadModel> getWorkloads() {
-        return workloads;
+    public List<WorkloadModel> getWorkloadModels() {
+        return workloadModels;
     }
 
-    public void setWorkloads(List<WorkloadModel> workloads) {
-        workloads.forEach(model -> model.setReport(this));
-        this.workloads = workloads;
+    public void setWorkloadModels(List<WorkloadModel> workloadModels) {
+        workloadModels.forEach(model -> model.setReport(this));
+        this.workloadModels = workloadModels;
     }
 }
