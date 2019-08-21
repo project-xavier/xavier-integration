@@ -55,7 +55,6 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
     @Before
     public void setup()
     {
-
         final AnalysisModel analysisModel = analysisRepository.save(new AnalysisModel());
         analysisId = analysisModel.getId();
         IntStream.range(0, collectionSize).forEach(value -> {

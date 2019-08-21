@@ -76,7 +76,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 // TODO Calculate the other parts of the Workload Summary Report
                 // and set them into the workloadSummaryReportModel bean
                 List<FlagModel> flagModels = flagService.calculateFlagModels(analysisId);
-                workloadSummaryReportModel.setFlags(flagModels);
+                workloadSummaryReportModel.setFlagModels(flagModels);
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
