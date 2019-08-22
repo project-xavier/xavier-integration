@@ -30,8 +30,8 @@ public class AnalysisServiceTest {
       AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName");
       assertThat(analysisModel).isNotNull();
       assertThat(analysisModel.getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.IN_PROGRESS.toString());
-      service.updateStatus(AnalysisService.STATUS.FAIL.toString(), analysisModel.getId());
+      service.updateStatus(AnalysisService.STATUS.FAILED.toString(), analysisModel.getId());
       analysisModel = service.findById(analysisModel.getId());
-      assertThat(analysisModel.getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.FAIL.toString());
+      assertThat(analysisModel.getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.FAILED.toString());
     }
 }

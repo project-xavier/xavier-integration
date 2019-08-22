@@ -18,7 +18,7 @@ import java.util.Date;
 public class AnalysisService
 {
     public enum STATUS {
-        FAIL,
+        FAILED,
         IN_PROGRESS,
         CREATED
     }

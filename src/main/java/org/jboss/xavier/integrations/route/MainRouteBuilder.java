@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.camel.builder.PredicateBuilder.not;
+
 /**
  * A Camel Java8 DSL Router
  */
@@ -104,8 +106,9 @@ public class MainRouteBuilder extends RouteBuilder {
                     .removeHeaders("Camel*")
                     .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                     .choice()
-                        .when(header(Exchange.HTTP_RESPONSE_CODE).isNotEqualTo(HttpStatus.SC_OK))
-                            .to("direct:mark-analysis-fail").end()
+                        .when(not(isResponseSuccess()))
+                            .to("direct:mark-analysis-fail")
+                            .end()
                 .endDoTry()
                 .doCatch(Exception.class)
                     .to("log:error?showCaughtException=true&showStackTrace=true")
@@ -113,7 +116,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .end();
 
         from("direct:mark-analysis-fail").id("markAnalysisFail")
-                .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAIL.toString(), (Long) e.getIn().getHeader("MA_metadata", Map.class).get(ANALYSIS_ID)))
+                .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader("MA_metadata", Map.class).get(ANALYSIS_ID))))
                 .end();
 
 
@@ -129,9 +132,20 @@ public class MainRouteBuilder extends RouteBuilder {
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setBody(constant(""))
-                .to("http4://oldhost")
-                .removeHeader("Exchange.HTTP_URI")
-                .to("direct:unzip-file");
+                .doTry()
+                    .to("http4://oldhost")
+                    .choice()
+                        .when(isResponseSuccess())
+                            .removeHeader("Exchange.HTTP_URI")
+                            .to("direct:unzip-file")
+                            .log("File ${header.CamelFileName} success")
+                        .otherwise()
+                            .to("direct:mark-analysis-fail")
+                .endDoTry()
+                .doCatch(Exception.class)
+                    .to("log:error?showCaughtException=true&showStackTrace=true")
+                    .to("direct:mark-analysis-fail")
+                .end();
 
         from("direct:unzip-file")
                 .id("unzip-file")
@@ -161,15 +175,14 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:calculate-costsavings")
                 .id("calculate-costsavings")
-                .doTry()
-                    .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
-                    .log("Message to send to AMQ : ${body}")
-                    .to("jms:queue:uploadFormInputDataModel")
-                .endDoTry()
-                .doCatch(Exception.class)
-                    .to("log:error?showCaughtException=true&showStackTrace=true")
-                    .setBody(simple("Exception on parsing Cloudforms file"))
+                .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
+                .log("Message to send to AMQ : ${body}")
+                .to("jms:queue:uploadFormInputDataModel")
                 .end();
+    }
+
+    private Predicate isResponseSuccess() {
+        return header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(HttpStatus.SC_OK);
     }
 
     public Map<String,String> extractMAmetadataHeaderFromIdentity(FilePersistedNotification filePersistedNotification) throws IOException {
@@ -177,7 +190,8 @@ public class MainRouteBuilder extends RouteBuilder {
         JsonNode node= new ObjectMapper().reader().readTree(identity_json);
 
         Map header = new HashMap<String, String>();
-        node.get("identity").get("internal").fieldNames().forEachRemaining(field -> header.put(field, node.get("identity").get("internal").get(field).asText()));
+        JsonNode internalNode = node.get("identity").get("internal");
+        internalNode.fieldNames().forEachRemaining(field -> header.put(field, internalNode.get(field).asText()));
         return header;
     }
 
@@ -210,18 +224,19 @@ public class MainRouteBuilder extends RouteBuilder {
     public String getRHIdentity(String x_rh_identity_base64, String filename, Map<String, Object> headers) throws IOException {
         JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
 
-        ObjectNode objectNode = (ObjectNode) node.get("identity").get("internal");
-        objectNode.put("filename", filename);
+        ObjectNode internalNode = (ObjectNode) node.get("identity").get("internal");
+        internalNode.put("filename", filename);
 
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,String>) headers.get("MA_metadata")).get(e)));
+        Map<String, String> ma_metadataCasted = (Map<String, String>) headers.get("MA_metadata");
+        insightsProperties.forEach(e -> internalNode.put(e, ma_metadataCasted.get(e)));
         // add the 'analysis_id' value
-        String analysisId = ((Map<String,String>) headers.get("MA_metadata")).get(ANALYSIS_ID);
+        String analysisId = ma_metadataCasted.get(ANALYSIS_ID);
         if (analysisId == null)
         {
             throw new IllegalArgumentException("'" + ANALYSIS_ID + "' field not available but it's mandatory");
         }
-        objectNode.put(ANALYSIS_ID, analysisId);
+        internalNode.put(ANALYSIS_ID, analysisId);
 
         return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
     }
