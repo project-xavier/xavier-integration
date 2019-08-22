@@ -10,12 +10,14 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.integrations.DecisionServerHelper;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -25,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -38,6 +42,9 @@ public class XmlRoutes_RouteMaTest {
 
     @Inject
     AnalysisService analysisService;
+
+    @SpyBean
+    DecisionServerHelper decisionServerHelper;
 
     @Before
     public void setup() throws Exception {
@@ -74,6 +81,32 @@ public class XmlRoutes_RouteMaTest {
 
         camelContext.stop();
     }
+
+    @Test
+    public void xmlroutes_directInputDataModel_WrongTypeInputDataModelGiven_ShouldMarkAnalysisAsFailed() throws Exception
+    {
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name");
+        assertThat(analysisModel.getInitialSavingsEstimationReportModel()).isNull();
+
+        doThrow(new IllegalArgumentException("Dummy error")).when(decisionServerHelper).extractInitialSavingsEstimationReportModel(any());
+
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        camelContext.start();
+        camelContext.startRoute("route-ma");
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("Content-Type", "application/zip");
+        headers.put(Exchange.FILE_NAME, "fichero.txt");
+
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:route-ma", getInputDataModelSample(analysisModel.getId()), headers);
+
+        assertThat(analysisService.findById(analysisModel.getId()).getStatus()).isEqualToIgnoringCase("FAILED");
+
+        camelContext.stop();
+    }
+
+
 
     private UploadFormInputDataModel getInputDataModelSample(Long analysisId) {
         String customerId = "CID123";

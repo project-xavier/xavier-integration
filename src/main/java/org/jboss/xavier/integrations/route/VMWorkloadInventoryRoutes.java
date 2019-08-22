@@ -3,11 +3,8 @@ package org.jboss.xavier.integrations.route;
 import org.apache.camel.builder.RouteBuilder;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
-import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
 
-import java.util.List;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -19,20 +16,13 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
 
     @Override
     public void configure() {
-        from("direct:calculate-vmworkloadinventory")
-                .id("calculate-vmworkloadinventory")
-                .onCompletion().onCompleteOnly()
-                .id("onCompletion-vmworkloadinventory")
-                .to("direct:aggregate-vmworkloadinventory")
+        from("direct:calculate-vmworkloadinventory").id("calculate-vmworkloadinventory")
+                .onCompletion().onCompleteOnly().id("onCompletion-vmworkloadinventory")
+                    .to("direct:aggregate-vmworkloadinventory")
                 .end()
-                .doTry()
-                    .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
-                    .split(body())
-                    .to("jms:queue:vm-workload-inventory")
-                .endDoTry()
-                .doCatch(Exception.class)
-                    .to("log:error?showCaughtException=true&showStackTrace=true")
-                    .setBody(simple("Exception on parsing Cloudforms file"))
+                .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
+                .split(body())
+                .to("jms:queue:vm-workload-inventory")
                 .end();
 
         from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
