@@ -1,6 +1,7 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
@@ -54,10 +55,23 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<SummaryModel> summaryModels;
 
-    transient ComplexityModel complexityModel;
-    transient RecommendedTargetsIMSModel recommendedTargetsIMSModel;
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private ComplexityModel complexityModel;
+
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private RecommendedTargetsIMSModel recommendedTargetsIMSModel;
+
+    // Models are still no defined
     transient WorkloadsDetected workloadsDetected;
     transient List<ScanRunModel> scanRuns;
+
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<WorkloadModel> workloadModels;
+
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<FlagModel> flagModels;
 
     public WorkloadSummaryReportModel() {}
 
@@ -100,6 +114,22 @@ public class WorkloadSummaryReportModel
 
     public void setRecommendedTargetsIMSModel(RecommendedTargetsIMSModel recommendedTargetsIMSModel) {
         this.recommendedTargetsIMSModel = recommendedTargetsIMSModel;
+    }
+
+    public List<WorkloadModel> getWorkloadModels() {
+        return workloadModels;
+    }
+
+    public List<FlagModel> getFlagModels() {
+        return flagModels;
+    }
+
+    public void setFlagModels(List<FlagModel> flagModels) {
+        this.flagModels = flagModels;
+    }
+
+    public void setWorkloadModels(List<WorkloadModel> workloadModels) {
+        this.workloadModels = workloadModels;
     }
 
     public WorkloadsDetected getWorkloadsDetected() {

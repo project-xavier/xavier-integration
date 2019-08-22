@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import javax.persistence.*;
 
 @Entity
-public class RecommendedTargetsIMSModel {
-
+public class FlagModel {
     @Id
     private Long id;
 
@@ -15,10 +14,10 @@ public class RecommendedTargetsIMSModel {
     @JsonBackReference
     private WorkloadSummaryReportModel report;
 
-    private Integer total;
-    private Integer rhv;
-    private Integer rhel;
-    private Integer osp;
+    private String flag;
+    private String osName;
+    private Integer clusters;
+    private Integer vms;
 
     public Long getId() {
         return id;
@@ -36,35 +35,36 @@ public class RecommendedTargetsIMSModel {
         this.report = report;
     }
 
-    public Integer getTotal() {
-        return total;
+    public String getFlag() {
+        return flag;
     }
 
-    public void setTotal(Integer total) {
-        this.total = total;
+    public void setFlag(String flag) {
+        this.flag = flag;
     }
 
-    public Integer getRhv() {
-        return rhv;
+    public String getOsName() {
+        return osName;
     }
 
-    public void setRhv(Integer rhv) {
-        this.rhv = rhv;
+    public void setOsName(String osName) {
+        this.osName = osName;
     }
 
-    public Integer getRhel() {
-        return rhel;
+    public Integer getClusters() {
+        return clusters;
     }
 
-    public void setRhel(Integer rhel) {
-        this.rhel = rhel;
+    public void setClusters(Integer clusters) {
+        this.clusters = clusters;
     }
 
-    public Integer getOsp() {
-        return osp;
+    public Integer getVms() {
+        return vms;
     }
 
-    public void setOsp(Integer osp) {
-        this.osp = osp;
+    public void setVms(Integer vms) {
+        this.vms = vms;
     }
+
 }

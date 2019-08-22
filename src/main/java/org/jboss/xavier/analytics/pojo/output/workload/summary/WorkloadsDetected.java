@@ -3,20 +3,10 @@ package org.jboss.xavier.analytics.pojo.output.workload.summary;
 public class WorkloadsDetected {
     private Long id;
 
-
     private Integer sles;
     private Integer oel;
     private Integer rhel;
     private Integer windows;
-
-    public WorkloadsDetected() {}
-
-    public WorkloadsDetected(Integer sles, Integer oel, Integer rhel, Integer windows) {
-        this.sles = sles;
-        this.oel = oel;
-        this.rhel = rhel;
-        this.windows = windows;
-    }
 
     public Integer getSles() {
         return sles;
