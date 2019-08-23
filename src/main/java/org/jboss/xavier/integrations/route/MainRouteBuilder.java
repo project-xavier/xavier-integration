@@ -107,8 +107,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     .to("http4://" + uploadHost + "/api/ingress/v1/upload")
                     .choice()
                         .when(not(isResponseSuccess()))
-                            .to("direct:mark-analysis-fail")
-                            .end()
+                            .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
                 .endDoTry()
                 .doCatch(Exception.class)
                     .to("log:error?showCaughtException=true&showStackTrace=true")
@@ -117,7 +116,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:mark-analysis-fail").id("markAnalysisFail")
                 .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader("MA_metadata", Map.class).get(ANALYSIS_ID))))
-                .end();
+                .stop();
 
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
@@ -140,7 +139,7 @@ public class MainRouteBuilder extends RouteBuilder {
                             .to("direct:unzip-file")
                             .log("File ${header.CamelFileName} success")
                         .otherwise()
-                            .to("direct:mark-analysis-fail")
+                            .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Download Service")
                 .endDoTry()
                 .doCatch(Exception.class)
                     .to("log:error?showCaughtException=true&showStackTrace=true")

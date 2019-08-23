@@ -63,6 +63,13 @@ public class MainRouteBuilder_DirectInsightsTest {
         String rhidentity = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";
         headers.put("x-rh-identity", Base64.getEncoder().encodeToString(rhidentity.getBytes(StandardCharsets.UTF_8)));
 
+        camelContext.getRouteDefinition("call-insights-upload-service").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() {
+                weaveByToUri("http4:.*").after().setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"));
+            }
+        });
+
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockInsightsServiceHttp4.expectedMessageCount(1);

@@ -193,6 +193,13 @@
             </marshal>
             <to id="log-request" uri="log:INFO?showBody=true&amp;showHeaders=true" />
             <to id="route-to-decision-server-rest" uri="http://{{service:{{kieserver.service}}:{{kieserver.devel-service}}}}/{{kieserver.path}}?authMethod=Basic&amp;authUsername={{kieserver.username}}&amp;authPassword={{kieserver.password}}"/>
+            <choice>
+                <when>
+                    <simple>${header.CamelHttpResponseCode} != 200</simple>
+                    <throwException exceptionType="org.apache.commons.httpclient.HttpException" message="Unsuccessful response from KIE Server"/>
+                    <stop/>
+                </when>
+            </choice>
             <!-- Unmarshal the response -->
             <unmarshal id="route-unmarshal">
                 <xstream/>

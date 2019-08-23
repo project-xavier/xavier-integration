@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|jms:queue:vm-workload-inventory")
+@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|jms:queue:vm-workload-inventory|direct:aggregate-vmworkloadinventory")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
@@ -106,7 +106,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
         metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
         metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, 7L);
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, "7");
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
