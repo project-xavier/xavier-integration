@@ -28,6 +28,7 @@ import javax.activation.DataHandler;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,8 @@ public class MainRouteBuilder extends RouteBuilder {
 
     @Inject
     private AnalysisService analysisService;
+
+    private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
     public void configure() {
         getContext().setTracing(true);
@@ -94,7 +97,6 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:store").id("direct-store")
                 .convertBodyTo(byte[].class) // we need this to fully read the stream and close it
-                .to("file:./upload")
                 .to("direct:analysis-model")
                 .to("direct:insights");
 
@@ -181,7 +183,7 @@ public class MainRouteBuilder extends RouteBuilder {
     }
 
     private Predicate isResponseSuccess() {
-        return header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(HttpStatus.SC_OK);
+        return e -> httpSuccessCodes.contains(e.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class));
     }
 
     public Map<String,String> extractMAmetadataHeaderFromIdentity(FilePersistedNotification filePersistedNotification) throws IOException {
