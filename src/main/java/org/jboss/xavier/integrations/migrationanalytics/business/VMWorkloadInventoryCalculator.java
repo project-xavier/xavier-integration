@@ -37,6 +37,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     private static final String PRODUCTNAMEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.productNamePath";
     private static final String DISKSIZEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.diskSizePath";
     private static final String EMSCLUSTERIDPATH = "cloudforms.manifest.{version}.vmworkloadinventory.emsClusterIdPath";
+    private static final String VMEMSCLUSTERPATH = "cloudforms.manifest.{version}.vmworkloadinventory.vmEmsClusterPath";
     private static final String VMDISKSFILENAMESPATH = "cloudforms.manifest.{version}.vmworkloadinventory.vmDiskFileNamesPath";
     private static final String SYSTEMSERVICESNAMESPATH = "cloudforms.manifest.{version}.vmworkloadinventory.systemServicesNamesPath";
     private static final String FILESCONTENTPATH = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPath";
@@ -65,6 +66,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();
         model.setProvider(readValueFromExpandedEnvVarPath(PROVIDERPATH, vmStructMap));
 
+        vmStructMap.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, vmStructMap));
         vmStructMap.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, vmStructMap));
         model.setDatacenter(readValueFromExpandedEnvVarPath(DATACENTERPATH, vmStructMap));
 
