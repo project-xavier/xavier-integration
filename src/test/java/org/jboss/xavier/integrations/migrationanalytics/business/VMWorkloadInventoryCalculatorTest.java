@@ -61,7 +61,9 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setSystemServicesNames(Arrays.asList("{02B0078E-2148-45DD-B7D3-7E37AAB3B31D}","xmlprov","wudfsvc"));
         expectedModel.setVmDiskFilenames(Arrays.asList("[NFS_Datastore] dev-windows-server-2008/dev-windows-server-2008.vmdk"));
         expectedModel.setAnalysisId(analysisId);
-
+        expectedModel.setHost_name("esx13.v2v.bos.redhat.com");
+        expectedModel.setVersion("6.5");
+        expectedModel.setProduct("VMware vCenter");
         HashMap<String, String> files = new HashMap<>();
         files.put("/root/.bash_profile","# .bash_profile\n\n# Get the aliases and functions\nif [ -f ~/.bashrc ]; then\n\t. ~/.bashrc\nfi\n\n# User specific environment and startup programs\n\nPATH=$PATH:$HOME/bin\nexport PATH\nexport JAVA_HOME=/usr/java/jdk1.5.0_07/bin/java\nexport WAS_HOME=/opt/IBM/WebSphere/AppServer\n");
         files.put("/opt/IBM", null);
@@ -101,7 +103,9 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setSystemServicesNames(Arrays.asList("NetworkManager-dispatcher","NetworkManager-wait-online","NetworkManager"));
         expectedModel.setVmDiskFilenames(Arrays.asList("[NFS-Storage] oracle_db_1/", "[NFS-Storage] oracle_db_1/oracle_db.vmdk", "[NFS-Storage] oracle_db_1/"));
         expectedModel.setAnalysisId(analysisId);
-
+        expectedModel.setHost_name("vcenter.example.com");
+        expectedModel.setVersion("6.7.2");
+        expectedModel.setProduct("VMware vCenter");
         HashMap<String, String> files = new HashMap<>();
         files.put("/etc/GeoIP.conf","dummy content");
         files.put("/etc/asound.conf", null);
