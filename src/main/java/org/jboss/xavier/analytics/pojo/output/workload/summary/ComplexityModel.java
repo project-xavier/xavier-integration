@@ -13,7 +13,7 @@ import javax.persistence.*;
                 columns = {
                         @ColumnResult(name = "easy", type = Integer.class),
                         @ColumnResult(name = "medium", type = Integer.class),
-                        @ColumnResult(name = "difficult", type = Integer.class),
+                        @ColumnResult(name = "hard", type = Integer.class),
                         @ColumnResult(name = "unknown", type = Integer.class)
                 }
         )
@@ -21,7 +21,7 @@ import javax.persistence.*;
 
 @NamedNativeQuery(
         name = "ComplexityModel.calculateComplexityModels",
-        query = "select sum(case when lower(complexity)='easy' then 1 else 0 end) as easy, sum(case when lower(complexity)='medium' then 1 else 0 end) as medium, sum(case when lower(complexity)='difficult' then 1 else 0 end) as difficult, sum(case when (complexity is null or lower(complexity)='unknown') then 1 else 0 end) as \"unknown\" from workload_inventory_report_model where analysis_id = :analysisId",
+        query = "select sum(case when lower(complexity)='easy' then 1 else 0 end) as easy, sum(case when lower(complexity)='medium' then 1 else 0 end) as medium, sum(case when lower(complexity)='hard' then 1 else 0 end) as hard, sum(case when (complexity is null or lower(complexity)='unknown') then 1 else 0 end) as \"unknown\" from workload_inventory_report_model where analysis_id = :analysisId",
         resultSetMapping = "mappingComplexityModels"
 )
 
@@ -46,15 +46,15 @@ public class ComplexityModel
 
     private Integer easy;
     private Integer medium;
-    private Integer difficult;
+    private Integer hard;
     private Integer unknown;
 
     public ComplexityModel() {}
 
-    public ComplexityModel(Integer easy, Integer medium, Integer difficult, Integer unknown) {
+    public ComplexityModel(Integer easy, Integer medium, Integer hard, Integer unknown) {
         this.easy = easy;
         this.medium = medium;
-        this.difficult = difficult;
+        this.hard = hard;
         this.unknown = unknown;
     }
 
@@ -90,12 +90,12 @@ public class ComplexityModel
         this.medium = medium;
     }
 
-    public Integer getDifficult() {
-        return difficult;
+    public Integer getHard() {
+        return hard;
     }
 
-    public void setDifficult(Integer difficult) {
-        this.difficult = difficult;
+    public void setHard(Integer hard) {
+        this.hard = hard;
     }
 
     public Integer getUnknown() {
@@ -111,9 +111,9 @@ public class ComplexityModel
         return "SummaryModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", unknown='" + easy + '\'' +
-                ", unknown=" + medium +
-                ", unknown=" + difficult +
+                ", easy='" + easy + '\'' +
+                ", medium=" + medium +
+                ", hard=" + hard +
                 ", unknown=" + unknown +
                 '}';
     }

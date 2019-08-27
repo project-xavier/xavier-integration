@@ -55,7 +55,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
     @Before
     public void setup()
     {
-        String[] complexities = new String[]{"Easy", "Easy", "Medium", "Difficult", "Unknown", null};
+        String[] complexities = new String[]{"Easy", "Easy", "Medium", "Hard", "Unknown", null};
 
         final AnalysisModel analysisModel = analysisRepository.save(new AnalysisModel());
         analysisId = analysisModel.getId();
@@ -147,7 +147,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
 
         Assert.assertEquals(2, (int) complexityModel.getEasy());
         Assert.assertEquals(1, (int) complexityModel.getMedium());
-        Assert.assertEquals(1, (int) complexityModel.getDifficult());
+        Assert.assertEquals(1, (int) complexityModel.getHard());
         Assert.assertEquals(2, (int) complexityModel.getUnknown());
 
         camelContext.stop();
