@@ -62,7 +62,7 @@ public class MainRouteBuilder extends RouteBuilder {
     @Inject
     private AnalysisService analysisService;
 
-    private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
+    private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
     public void configure() {
         getContext().setTracing(true);
