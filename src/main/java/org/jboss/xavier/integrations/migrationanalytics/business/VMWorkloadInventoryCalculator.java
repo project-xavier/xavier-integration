@@ -42,6 +42,9 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     private static final String FILESCONTENTPATH = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPath";
     private static final String FILESCONTENTPATH_FILENAME = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathName";
     private static final String FILESCONTENTPATH_CONTENTS = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathContents";
+    private static final String PRODUCTPATH = "";
+    private static final String VERSIONPATH = "";
+    private static final String HOSTNAMEPATH = "";
 
     @Autowired
     private Environment env;
@@ -82,6 +85,10 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         model.setFiles(readMapValuesFromExpandedEnvVarPath(FILESCONTENTPATH, vmStructMap, getExpandedPath(FILESCONTENTPATH_FILENAME, vmStructMap), getExpandedPath(FILESCONTENTPATH_CONTENTS, vmStructMap)));
         model.setSystemServicesNames(readListValuesFromExpandedEnvVarPath(SYSTEMSERVICESNAMESPATH, vmStructMap));
         model.setVmDiskFilenames(readListValuesFromExpandedEnvVarPath(VMDISKSFILENAMESPATH, vmStructMap));
+
+        model.setProduct(readValueFromExpandedEnvVarPath(PRODUCTPATH, vmStructMap));
+        model.setVersion(readValueFromExpandedEnvVarPath(VERSIONPATH, vmStructMap));
+        model.setHost_name(readValueFromExpandedEnvVarPath(HOSTNAMEPATH, vmStructMap));
 
         model.setAnalysisId(analysisId);
 
