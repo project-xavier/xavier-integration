@@ -42,9 +42,9 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     private static final String FILESCONTENTPATH = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPath";
     private static final String FILESCONTENTPATH_FILENAME = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathName";
     private static final String FILESCONTENTPATH_CONTENTS = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathContents";
-    private static final String PRODUCTPATH = "";
-    private static final String VERSIONPATH = "";
-    private static final String HOSTNAMEPATH = "";
+    private static final String PRODUCTPATH = "cloudforms.manifest.{version}.vmworkloadinventory.productPath";
+    private static final String VERSIONPATH = "cloudforms.manifest.{version}.vmworkloadinventory.versionPath";
+    private static final String HOSTNAMEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.hostNamePath";
 
     @Autowired
     private Environment env;

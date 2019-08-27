@@ -9,7 +9,6 @@ import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
-import org.jboss.xavier.integrations.migrationanalytics.business.Calculator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -69,6 +68,10 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
         expectedModel.setSystemServicesNames(Arrays.asList("{02B0078E-2148-45DD-B7D3-7E37AAB3B31D}","xmlprov","wudfsvc"));
         expectedModel.setVmDiskFilenames(Arrays.asList("[NFS_Datastore] dev-windows-server-2008/dev-windows-server-2008.vmdk"));
         expectedModel.setAnalysisId(analysisId);
+
+        expectedModel.setHost_name("esx13.v2v.bos.redhat.com");
+        expectedModel.setVersion("6.5");
+        expectedModel.setProduct("VMware vCenter");
 
         HashMap<String, String> files = new HashMap<>();
         files.put("/root/.bash_profile","# .bash_profile\n\n# Get the aliases and functions\nif [ -f ~/.bashrc ]; then\n\t. ~/.bashrc\nfi\n\n# User specific environment and startup programs\n\nPATH=$PATH:$HOME/bin\nexport PATH\nexport JAVA_HOME=/usr/java/jdk1.5.0_07/bin/java\nexport WAS_HOME=/opt/IBM/WebSphere/AppServer\n");
