@@ -111,7 +111,7 @@ public class ComplexityModel
         return "SummaryModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", easy='" + easy + '\'' +
+                ", easy='" + easy +
                 ", medium=" + medium +
                 ", hard=" + hard +
                 ", unknown=" + unknown +
