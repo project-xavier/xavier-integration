@@ -112,7 +112,7 @@ public class RecommendedTargetsIMSModel
         return "SummaryModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", rhv='" + rhv + '\'' +
+                ", rhv='" + rhv +
                 ", rhel=" + rhel +
                 ", osp=" + osp +
                 '}';
