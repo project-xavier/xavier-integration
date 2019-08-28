@@ -56,6 +56,10 @@ public class WorkloadSummaryReportModel
 
     @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
     @JsonManagedReference
+    private ComplexityModel complexityModel;
+
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private RecommendedTargetsIMSModel recommendedTargetsIMSModel;
 
     public WorkloadSummaryReportModel() {}
@@ -83,6 +87,15 @@ public class WorkloadSummaryReportModel
     public void setSummaryModels(List<SummaryModel> summaryModels) {
         summaryModels.forEach(model -> model.setReport(this));
         this.summaryModels = summaryModels;
+    }
+
+    public ComplexityModel getComplexityModel() {
+        return complexityModel;
+    }
+
+    public void setComplexityModel(ComplexityModel complexityModel) {
+        complexityModel.setReport(this);
+        this.complexityModel = complexityModel;
     }
 
     public RecommendedTargetsIMSModel getRecommendedTargetsIMSModel() {
