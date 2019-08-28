@@ -1,6 +1,7 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
@@ -53,6 +54,7 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<SummaryModel> summaryModels;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<FlagModel> flagModels;
 
