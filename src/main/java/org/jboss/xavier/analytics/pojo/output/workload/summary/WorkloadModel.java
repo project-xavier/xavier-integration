@@ -115,7 +115,7 @@ public class WorkloadModel
         return "WorkloadDetectedModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", workload='" + workload + '\'' +
+                ", workload='" + workload +
                 ", osName=" + osName +
                 ", clusters=" + clusters +
                 ", vms=" + vms +
