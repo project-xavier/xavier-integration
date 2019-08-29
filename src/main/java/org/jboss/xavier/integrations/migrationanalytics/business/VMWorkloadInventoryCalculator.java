@@ -73,8 +73,8 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         model.setCluster(readValueFromExpandedEnvVarPath(CLUSTERPATH, vmStructMap));
 
         model.setVmName(readValueFromExpandedEnvVarPath(VMNAMEPATH, vmStructMap ));
-        model.setMemory(readValueFromExpandedEnvVarPath(RAMSIZEINBYTES, vmStructMap));
-        model.setCpuCores(readValueFromExpandedEnvVarPath(NUMCPUPATH, vmStructMap));
+        model.setMemory(readValueFromExpandedEnvVarPath(RAMSIZEINBYTES, vmStructMap, Long.class));
+        model.setCpuCores(readValueFromExpandedEnvVarPath(NUMCPUPATH, vmStructMap, Integer.class));
         model.setOsProductName(readValueFromExpandedEnvVarPath(PRODUCTNAMEPATH, vmStructMap));
         model.setGuestOSFullName(StringUtils.defaultIfEmpty(readValueFromExpandedEnvVarPath(GUESTOSFULLNAMEPATH, vmStructMap ), readValueFromExpandedEnvVarPath(GUESTOSFULLNAME_FALLBACKPATH, vmStructMap )));
         model.setHasRdmDisk(readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap));
@@ -82,7 +82,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
         model.setDiskSpace(diskSpaceList.stream().filter(e -> e != null).mapToLong(Number::longValue).sum());
 
-        model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap));
+        model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap, Integer.class));
 
         model.setFiles(readMapValuesFromExpandedEnvVarPath(FILESCONTENTPATH, vmStructMap, getExpandedPath(FILESCONTENTPATH_FILENAME, vmStructMap), getExpandedPath(FILESCONTENTPATH_CONTENTS, vmStructMap)));
         model.setSystemServicesNames(readListValuesFromExpandedEnvVarPath(SYSTEMSERVICESNAMESPATH, vmStructMap));
@@ -109,15 +109,19 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         return files;
     }
 
-    private <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
+    private <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, Class type) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
 
-        Object value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
+        Object value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath, type);
         if (value instanceof Collection) {
             return ((List<T>) value).get(0);
         } else {
             return (T) value;
         }
+    }
+
+    private <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
+        return readValueFromExpandedEnvVarPath(envVarPath, vmStructMap, Object.class);
     }
 
     private <T> List<T> readListValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
