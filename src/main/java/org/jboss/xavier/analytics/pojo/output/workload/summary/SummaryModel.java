@@ -147,10 +147,13 @@ public class SummaryModel
         return "SummaryModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", providers='" + provider + '\'' +
+                ", providers='" + provider +
                 ", clusters=" + clusters +
                 ", sockets=" + sockets +
                 ", vms=" + vms +
+                ", hosts=" + hosts +
+                ", product=" + product +
+                ", version=" + version +
                 '}';
     }
 }
