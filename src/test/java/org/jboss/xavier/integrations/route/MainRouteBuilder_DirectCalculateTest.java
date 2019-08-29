@@ -2,6 +2,7 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
@@ -131,6 +132,98 @@ public class MainRouteBuilder_DirectCalculateTest {
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(563902124032L);
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
         assertThat(mockJmsQueueWorkloadInventory.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class).getVmName()).isNotEmpty();
+        camelContext.stop();
+    }
+
+    @Test
+    public void mainRouteBuilder_DirectCalculateWithV1_0_0_FileGiven_ShouldSendMessageToJMS() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        mockJmsQueueCostSavings.expectedMessageCount(1);
+
+        String fileName = "cloudforms-export-v1_0_0.json";
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("filename", fileName);
+        metadata.put("dummy", "dummy");
+        metadata.put(Calculator.YEAR_1_HYPERVISORPERCENTAGE, 10D);
+        metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
+        metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
+        metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, 7L);
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("MA_metadata", metadata);
+        headers.put("Content-type", "application/zip");
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("unzip-file");
+        camelContext.startRoute("calculate");
+        camelContext.startRoute("calculate-costsavings");
+        camelContext.startRoute("calculate-vmworkloadinventory");
+        String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
+
+        camelContext.createProducerTemplate().request("direct:calculate", exchange -> {
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
+            exchange.getIn().setHeaders(headers);
+        });
+
+        Thread.sleep(5000);
+        //Then
+        mockJmsQueueCostSavings.assertIsSatisfied();
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
+        assertThat(mockJmsQueueWorkloadInventory.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class).getVmName()).isNotEmpty();
+        camelContext.stop();
+    }
+
+    @Test
+    public void mainRouteBuilder_DirectCalculateWithMultipleJSONFilesGiven_ShouldSendOneMessageToJMS() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        camelContext.getRouteDefinition("calculate").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                mockEndpointsAndSkip("direct:calculate-vmworkloadinventory");
+            }
+        });
+        mockJmsQueueCostSavings.expectedMessageCount(1);
+
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("filename", fileName);
+        metadata.put("dummy", "dummy");
+        metadata.put(Calculator.YEAR_1_HYPERVISORPERCENTAGE, 10D);
+        metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
+        metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
+        metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, 7L);
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("MA_metadata", metadata);
+        headers.put("Content-type", "application/zip");
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("unzip-file");
+        camelContext.startRoute("calculate");
+        camelContext.startRoute("calculate-costsavings");
+        String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
+
+        camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
+            exchange.getIn().setHeaders(headers);
+        });
+
+        Thread.sleep(5000);
+        //Then
+        mockJmsQueueCostSavings.assertIsSatisfied();
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
         camelContext.stop();
     }
 

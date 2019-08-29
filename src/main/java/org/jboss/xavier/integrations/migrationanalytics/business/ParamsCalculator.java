@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
+import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.MainRouteBuilder;
 import org.springframework.core.env.Environment;
 
@@ -16,6 +17,9 @@ import java.util.Map;
 public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
     @Inject
     private Environment env;
+
+    @Inject
+    private AnalysisService analysisService;
 
     private static Integer calculateHypervisors(Object e, String cpuTotalCoresPath, String cpuCoresPerSocketPath) {
         Map mapa = (Map) e;
@@ -47,11 +51,19 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
         double year3hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE).toString() : "0") / 100;
         double growthratepercentage = Double.parseDouble(headers.get(Calculator.GROWTHRATEPERCENTAGE) != null ? headers.get(Calculator.GROWTHRATEPERCENTAGE).toString() : "0") / 100;
 
+        UploadFormInputDataModel dataModel = (UploadFormInputDataModel) headers.get("uploadFormInputDataModel");
+        if (dataModel == null) {
+          dataModel = new UploadFormInputDataModel(customerid, filename, numberofhypervisors.intValue(), totalspace,
+                  null, year1hypervisorpercentage,
+                  year2hypervisorpercentage,
+                  year3hypervisorpercentage, growthratepercentage,
+                  Long.parseLong(headers.get(MainRouteBuilder.ANALYSIS_ID).toString()));
+        } else {
+            dataModel.setHypervisor(dataModel.getHypervisor() + numberofhypervisors.intValue());
+            dataModel.setTotalDiskSpace(dataModel.getTotalDiskSpace() + totalspace);
+        }
+
         // Calculated and enriched model
-        return new UploadFormInputDataModel(customerid, filename, numberofhypervisors.intValue(), totalspace,
-                null, year1hypervisorpercentage,
-                year2hypervisorpercentage,
-                year3hypervisorpercentage, growthratepercentage,
-                Long.parseLong(headers.get(MainRouteBuilder.ANALYSIS_ID).toString()));
+        return dataModel;
     }
 }

@@ -153,14 +153,18 @@ public class MainRouteBuilder extends RouteBuilder {
                 .choice()
                     .when(isZippedFile("zip"))
                         .split(new ZipSplitter())
-                        .streaming()
-                        .to("direct:calculate")
+                            .streaming()
+                            .to("direct:calculate")
+                        .end()
                     .endChoice()
                     .when(isZippedFile("tar.gz"))
                         .unmarshal().gzip()
                         .split(new TarSplitter())
-                        .streaming()
-                        .to("direct:calculate")
+                            .streaming()
+                            .to("direct:calculate")
+                        .end()
+                        .log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+                        .to("jms:queue:uploadFormInputDataModel")
                     .endChoice()
                     .otherwise()
                         .to("direct:calculate")
@@ -169,17 +173,17 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .convertBodyTo(String.class)
+                .removeHeader("uploadFormInputDataModel")
                 .multicast()
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory")
-                .end();
+                ;
 
 
-        from("direct:calculate-costsavings")
-                .id("calculate-costsavings")
-                .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
-                .log("Message to send to AMQ : ${body}")
-                .to("jms:queue:uploadFormInputDataModel")
-                .end();
+        from("direct:calculate-costsavings").id("calculate-costsavings")
+                    .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
+                    .setHeader("uploadFormInputDataModel", body())
+                    .log("Message to send to AMQ : ${body}");
+                //.to("jms:queue:uploadFormInputDataModel");
     }
 
     private Predicate isResponseSuccess() {
