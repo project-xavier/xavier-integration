@@ -130,6 +130,7 @@ public class WorkloadSummaryReportModel
     }
 
     public void setWorkloadsDetectedModel(WorkloadsDetectedModel workloadsDetectedModel) {
+        workloadsDetectedModel.setReport(this);
         this.workloadsDetectedModel = workloadsDetectedModel;
     }
 }
