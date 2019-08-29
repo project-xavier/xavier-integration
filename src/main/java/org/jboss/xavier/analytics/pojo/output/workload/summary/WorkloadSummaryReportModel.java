@@ -67,6 +67,10 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<WorkloadModel> workloadModels;
 
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private WorkloadsDetectedModel workloadsDetectedModel;
+
     public WorkloadSummaryReportModel() {}
 
     public Long getId() {
@@ -119,5 +123,13 @@ public class WorkloadSummaryReportModel
     public void setWorkloadModels(List<WorkloadModel> workloadModels) {
         workloadModels.forEach(model -> model.setReport(this));
         this.workloadModels = workloadModels;
+    }
+
+    public WorkloadsDetectedModel getWorkloadsDetectedModel() {
+        return workloadsDetectedModel;
+    }
+
+    public void setWorkloadsDetectedModel(WorkloadsDetectedModel workloadsDetectedModel) {
+        this.workloadsDetectedModel = workloadsDetectedModel;
     }
 }
