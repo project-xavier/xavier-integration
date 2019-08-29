@@ -112,12 +112,16 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     private <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, Class type) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
 
-        Object value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath, type);
+        Object value = JsonPath.parse(cloudFormsJson).read(expandParamsInPath);
         if (value instanceof Collection) {
-            return ((List<T>) value).get(0);
-        } else {
-            return (T) value;
+            value = ((List<T>) value).get(0);
         }
+        if (Long.class.isAssignableFrom(type)) {
+            value = Long.valueOf(((Number) value).longValue());
+        } else if (Integer.class.isAssignableFrom(type)) {
+            value = Integer.valueOf(((Number) value).intValue());
+        }
+        return (T) value;
     }
 
     private <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
