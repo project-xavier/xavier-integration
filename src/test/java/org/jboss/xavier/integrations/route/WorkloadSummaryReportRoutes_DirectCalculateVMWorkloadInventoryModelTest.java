@@ -8,11 +8,7 @@ import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.ComplexityModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.RecommendedTargetsIMSModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadRepository;
@@ -251,6 +247,48 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertEquals("oel", workloads.get(0).getOsName());
         Assert.assertEquals(1, (int) workloads.get(0).getClusters());
         Assert.assertEquals(1, (int) workloads.get(0).getVms());
+
+        camelContext.stop();
+    }
+
+    @Test
+    public void DirectCalculateVMWorkloadInventoryModel_ShouldPersistWorkloadReportModel1111() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("calculate-workloadsummaryreportmodel");
+
+        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
+        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("MA_metadata", metadata);
+
+        Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
+            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        AnalysisModel analysisModel = analysisRepository.findOne(analysisId);
+        Assert.assertNotNull(analysisModel);
+        WorkloadSummaryReportModel workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
+        Assert.assertNotNull(workloadSummaryReportModel);
+        workloadSummaryReportModel = workloadSummaryReportRepository.findOne(workloadSummaryReportModel.getId());
+        Set<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels = workloadSummaryReportModel.getWorkloadsDetectedOSTypeModels();
+
+        List<WorkloadModel> workloads = workloadRepository.findByReportAnalysisId(analysisId);
+        Assert.assertNotNull(workloads);
+
+        Assert.assertNotNull(workloadsDetectedOSTypeModels);
+        Assert.assertEquals(6, workloadsDetectedOSTypeModels.size());
+        Assert.assertTrue(workloadsDetectedOSTypeModels.stream().anyMatch(p -> p.getOsName().equals("rhel") && p.getTotal() == 1));
+        Assert.assertTrue(workloadsDetectedOSTypeModels.stream().anyMatch(p -> p.getOsName().equals("unknown") && p.getTotal() == 2));
 
         camelContext.stop();
     }

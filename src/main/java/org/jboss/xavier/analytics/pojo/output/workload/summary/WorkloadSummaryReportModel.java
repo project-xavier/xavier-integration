@@ -20,6 +20,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Transactional
@@ -67,9 +68,8 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<WorkloadModel> workloadModels;
 
-    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JsonManagedReference
-    private WorkloadsDetectedModel workloadsDetectedModel;
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels;
 
     public WorkloadSummaryReportModel() {}
 
@@ -125,12 +125,13 @@ public class WorkloadSummaryReportModel
         this.workloadModels = workloadModels;
     }
 
-    public WorkloadsDetectedModel getWorkloadsDetectedModel() {
-        return workloadsDetectedModel;
+    public Set<WorkloadsDetectedOSTypeModel> getWorkloadsDetectedOSTypeModels() {
+        return workloadsDetectedOSTypeModels;
     }
 
-    public void setWorkloadsDetectedModel(WorkloadsDetectedModel workloadsDetectedModel) {
-        workloadsDetectedModel.setReport(this);
-        this.workloadsDetectedModel = workloadsDetectedModel;
+    public void setWorkloadsDetectedOSTypeModels(Set<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels) {
+        workloadsDetectedOSTypeModels.forEach(model -> model.setReport(this));
+        this.workloadsDetectedOSTypeModels = workloadsDetectedOSTypeModels;
     }
+
 }

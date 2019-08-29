@@ -2,6 +2,7 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.builder.RouteBuilder;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
 import org.jboss.xavier.integrations.jpa.service.*;
@@ -12,6 +13,7 @@ import javax.inject.Named;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Named
@@ -23,7 +25,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
     WorkloadInventoryReportService workloadInventoryReportService;
 
     @Inject
-    WorkloadsDetectedService workloadsDetectedService;
+    WorkloadsDetectedOSTypeService workloadsDetectedOSTypeService;
 
     @Inject
     ComplexityService complexityService;
@@ -88,10 +90,18 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 List<WorkloadModel> workloadModels = workloadService.calculateWorkloadsModels(analysisId);
                 workloadSummaryReportModel.setWorkloadModels(workloadModels);
 
-                WorkloadsDetectedModel workloadsDetectedModel = workloadsDetectedService.calculateWorkloadsDetectedModels(analysisId);
-                workloadSummaryReportModel.setWorkloadsDetectedModel(workloadsDetectedModel);
-
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
+                analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
+
+
+                // Refresh the  workloadSummaryReportModel
+                AnalysisModel analysisModel = analysisService.findById(analysisId);
+                workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
+
+                // TODO Calculate parts of the Workload Summary Report which depends of previous data
+                Set<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels = workloadsDetectedOSTypeService.calculateWorkloadsDetectedOSTypeModels(analysisId);
+                workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(workloadsDetectedOSTypeModels);
+
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
             });
     }
