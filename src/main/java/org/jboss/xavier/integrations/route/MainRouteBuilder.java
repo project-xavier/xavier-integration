@@ -17,6 +17,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
@@ -163,8 +164,6 @@ public class MainRouteBuilder extends RouteBuilder {
                             .streaming()
                             .to("direct:calculate")
                         .end()
-                        .log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-                        .to("jms:queue:uploadFormInputDataModel")
                     .endChoice()
                     .otherwise()
                         .to("direct:calculate")
@@ -182,8 +181,16 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate-costsavings").id("calculate-costsavings")
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                     .setHeader("uploadFormInputDataModel", body())
-                    .log("Message to send to AMQ : ${body}");
-                //.to("jms:queue:uploadFormInputDataModel");
+                .aggregate()
+                    .body(UploadFormInputDataModel.class)
+                    .aggregationStrategy()
+                        .body(UploadFormInputDataModel.class, (old,neu) -> {
+                           neu.setTotalDiskSpace(neu.getTotalDiskSpace() + ((old != null) ? old.getTotalDiskSpace() : 0));
+                           neu.setHypervisor(neu.getHypervisor() + ((old != null) ? old.getHypervisor() : 0));
+                           return neu;
+                        } )
+                .log("Message to send to AMQ : ${body}")
+                .to("jms:queue:uploadFormInputDataModel");
     }
 
     private Predicate isResponseSuccess() {
