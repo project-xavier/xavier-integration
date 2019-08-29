@@ -68,6 +68,10 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<WorkloadModel> workloadModels;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<FlagModel> flagModels;
+
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels;
 
@@ -123,6 +127,15 @@ public class WorkloadSummaryReportModel
     public void setWorkloadModels(List<WorkloadModel> workloadModels) {
         workloadModels.forEach(model -> model.setReport(this));
         this.workloadModels = workloadModels;
+    }
+
+    public List<FlagModel> getFlagModels() {
+        return flagModels;
+    }
+
+    public void setFlagModels(List<FlagModel> flagModels) {
+        flagModels.forEach(model -> model.setReport(this));
+        this.flagModels = flagModels;
     }
 
     public Set<WorkloadsDetectedOSTypeModel> getWorkloadsDetectedOSTypeModels() {

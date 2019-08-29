@@ -10,6 +10,7 @@ import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
+import org.jboss.xavier.integrations.jpa.repository.FlagRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadSummaryReportRepository;
@@ -43,6 +44,9 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
 
     @Autowired
     WorkloadRepository workloadRepository;
+
+    @Autowired
+    FlagRepository flagRepository;
 
     @Autowired
     WorkloadSummaryReportRepository workloadSummaryReportRepository;
@@ -84,6 +88,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
             workloadInventoryReportModel.setRecommendedTargetsIMS(recommendedTargetsIMS.get(value));
             workloadInventoryReportModel.setOsName(osNames.get(value));
             workloadInventoryReportModel.setWorkloads(new HashSet<>(Arrays.asList("Workload" + (value % 2), "Workload" + (value % 3))));
+            workloadInventoryReportModel.setFlagsIMS(new HashSet<>(Arrays.asList("Flag" + (value % 2), "Flag" + (value % 3))));
 
             System.out.println("Saved WorkloadInventoryReportModel with ID #" + workloadInventoryReportRepository.save(workloadInventoryReportModel).getId());
         });
@@ -289,6 +294,46 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertEquals(6, workloadsDetectedOSTypeModels.size());
         Assert.assertTrue(workloadsDetectedOSTypeModels.stream().anyMatch(p -> p.getOsName().equals("rhel") && p.getTotal() == 1));
         Assert.assertTrue(workloadsDetectedOSTypeModels.stream().anyMatch(p -> p.getOsName().equals("unknown") && p.getTotal() == 2));
+
+        camelContext.stop();
+    }
+
+    @Test
+    public void DirectCalculateVMWorkloadInventoryModel_ShouldPersistWorkloadFlagReportModel() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("calculate-workloadsummaryreportmodel");
+
+        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
+        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("MA_metadata", metadata);
+
+        Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
+            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        AnalysisModel analysisModel = analysisRepository.findOne(analysisId);
+        Assert.assertNotNull(analysisModel);
+        WorkloadSummaryReportModel workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
+        Assert.assertNotNull(workloadSummaryReportModel);
+
+        List<FlagModel> flags = flagRepository.findByReportAnalysisId(analysisId);
+        Assert.assertNotNull(flags);
+        Assert.assertEquals(6, flags.size());
+        Assert.assertEquals("Flag0", flags.get(0).getFlag());
+        Assert.assertEquals("OSName0", flags.get(0).getOsName());
+        Assert.assertEquals(3, (int) flags.get(0).getClusters());
+        Assert.assertEquals(3, (int) flags.get(0).getVms());
 
         camelContext.stop();
     }
