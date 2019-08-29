@@ -1,6 +1,7 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -55,21 +56,19 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<SummaryModel> summaryModels;
 
-    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
     @JsonManagedReference
     private ComplexityModel complexityModel;
 
-    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
     @JsonManagedReference
     private RecommendedTargetsIMSModel recommendedTargetsIMSModel;
 
-    // Models are still no defined
-    transient WorkloadsDetected workloadsDetected;
-    transient List<ScanRunModel> scanRuns;
-
+    @JsonIgnore
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<WorkloadModel> workloadModels;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<FlagModel> flagModels;
 
@@ -105,6 +104,7 @@ public class WorkloadSummaryReportModel
     }
 
     public void setComplexityModel(ComplexityModel complexityModel) {
+        complexityModel.setReport(this);
         this.complexityModel = complexityModel;
     }
 
@@ -113,6 +113,7 @@ public class WorkloadSummaryReportModel
     }
 
     public void setRecommendedTargetsIMSModel(RecommendedTargetsIMSModel recommendedTargetsIMSModel) {
+        recommendedTargetsIMSModel.setReport(this);
         this.recommendedTargetsIMSModel = recommendedTargetsIMSModel;
     }
 
@@ -120,31 +121,17 @@ public class WorkloadSummaryReportModel
         return workloadModels;
     }
 
+    public void setWorkloadModels(List<WorkloadModel> workloadModels) {
+        workloadModels.forEach(model -> model.setReport(this));
+        this.workloadModels = workloadModels;
+    }
+
     public List<FlagModel> getFlagModels() {
         return flagModels;
     }
 
     public void setFlagModels(List<FlagModel> flagModels) {
+        flagModels.forEach(model -> model.setReport(this));
         this.flagModels = flagModels;
-    }
-
-    public void setWorkloadModels(List<WorkloadModel> workloadModels) {
-        this.workloadModels = workloadModels;
-    }
-
-    public WorkloadsDetected getWorkloadsDetected() {
-        return workloadsDetected;
-    }
-
-    public void setWorkloadsDetected(WorkloadsDetected workloadsDetected) {
-        this.workloadsDetected = workloadsDetected;
-    }
-
-    public List<ScanRunModel> getScanRuns() {
-        return scanRuns;
-    }
-
-    public void setScanRuns(List<ScanRunModel> scanRuns) {
-        this.scanRuns = scanRuns;
     }
 }

@@ -2,7 +2,6 @@ package org.jboss.xavier.integrations.jpa.service;
 
 import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagModel;
 import org.jboss.xavier.integrations.jpa.repository.FlagRepository;
-import org.jboss.xavier.integrations.jpa.repository.WorkloadRepository;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +11,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class FlagService
 {
     @Autowired
     FlagRepository flagRepository;
 
-    public Page<FlagModel> findByReportAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean) {
+    public List<FlagModel> calculateFlagModels(Long analysisId)
+    {
+        return flagRepository.calculateFlagModels(analysisId);
+    }
+
+    public Page<FlagModel> findByReportAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean)
+    {
         // Sort
         Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
         String orderBy = FlagModel.SUPPORTED_SORT_FIELDS.contains(sortBean.getOrderBy()) ? sortBean.getOrderBy() : FlagModel.DEFAULT_SORT_FIELD;
@@ -31,5 +38,4 @@ public class FlagService
 
         return flagRepository.findByReportAnalysisId(analysisId, pageable);
     }
-
 }
