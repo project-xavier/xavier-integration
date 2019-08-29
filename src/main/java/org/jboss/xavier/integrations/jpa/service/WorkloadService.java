@@ -11,11 +11,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class WorkloadService
 {
     @Autowired
     WorkloadRepository workloadRepository;
+
+    public List<WorkloadModel> calculateWorkloadsModels(Long analysisId)
+    {
+        return workloadRepository.calculateWorkloadsModels(analysisId);
+    }
 
     public Page<WorkloadModel> findByReportAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean) {
         // Sort
