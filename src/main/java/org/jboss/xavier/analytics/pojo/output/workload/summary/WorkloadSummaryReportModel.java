@@ -67,7 +67,7 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<WorkloadModel> workloadModels;
 
-    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     private WorkloadsDetectedModel workloadsDetectedModel;
 

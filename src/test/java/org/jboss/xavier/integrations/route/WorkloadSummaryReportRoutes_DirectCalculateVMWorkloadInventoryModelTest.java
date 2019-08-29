@@ -67,6 +67,14 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
                 new HashSet<>(Collections.singletonList("other")),
                 new HashSet<>()
         ));
+        List<String> osNames = new ArrayList<>(Arrays.asList(
+                "rhel",
+                "sles",
+                "windows",
+                "oel",
+                "other",
+                null
+        ));
 
         final AnalysisModel analysisModel = analysisRepository.save(new AnalysisModel());
         analysisId = analysisModel.getId();
@@ -78,7 +86,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
             workloadInventoryReportModel.setCpuCores(value % 4);
             workloadInventoryReportModel.setComplexity(complexities[value]);
             workloadInventoryReportModel.setRecommendedTargetsIMS(recommendedTargetsIMS.get(value));
-            workloadInventoryReportModel.setOsName("OSName" + (value % 2));
+            workloadInventoryReportModel.setOsName(osNames.get(value));
             workloadInventoryReportModel.setWorkloads(new HashSet<>(Arrays.asList("Workload" + (value % 2), "Workload" + (value % 3))));
 
             System.out.println("Saved WorkloadInventoryReportModel with ID #" + workloadInventoryReportRepository.save(workloadInventoryReportModel).getId());
@@ -238,11 +246,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
 
         List<WorkloadModel> workloads = workloadRepository.findByReportAnalysisId(analysisId);
         Assert.assertNotNull(workloads);
-        Assert.assertEquals(6, workloads.size());
+        Assert.assertEquals(10, workloads.size());
         Assert.assertEquals("Workload0", workloads.get(0).getWorkload());
-        Assert.assertEquals("OSName0", workloads.get(0).getOsName());
-        Assert.assertEquals(3, (int) workloads.get(0).getClusters());
-        Assert.assertEquals(3, (int) workloads.get(0).getVms());
+        Assert.assertEquals("oel", workloads.get(0).getOsName());
+        Assert.assertEquals(1, (int) workloads.get(0).getClusters());
+        Assert.assertEquals(1, (int) workloads.get(0).getVms());
 
         camelContext.stop();
     }
