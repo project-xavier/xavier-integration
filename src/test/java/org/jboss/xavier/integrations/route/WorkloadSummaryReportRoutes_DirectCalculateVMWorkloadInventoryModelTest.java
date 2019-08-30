@@ -331,13 +331,13 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertEquals(2, workloadsDetectedOSTypeModels.size());
 
         Integer totalSum = workloadsDetectedOSTypeModels.stream().map(WorkloadsDetectedOSTypeModel::getTotal).reduce(0, (a, b) -> a + b);
-        Assert.assertEquals(Integer.valueOf(6), totalSum);
+        Assert.assertEquals(Integer.valueOf(10), totalSum);
 
         Map<Long, WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeMap = workloadsDetectedOSTypeModels.stream().collect(Collectors.toMap(WorkloadsDetectedOSTypeModel::getId, s -> s));
         Assert.assertEquals("OSName0", workloadsDetectedOSTypeMap.get(1L).getOsName());
         Assert.assertEquals("OSName1", workloadsDetectedOSTypeMap.get(2L).getOsName());
-        Assert.assertEquals(Integer.valueOf(3), workloadsDetectedOSTypeMap.get(1L).getTotal());
-        Assert.assertEquals(Integer.valueOf(3), workloadsDetectedOSTypeMap.get(2L).getTotal());
+        Assert.assertEquals(Integer.valueOf(5), workloadsDetectedOSTypeMap.get(1L).getTotal());
+        Assert.assertEquals(Integer.valueOf(5), workloadsDetectedOSTypeMap.get(2L).getTotal());
 
         camelContext.stop();
     }

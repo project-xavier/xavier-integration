@@ -19,7 +19,7 @@ import javax.persistence.*;
 
 @NamedNativeQuery(
         name = "WorkloadsDetectedOSTypeModel.calculateWorkloadsDetectedOSTypeModels",
-        query = "select coalesce(wm.os_name, 'unknown') as osName, count(*) as total \n" +
+        query = "select coalesce(wm.os_name, 'unknown') as osName, sum(wm.vms) as total \n" +
                 "from workload_model wm \n" +
                 "inner join workload_summary_report_model ws on wm.report_id=ws.id \n" +
                 "inner join analysis_model am on ws.analysis_id=am.id \n" +
