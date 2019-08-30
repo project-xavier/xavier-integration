@@ -381,7 +381,7 @@
                     "retired": null,
                     "v_datastore_path": "NFS-Storage/tomcat/tomcat.vmx",
                     "operating_system": {
-                        "product_type": "Linux",
+                        "product_type": null,
                         "product_name": null,
                         "distribution": "CentOS"
                     },

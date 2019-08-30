@@ -175,6 +175,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
         assertThat(mockJmsQueueWorkloadInventory.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class).getVmName()).isNotEmpty();
+        assertThat(mockJmsQueueWorkloadInventory.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName()).isEqualTo("CentOS 7 (64-bit)");
+        assertThat(mockJmsQueueWorkloadInventory.getExchanges().get(1).getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName()).isEqualTo("Linux");
         camelContext.stop();
     }
 

@@ -84,6 +84,8 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getNicsCount() == 2).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana")).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("tomcat")).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getOsProductName().equalsIgnoreCase("Linux")).count()).isEqualTo(7);
+        assertThat(modelList.stream().filter(e -> e.getOsProductName().equalsIgnoreCase("CentOS 7 (64-bit)")).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("CentOS 7 (64-bit)")).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("Red Hat Enterprise Linux Server release 7.6 (Maipo)")).count()).isEqualTo(6);
         assertThat(modelList.stream().filter(e -> e.getDiskSpace() == (17980588032L)).count()).isEqualTo(1);
