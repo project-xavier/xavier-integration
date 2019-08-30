@@ -6,12 +6,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public interface WorkloadsDetectedOSTypeRepository extends JpaRepository<WorkloadsDetectedOSTypeModel, Long>
 {
     // this name has to match the value after the '.' in the @NamedNativeQuery annotation
-    Set<WorkloadsDetectedOSTypeModel> calculateWorkloadsDetectedOSTypeModels(@Param("analysisId") Long analysisId);
+    List<WorkloadsDetectedOSTypeModel> calculateWorkloadsDetectedOSTypeModels(@Param("analysisId") Long analysisId);
 
 }

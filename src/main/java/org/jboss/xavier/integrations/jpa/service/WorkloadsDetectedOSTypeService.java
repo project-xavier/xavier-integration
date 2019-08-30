@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 @Component
 public class WorkloadsDetectedOSTypeService
@@ -14,7 +13,7 @@ public class WorkloadsDetectedOSTypeService
     @Autowired
     WorkloadsDetectedOSTypeRepository workloadsDetectedRepository;
 
-    public Set<WorkloadsDetectedOSTypeModel> calculateWorkloadsDetectedOSTypeModels(Long analysisId)
+    public List<WorkloadsDetectedOSTypeModel> calculateWorkloadsDetectedOSTypeModels(Long analysisId)
     {
         return workloadsDetectedRepository.calculateWorkloadsDetectedOSTypeModels(analysisId);
     }

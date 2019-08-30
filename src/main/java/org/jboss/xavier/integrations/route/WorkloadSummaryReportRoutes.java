@@ -23,10 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 @Named
@@ -93,7 +90,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 //retrieve each model one after the other
                 List<SummaryModel> summaryModels = summaryService.calculateSummaryModels(analysisId);
                 // Set the components into the WorkloadSummaryReportModel bean
-                workloadSummaryReportModel.setSummaryModels(summaryModels);
+                workloadSummaryReportModel.setSummaryModels(new LinkedHashSet<>(summaryModels)); // LinkedHashSet to preserve the order
 
                 // TODO Calculate the other parts of the Workload Summary Report
                 // and set them into the workloadSummaryReportModel bean
@@ -118,10 +115,11 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
 
                 // TODO Calculate parts of the Workload Summary Report which depends of previous data
-                Set<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels = workloadsDetectedOSTypeService.calculateWorkloadsDetectedOSTypeModels(analysisId);
-                workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(workloadsDetectedOSTypeModels);
+                List<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels = workloadsDetectedOSTypeService.calculateWorkloadsDetectedOSTypeModels(analysisId);
+                workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(new LinkedHashSet<>(workloadsDetectedOSTypeModels)); // // LinkedHashSet to preserve the order
 
-                analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
+                // Set the WorkloadSummaryReportModel into the AnalysisModel and update status to CREATED
+                analysisService.setWorkloadSummaryReportModelAndUpdateStatus(workloadSummaryReportModel, analysisId);
             });
     }
 }

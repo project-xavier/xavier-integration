@@ -8,16 +8,7 @@ import org.hibernate.annotations.Parameter;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
@@ -54,13 +45,13 @@ public class WorkloadSummaryReportModel
     private AnalysisModel analysis;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<SummaryModel> summaryModels;
+    private Set<SummaryModel> summaryModels;
 
-    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.EAGER)
     @JsonManagedReference
     private ComplexityModel complexityModel;
 
-    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "report", cascade = CascadeType.ALL, optional = false, fetch = FetchType.EAGER)
     @JsonManagedReference
     private RecommendedTargetsIMSModel recommendedTargetsIMSModel;
 
@@ -93,11 +84,11 @@ public class WorkloadSummaryReportModel
         this.analysis = analysis;
     }
 
-    public List<SummaryModel> getSummaryModels() {
+    public Set<SummaryModel> getSummaryModels() {
         return summaryModels;
     }
 
-    public void setSummaryModels(List<SummaryModel> summaryModels) {
+    public void setSummaryModels(Set<SummaryModel> summaryModels) {
         summaryModels.forEach(model -> model.setReport(this));
         this.summaryModels = summaryModels;
     }
