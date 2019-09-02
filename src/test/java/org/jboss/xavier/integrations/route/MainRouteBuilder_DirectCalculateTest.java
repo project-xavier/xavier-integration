@@ -84,6 +84,7 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate-costsavings", body, headers);
 
+        Thread.sleep(3000L);
         //Then
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
 
