@@ -78,6 +78,9 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
             WorkloadInventoryReportModel workloadInventoryReportModel = new WorkloadInventoryReportModel();
             workloadInventoryReportModel.setAnalysis(analysisModel);
             workloadInventoryReportModel.setProvider("Provider" + (value % 2));
+            workloadInventoryReportModel.setProduct("Product" + (value % 2));
+            workloadInventoryReportModel.setVersion("Version" + (value % 2));
+            workloadInventoryReportModel.setHost_name("HostName" + (value % 2));
             workloadInventoryReportModel.setCluster("Cluster" + (value % 3));
             workloadInventoryReportModel.setCpuCores(value % 4);
             workloadInventoryReportModel.setComplexity(complexities[value]);
