@@ -51,19 +51,11 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
         double year3hypervisorpercentage = Double.parseDouble(headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE) != null ? headers.get(Calculator.YEAR_3_HYPERVISORPERCENTAGE).toString() : "0") / 100;
         double growthratepercentage = Double.parseDouble(headers.get(Calculator.GROWTHRATEPERCENTAGE) != null ? headers.get(Calculator.GROWTHRATEPERCENTAGE).toString() : "0") / 100;
 
-        UploadFormInputDataModel dataModel = (UploadFormInputDataModel) headers.get("uploadFormInputDataModel");
-        if (dataModel == null) {
-          dataModel = new UploadFormInputDataModel(customerid, filename, numberofhypervisors.intValue(), totalspace,
+        // Calculated and enriched model
+        return new UploadFormInputDataModel(customerid, filename, numberofhypervisors, totalspace,
                   null, year1hypervisorpercentage,
                   year2hypervisorpercentage,
                   year3hypervisorpercentage, growthratepercentage,
                   Long.parseLong(headers.get(MainRouteBuilder.ANALYSIS_ID).toString()));
-        } else {
-            dataModel.setHypervisor(dataModel.getHypervisor() + numberofhypervisors.intValue());
-            dataModel.setTotalDiskSpace(dataModel.getTotalDiskSpace() + totalspace);
-        }
-
-        // Calculated and enriched model
-        return dataModel;
     }
 }

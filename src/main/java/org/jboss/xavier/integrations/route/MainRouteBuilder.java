@@ -156,7 +156,6 @@ public class MainRouteBuilder extends RouteBuilder {
                         .split(new ZipSplitter())
                             .streaming()
                             .to("direct:calculate")
-                        .end()
                     .endChoice()
                     .when(isZippedFile("tar.gz"))
                         .unmarshal().gzip()
@@ -180,15 +179,14 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:calculate-costsavings").id("calculate-costsavings")
                     .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
-                    .setHeader("uploadFormInputDataModel", body())
-                .aggregate()
-                    .body(UploadFormInputDataModel.class)
+                .aggregate(simple("${header.MA_metadata['analysisId']}"))
                     .aggregationStrategy()
                         .body(UploadFormInputDataModel.class, (old,neu) -> {
                            neu.setTotalDiskSpace(neu.getTotalDiskSpace() + ((old != null) ? old.getTotalDiskSpace() : 0));
                            neu.setHypervisor(neu.getHypervisor() + ((old != null) ? old.getHypervisor() : 0));
                            return neu;
                         } )
+                    .completionTimeout(2000L) //TODO find another way to know the size of the list ( TarSplitter does not inform CamelSplitSize )
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:uploadFormInputDataModel");
     }

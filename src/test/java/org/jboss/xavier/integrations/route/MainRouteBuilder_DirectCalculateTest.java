@@ -2,7 +2,6 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
@@ -173,24 +172,20 @@ public class MainRouteBuilder_DirectCalculateTest {
         Thread.sleep(5000);
         //Then
         mockJmsQueueCostSavings.assertIsSatisfied();
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(34359738368L);
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
         assertThat(mockJmsQueueWorkloadInventory.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class).getVmName()).isNotEmpty();
         camelContext.stop();
     }
 
     @Test
-    public void mainRouteBuilder_DirectCalculateWithMultipleJSONFilesGiven_ShouldSendOneMessageToJMS() throws Exception {
+    public void mainRouteBuilder_DirectCalculateWithMultipleJSONFilesGiven_ShouldSendOneMessageToICSAnd2ToWILQueue() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
-        camelContext.getRouteDefinition("calculate").adviceWith(camelContext, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                mockEndpointsAndSkip("direct:calculate-vmworkloadinventory");
-            }
-        });
+
         mockJmsQueueCostSavings.expectedMessageCount(1);
+        mockJmsQueueWorkloadInventory.expectedMessageCount(2);
 
         String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
@@ -212,6 +207,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.startRoute("unzip-file");
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
+        camelContext.startRoute("calculate-vmworkloadinventory");
+
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
         camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
@@ -222,9 +219,34 @@ public class MainRouteBuilder_DirectCalculateTest {
         Thread.sleep(5000);
         //Then
         mockJmsQueueCostSavings.assertIsSatisfied();
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
+        mockJmsQueueWorkloadInventory.assertIsSatisfied();
+
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(34359738368L);
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
+
+        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-04-copy"))
+                .findFirst().get().getCpuCores()).isEqualTo(1);
+        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-04-copy"))
+                .findFirst().get().getDiskSpace()).isEqualTo(99123456789L);
+
+        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy"))
+                .findFirst().get().getCpuCores()).isEqualTo(1);
+
+        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy"))
+                .findFirst().get().getDiskSpace()).isEqualTo(5000000000L);
+
         camelContext.stop();
     }
-
 }
