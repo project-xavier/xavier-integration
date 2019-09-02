@@ -130,6 +130,12 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<Long, SummaryModel> summaryModelMap = summaryModels.stream().collect(Collectors.toMap(SummaryModel::getId, s -> s));
         Assert.assertEquals("Provider0", summaryModelMap.get(1L).getProvider());
         Assert.assertEquals("Provider1", summaryModelMap.get(2L).getProvider());
+        Assert.assertEquals("Product0", summaryModelMap.get(1L).getProduct());
+        Assert.assertEquals("Product1", summaryModelMap.get(2L).getProduct());
+        Assert.assertEquals("Version0", summaryModelMap.get(1L).getVersion());
+        Assert.assertEquals("Version1", summaryModelMap.get(2L).getVersion());
+        Assert.assertEquals(1, summaryModelMap.get(1L).getHosts(), 0);
+        Assert.assertEquals(1, summaryModelMap.get(2L).getHosts(), 0);
         Assert.assertEquals(3, summaryModelMap.get(1L).getClusters(), 0);
         Assert.assertEquals(3, summaryModelMap.get(2L).getClusters(), 0);
         Assert.assertEquals(4L, summaryModelMap.get(1L).getSockets(), 0);
