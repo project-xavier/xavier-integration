@@ -23,6 +23,7 @@ import javax.persistence.SqlResultSetMapping;
                         @ColumnResult(name = "provider", type = String.class),
                         @ColumnResult(name = "product", type = String.class),
                         @ColumnResult(name = "version", type = String.class),
+                        @ColumnResult(name = "hosts", type = Integer.class),
                         @ColumnResult(name = "clusters", type = Integer.class),
                         @ColumnResult(name = "sockets", type = Long.class),
                         @ColumnResult(name = "vms", type = Integer.class)
@@ -32,11 +33,11 @@ import javax.persistence.SqlResultSetMapping;
 
 @NamedNativeQuery(
         name = "SummaryModel.calculateSummaryModels",
-        query = "select provider, product, version, count(distinct cluster) as clusters, sum(cpu_cores)*2 as sockets, count(*) as vms \n" +
+        query = "select provider, product, version, count(distinct host_name) as hosts, count(distinct cluster) as clusters, sum(cpu_cores)*2 as sockets, count(*) as vms \n" +
                 "from workload_inventory_report_model \n" +
                 "where analysis_id = :analysisId \n" +
-                "group by provider, product, version\n" +
-                "order by provider, product, version;",
+                "group by provider, product, version, host_name \n" +
+                "order by provider, product, version",
         resultSetMapping = "mappingSummaryModels"
 )
 
@@ -69,10 +70,11 @@ public class SummaryModel
 
     public SummaryModel() {}
 
-    public SummaryModel(String provider, String product, String version, Integer clusters, Long sockets, Integer vms) {
+    public SummaryModel(String provider, String product, String version, Integer hosts, Integer clusters, Long sockets, Integer vms) {
         this.provider = provider;
         this.product = product;
         this.version = version;
+        this.hosts = hosts;
         this.clusters = clusters;
         this.sockets = sockets;
         this.vms = vms;
