@@ -80,7 +80,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
             workloadInventoryReportModel.setProvider("Provider" + (value % 2));
             workloadInventoryReportModel.setProduct("Product" + (value % 2));
             workloadInventoryReportModel.setVersion("Version" + (value % 2));
-            workloadInventoryReportModel.setHost_name("HostName" + (value % 2));
+            workloadInventoryReportModel.setHost_name("HostName" + (value % 3));
             workloadInventoryReportModel.setCluster("Cluster" + (value % 3));
             workloadInventoryReportModel.setCpuCores(value % 4);
             workloadInventoryReportModel.setComplexity(complexities[value]);
@@ -134,12 +134,12 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertEquals("Product1", summaryModelMap.get(2L).getProduct());
         Assert.assertEquals("Version0", summaryModelMap.get(1L).getVersion());
         Assert.assertEquals("Version1", summaryModelMap.get(2L).getVersion());
-        Assert.assertEquals(1, summaryModelMap.get(1L).getHosts(), 0);
-        Assert.assertEquals(1, summaryModelMap.get(2L).getHosts(), 0);
+        Assert.assertEquals(3, summaryModelMap.get(1L).getHosts(), 0);
+        Assert.assertEquals(3, summaryModelMap.get(2L).getHosts(), 0);
         Assert.assertEquals(3, summaryModelMap.get(1L).getClusters(), 0);
         Assert.assertEquals(3, summaryModelMap.get(2L).getClusters(), 0);
-        Assert.assertEquals(4L, summaryModelMap.get(1L).getSockets(), 0);
-        Assert.assertEquals(10L, summaryModelMap.get(2L).getSockets(), 0);
+        Assert.assertEquals(2L, summaryModelMap.get(1L).getSockets(), 0);
+        Assert.assertEquals(5L, summaryModelMap.get(2L).getSockets(), 0);
         Assert.assertEquals(3, summaryModelMap.get(1L).getVms(), 0);
         Assert.assertEquals(3, summaryModelMap.get(2L).getVms(), 0);
 
