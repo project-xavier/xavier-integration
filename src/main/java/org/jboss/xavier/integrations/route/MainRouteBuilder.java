@@ -170,10 +170,8 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .convertBodyTo(String.class)
-                .removeHeader("uploadFormInputDataModel")
                 .multicast()
-                    .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory")
-                ;
+                    .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory");
 
 
         from("direct:calculate-costsavings").id("calculate-costsavings")
