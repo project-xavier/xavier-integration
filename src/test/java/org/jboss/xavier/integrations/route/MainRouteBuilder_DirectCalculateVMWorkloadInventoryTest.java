@@ -112,6 +112,7 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1_0_0.json";
+//        String fileName = "cfme_inventory_0.json";
         Long analysisId = 11L;
 
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
