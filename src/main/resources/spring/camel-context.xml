@@ -231,7 +231,7 @@
             <marshal id="route-marshal">
                 <xstream/>
             </marshal>
-            <to id="log-request" uri="log:INFO?showBody=true&amp;showHeaders=true" />
+<!--            <to id="log-request" uri="log:INFO?showBody=true&amp;showHeaders=true" />-->
             <to id="route-to-decision-server-rest" uri="http://{{service:{{kieserver.service}}:{{kieserver.devel-service}}}}/{{kieserver.path}}?authMethod=Basic&amp;authUsername={{kieserver.username}}&amp;authPassword={{kieserver.password}}"/>
             <choice>
                 <when>
