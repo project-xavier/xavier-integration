@@ -13,7 +13,7 @@ import javax.persistence.UniqueConstraint;
 })
 public class FlagAssessmentModel implements java.io.Serializable {
 
-    static final String FLAG = "analysis_id";
+    static final String FLAG = "flag";
 
     @Id
     private Long id;
