@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
@@ -21,12 +22,13 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                     .to("direct:aggregate-vmworkloadinventory")
                 .end()
                 .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
-                .split(body())
+                .split(body()).parallelProcessing(true)
                 .to("jms:queue:vm-workload-inventory")
-                .end();
+                .end()
+                .log(LoggingLevel.INFO, "####### SPLIT DONE");
 
         from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
-            .to("log:INFO?showBody=true&showHeaders=true")
+            //.to("log:INFO?showBody=true&showHeaders=true")
             .doTry()
                 .setHeader(MainRouteBuilder.ANALYSIS_ID, simple("${body." + MainRouteBuilder.ANALYSIS_ID + "}", String.class))
                 .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
