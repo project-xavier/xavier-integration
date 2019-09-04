@@ -2,10 +2,19 @@ package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-public class FlagAssessmentModel
-{
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "FlagAssessmentModel_" +
+                FlagAssessmentModel.FLAG + "_unique",
+                columnNames = FlagAssessmentModel.FLAG)
+})
+public class FlagAssessmentModel implements java.io.Serializable {
+
+    static final String FLAG = "analysis_id";
+
     @Id
     private Long id;
     private String flag;
