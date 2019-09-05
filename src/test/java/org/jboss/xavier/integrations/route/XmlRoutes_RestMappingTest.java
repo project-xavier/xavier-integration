@@ -48,14 +48,31 @@ public class XmlRoutes_RestMappingTest {
     }
 
     @Test
-    public void xmlRouteBuilder_RestMapping_ShouldCallFindFlagAssessment() throws Exception {
+    public void xmlRouteBuilder_RestMapping_ShouldCallFindFlagAssessment_FindAll() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
 
         //When
         camelContext.start();
-        camelContext.startRoute("mappings-flag-assessment");
+        camelContext.startRoute("mappings-flag-assessment-findAll");
+
+        restTemplate.getForEntity(camel_context + "mappings/flag-assessment", String.class);
+
+        //Then
+        verify(flagAssessmentService).findAll();
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestMapping_ShouldCallFindFlagAssessment_ByFlag() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("mappings-flag-assessment-byflag");
 
         Map<String, Object> variables = new HashMap<>();
         String flag = "RDM";

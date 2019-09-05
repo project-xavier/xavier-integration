@@ -5,6 +5,8 @@ import org.jboss.xavier.integrations.jpa.repository.FlagAssessmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class FlagAssessmentService
 {
@@ -14,6 +16,11 @@ public class FlagAssessmentService
     public FlagAssessmentModel findOne(String flag)
     {
         return flagAssessmentRepository.findOne(flag);
+    }
+
+    public List<FlagAssessmentModel> findAll()
+    {
+        return flagAssessmentRepository.findAll();
     }
 
 }
