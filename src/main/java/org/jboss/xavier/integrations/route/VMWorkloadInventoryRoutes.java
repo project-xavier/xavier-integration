@@ -6,6 +6,7 @@ import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInvento
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,6 +19,9 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
     @Inject
     AnalysisService analysisService;
 
+    @Value("${parallel.wir}")
+    private boolean parallel;
+
     @Override
     public void configure() {
         from("direct:calculate-vmworkloadinventory").id("calculate-vmworkloadinventory")
@@ -25,7 +29,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                     .to("direct:aggregate-vmworkloadinventory")
                 .end()
                 .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
-                .split(body()).parallelProcessing(true).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
+                .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
 //                .to("jms:queue:vm-workload-inventory")
                 .to("direct:vm-workload-inventory")
                 .end()
