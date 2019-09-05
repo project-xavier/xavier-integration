@@ -46,7 +46,7 @@
                 <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
                 <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
                 <route id="reports-get-all">
-                    <log message="${headers} ${body}" />
+<!--                    <log message="${headers} ${body}" />-->
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>

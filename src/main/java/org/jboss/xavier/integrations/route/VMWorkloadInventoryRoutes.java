@@ -5,6 +5,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
+import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -22,10 +23,11 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                     .to("direct:aggregate-vmworkloadinventory")
                 .end()
                 .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
-                .split(body()).parallelProcessing(true)
+                .split(body()).parallelProcessing(true).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .to("jms:queue:vm-workload-inventory")
                 .end()
-                .log(LoggingLevel.INFO, "####### SPLIT DONE");
+                .log(LoggingLevel.INFO, "####### SPLIT DONE")
+                .to("log:INFO?showBody=true");
 
         from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
             //.to("log:INFO?showBody=true&showHeaders=true")
