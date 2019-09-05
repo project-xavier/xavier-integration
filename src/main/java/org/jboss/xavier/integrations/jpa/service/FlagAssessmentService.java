@@ -11,9 +11,9 @@ public class FlagAssessmentService
     @Autowired
     FlagAssessmentRepository flagAssessmentRepository;
 
-    public FlagAssessmentModel findByFlag(String flag)
+    public FlagAssessmentModel findOne(String flag)
     {
-        return flagAssessmentRepository.findByFlagIgnoreCase(flag);
+        return flagAssessmentRepository.findOne(flag);
     }
 
 }

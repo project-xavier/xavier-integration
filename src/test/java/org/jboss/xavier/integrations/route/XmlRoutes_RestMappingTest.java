@@ -63,7 +63,7 @@ public class XmlRoutes_RestMappingTest {
         restTemplate.getForEntity(camel_context + "mappings/flag-assessment/{flag}", String.class, variables);
 
         //Then
-        verify(flagAssessmentService).findByFlag(flag);
+        verify(flagAssessmentService).findOne(flag);
         camelContext.stop();
     }
 

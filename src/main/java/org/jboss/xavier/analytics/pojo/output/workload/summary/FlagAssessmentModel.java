@@ -1,32 +1,20 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.OneToMany;
+import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = {
-        @UniqueConstraint(name = "FlagAssessmentModel_" +
-                FlagAssessmentModel.FLAG + "_unique",
-                columnNames = FlagAssessmentModel.FLAG)
-})
 public class FlagAssessmentModel implements java.io.Serializable {
 
-    static final String FLAG = "flag";
-
     @Id
-    private Long id;
     private String flag;
-    private String assessment;
+    private String label;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @OneToMany(mappedBy = "flagAssessmentModel", fetch = FetchType.EAGER)
+    private Set<FlagAssessmentOSModel> flagAssessmentOSModels;
 
     public String getFlag() {
         return flag;
@@ -36,11 +24,19 @@ public class FlagAssessmentModel implements java.io.Serializable {
         this.flag = flag;
     }
 
-    public String getAssessment() {
-        return assessment;
+    public String getLabel() {
+        return label;
     }
 
-    public void setAssessment(String assessment) {
-        this.assessment = assessment;
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public Set<FlagAssessmentOSModel> getFlagAssessmentOSModels() {
+        return flagAssessmentOSModels;
+    }
+
+    public void setFlagAssessmentOSModels(Set<FlagAssessmentOSModel> flagAssessmentOSModels) {
+        this.flagAssessmentOSModels = flagAssessmentOSModels;
     }
 }
