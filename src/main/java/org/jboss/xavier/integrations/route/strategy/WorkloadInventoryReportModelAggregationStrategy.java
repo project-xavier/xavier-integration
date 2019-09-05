@@ -9,6 +9,7 @@ public class WorkloadInventoryReportModelAggregationStrategy extends AbstractLis
     @Override
     public WorkloadInventoryReportModel getValue(Exchange exchange)
     {
+        System.out.println("@@@@@@@ WorkloadInventoryReportModelAggregationStrategy.getValue " + exchange.getIn().getBody(WorkloadInventoryReportModel.class));
         return exchange.getIn().getBody(WorkloadInventoryReportModel.class);
     }
 }

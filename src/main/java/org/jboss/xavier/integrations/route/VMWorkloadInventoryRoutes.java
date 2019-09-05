@@ -23,11 +23,10 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                     .to("direct:aggregate-vmworkloadinventory")
                 .end()
                 .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
-                .split(body()).parallelProcessing(true).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
+                .split(body()).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .to("jms:queue:vm-workload-inventory")
                 .end()
-                .log(LoggingLevel.INFO, "####### SPLIT DONE")
-                .to("log:INFO?showBody=true");
+                .log(LoggingLevel.INFO, "####### SPLIT DONE ${body}");
 
         from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
             //.to("log:INFO?showBody=true&showHeaders=true")
