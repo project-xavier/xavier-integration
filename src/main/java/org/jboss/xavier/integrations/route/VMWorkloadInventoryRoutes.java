@@ -9,6 +9,8 @@ import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModel
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.List;
+import java.util.Map;
 
 @Named
 public class VMWorkloadInventoryRoutes extends RouteBuilder {
@@ -27,7 +29,11 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
 //                .to("jms:queue:vm-workload-inventory")
                 .to("direct:vm-workload-inventory")
                 .end()
-                .log(LoggingLevel.INFO, "####### SPLIT DONE ${body}");
+                .log(LoggingLevel.INFO, "####### SPLIT DONE ${body}")
+                .process(exchange -> {
+                    analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
+                            Long.parseLong(exchange.getIn().getHeader("MA_metadata", Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString());
+                });
 
 //        from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
         from ("direct:vm-workload-inventory").id("extract-vmworkloadinventory")
