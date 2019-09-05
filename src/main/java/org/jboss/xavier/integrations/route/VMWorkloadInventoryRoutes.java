@@ -32,7 +32,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                 .log(LoggingLevel.INFO, "####### SPLIT DONE ${body}")
                 .process(exchange -> {
                     analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
-                            Long.parseLong(exchange.getIn().getHeader("MA_metadata", Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString());
+                            Long.parseLong(exchange.getIn().getHeader("MA_metadata", Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString()));
                 });
 
 //        from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
