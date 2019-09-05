@@ -50,6 +50,9 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
     FlagService flagService;
 
     @Inject
+    ScanRunService scanRunService;
+
+    @Inject
     SummaryService summaryService;
 
     @Inject
@@ -105,6 +108,9 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
 
                 List<FlagModel> flagModels = flagService.calculateFlagModels(analysisId);
                 workloadSummaryReportModel.setFlagModels(flagModels);
+
+                List<ScanRunModel> scanRunModels = scanRunService.calculateScanRunModels(analysisId);
+                workloadSummaryReportModel.setScanRunModels(scanRunModels);
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
