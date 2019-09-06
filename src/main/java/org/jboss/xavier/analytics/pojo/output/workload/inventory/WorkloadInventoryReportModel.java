@@ -143,7 +143,7 @@ public class WorkloadInventoryReportModel
 
     private Date creationDate;
 
-    private Boolean ssaEnabled;
+    private String ssaEnabled;
 
     public WorkloadInventoryReportModel() {}
 
@@ -321,11 +321,11 @@ public class WorkloadInventoryReportModel
         this.host_name = host_name;
     }
 
-    public Boolean getSsaEnabled() {
+    public String getSsaEnabled() {
         return ssaEnabled;
     }
 
-    public void setSsaEnabled(Boolean ssaEnabled) {
+    public void setSsaEnabled(String ssaEnabled) {
         this.ssaEnabled = ssaEnabled;
     }
 }

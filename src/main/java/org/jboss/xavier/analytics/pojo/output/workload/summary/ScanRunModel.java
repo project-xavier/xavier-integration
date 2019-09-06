@@ -1,6 +1,6 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
-import java.util.Date;
+import java.sql.Date;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.GenericGenerator;
@@ -23,15 +23,15 @@ import javax.persistence.SqlResultSetMapping;
                 targetClass = ScanRunModel.class,
                 columns = {
                         @ColumnResult(name = "target", type = String.class),
-                        @ColumnResult(name = "date", type = Date.class),
-                        @ColumnResult(name = "type", type = Boolean.class)
+                        @ColumnResult(name = "date", type = java.sql.Date.class),
+                        @ColumnResult(name = "type", type = String.class)
                 }
         )
 )
 
 @NamedNativeQuery(
         name = "ScanRunModel.calculateScanRunModels",
-        query = "select provider as target, creation_date as date, ssaenabled as type from workload_inventory_report_model  where analysis_id = :analysisId group by provider order by provider;",
+        query = "select provider as target, creation_date as date, ssa_enabled as type from workload_inventory_report_model  where analysis_id = :analysisId group by provider order by provider;",
         resultSetMapping = "mappingScanRunModels"
 )
 
@@ -57,13 +57,13 @@ public class ScanRunModel {
 
     private String target;
     private Date date;
-    private Boolean type;
+    private String type;
 
     ScanRunModel(){}
 
-    ScanRunModel(Date date, String target, Boolean type){
-        this.date = date;
+    ScanRunModel(String target, Date date, String type){
         this.target = target;
+        this.date = date;
         this.type = type;
     }
 
@@ -99,12 +99,16 @@ public class ScanRunModel {
         this.date = date;
     }
 
-    public String getType() {
+    /*public String getType() {
         String typeString = "Virt Platform";
         return typeString + (type?" + SmartState": null);
+    }*/
+
+    public String getType() {
+        return type;
     }
 
-    public void setType(Boolean type) {
+    public void setType(String type) {
         this.type = type;
     }
 }
