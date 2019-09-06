@@ -1,6 +1,6 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
-import java.sql.Date;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.GenericGenerator;
@@ -23,8 +23,8 @@ import javax.persistence.SqlResultSetMapping;
                 targetClass = ScanRunModel.class,
                 columns = {
                         @ColumnResult(name = "target", type = String.class),
-                        @ColumnResult(name = "date", type = java.sql.Date.class),
-                        @ColumnResult(name = "type", type = String.class)
+                        @ColumnResult(name = "date", type = java.util.Date.class),
+                        @ColumnResult(name = "type", type = Boolean.class)
                 }
         )
 )
@@ -57,11 +57,11 @@ public class ScanRunModel {
 
     private String target;
     private Date date;
-    private String type;
+    private Boolean type;
 
     ScanRunModel(){}
 
-    ScanRunModel(String target, Date date, String type){
+    ScanRunModel(String target, Date date, Boolean type){
         this.target = target;
         this.date = date;
         this.type = type;
@@ -104,11 +104,11 @@ public class ScanRunModel {
         return typeString + (type?" + SmartState": null);
     }*/
 
-    public String getType() {
+    public Boolean getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(Boolean type) {
         this.type = type;
     }
 }
