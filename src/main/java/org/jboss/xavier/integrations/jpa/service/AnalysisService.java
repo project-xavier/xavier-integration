@@ -56,21 +56,15 @@ public class AnalysisService
     }
 
     public void addWorkloadInventoryReportModel(WorkloadInventoryReportModel reportModel, Long id) {
-        Long start = System.currentTimeMillis();
         AnalysisModel analysisModel = findById(id);
         analysisModel.addWorkloadInventoryReportModel(reportModel);
-        Long gap = System.currentTimeMillis();
         analysisRepository.save(analysisModel);
-        System.out.println("######### addWorkloadInventoryReportModel took " + (gap - start) + " to find and " + (System.currentTimeMillis() - gap) + " to save");
     }
 
     public void addWorkloadInventoryReportModels(List<WorkloadInventoryReportModel> reportModels, Long id) {
-        Long start = System.currentTimeMillis();
         AnalysisModel analysisModel = findById(id);
         analysisModel.setWorkloadInventoryReportModels(reportModels);
-        Long gap = System.currentTimeMillis();
         analysisRepository.save(analysisModel);
-        System.out.println("######### addWorkloadInventoryReportModels(List) took " + (gap - start) + " to find and " + (System.currentTimeMillis() - gap) + " to save");
     }
 
     public void setWorkloadSummaryReportModel(WorkloadSummaryReportModel reportModel, Long id) {

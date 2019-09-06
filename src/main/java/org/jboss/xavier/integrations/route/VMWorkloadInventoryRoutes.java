@@ -30,24 +30,18 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                 .end()
                 .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
-//                .to("jms:queue:vm-workload-inventory")
                 .to("direct:vm-workload-inventory")
                 .end()
-                .log(LoggingLevel.INFO, "####### SPLIT DONE ${body}")
                 .process(exchange -> {
                     analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
                             Long.parseLong(exchange.getIn().getHeader("MA_metadata", Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString()));
                 });
 
-//        from ("jms:queue:vm-workload-inventory").id("extract-vmworkloadinventory")
         from ("direct:vm-workload-inventory").id("extract-vmworkloadinventory")
-            //.to("log:INFO?showBody=true&showHeaders=true")
             .doTry()
-                .setHeader(MainRouteBuilder.ANALYSIS_ID, simple("${body." + MainRouteBuilder.ANALYSIS_ID + "}", String.class))
                 .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
                 .to("direct:decisionserver").id("workload-decisionserver")
                 .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel")
-//                .process(e -> analysisService.addWorkloadInventoryReportModel(e.getIn().getBody(WorkloadInventoryReportModel.class), Long.parseLong(e.getIn().getHeader(MainRouteBuilder.ANALYSIS_ID, String.class))))
             .endDoTry()
             .doCatch(Exception.class)
                 .to("log:error?showCaughtException=true&showStackTrace=true")

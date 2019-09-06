@@ -66,7 +66,6 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     }
 
     private VMWorkloadInventoryModel createVMWorkloadInventoryModel(Map vmStructMap, Long analysisId) {
-        Long start = System.currentTimeMillis();
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();
         model.setProvider(readValueFromExpandedEnvVarPath(PROVIDERPATH, vmStructMap));
 
@@ -98,7 +97,6 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
 
         model.setAnalysisId(analysisId);
 
-        System.out.println("Execution took " + (System.currentTimeMillis() - start));
         return model;
     }
 
