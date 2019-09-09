@@ -32,19 +32,14 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
     @Override
     public void configure() {
         from("direct:calculate-vmworkloadinventory").id("calculate-vmworkloadinventory")
-/*
-                .onCompletion().onCompleteOnly().id("onCompletion-vmworkloadinventory")
-                    .to("direct:aggregate-vmworkloadinventory")
-                .end()
-*/
-                .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
-                .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
-                .to("direct:vm-workload-inventory")
-                .end()
-                .process(exchange -> {
-                    analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
-                            Long.parseLong(exchange.getIn().getHeader("MA_metadata", Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString()));
-                }).log(LoggingLevel.ERROR, "----------------- END direct:calculate-vmworkloadinventory");
+            .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.MA_metadata})")
+            .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
+            .to("direct:vm-workload-inventory")
+            .end()
+            .process(exchange -> {
+                analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
+                        Long.parseLong(exchange.getIn().getHeader("MA_metadata", Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString()));
+            });
 
         from ("direct:vm-workload-inventory").id("extract-vmworkloadinventory")
             .doTry()
@@ -61,7 +56,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
 
         from("direct:flags-shared-disks").id("flags-shared-disks")
             .doTry()
-                .log("@@@@@@ analysis id = ${header.MA_metadata[" + MainRouteBuilder.ANALYSIS_ID + "]}")
                 .transform().method(FlagSharedDisksCalculator.class, "calculate(${body}, ${header.MA_metadata})")
                 .process(exchange -> {
                     Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
