@@ -67,7 +67,7 @@ public class WorkloadSummaryReportModel
     private Set<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<ScanRunModel> scanRunModels;
 
     public WorkloadSummaryReportModel() {}

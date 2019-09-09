@@ -100,14 +100,14 @@ public class ScanRunModel {
         this.date = date;
     }
 
-    /*public String getType() {
+    public String getType() {
         String typeString = "Virt Platform";
-        return typeString + (type?" + SmartState": null);
-    }*/
-
-    public Boolean getType() {
-        return type;
+        return typeString + (type?" + SmartState": "");
     }
+
+    /*public Boolean getType() {
+        return type;
+    }*/
 
     public void setType(Boolean type) {
         this.type = type;
