@@ -1,15 +1,8 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
-import org.jboss.xavier.integrations.route.MainRouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
