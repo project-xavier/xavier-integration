@@ -1,5 +1,6 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -23,7 +24,7 @@ import javax.persistence.SqlResultSetMapping;
                 targetClass = ScanRunModel.class,
                 columns = {
                         @ColumnResult(name = "target", type = String.class),
-                        @ColumnResult(name = "date", type = java.util.Date.class),
+                        @ColumnResult(name = "date", type = Timestamp.class),
                         @ColumnResult(name = "type", type = Boolean.class)
                 }
         )
@@ -59,9 +60,9 @@ public class ScanRunModel {
     private Date date;
     private Boolean type;
 
-    ScanRunModel(){}
+    public ScanRunModel(){}
 
-    ScanRunModel(String target, Date date, Boolean type){
+    public ScanRunModel(String target, Date date, Boolean type){
         this.target = target;
         this.date = date;
         this.type = type;
