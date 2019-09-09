@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class AnalysisService
@@ -60,6 +61,12 @@ public class AnalysisService
         analysisRepository.save(analysisModel);
     }
 
+    public void addWorkloadInventoryReportModels(List<WorkloadInventoryReportModel> reportModels, Long id) {
+        AnalysisModel analysisModel = findById(id);
+        analysisModel.setWorkloadInventoryReportModels(reportModels);
+        analysisRepository.save(analysisModel);
+    }
+
     public void setWorkloadSummaryReportModel(WorkloadSummaryReportModel reportModel, Long id) {
         AnalysisModel analysisModel = findById(id);
         analysisModel.setWorkloadSummaryReportModels(reportModel);
@@ -73,6 +80,7 @@ public class AnalysisService
         reportModel.setAnalysis(analysisModel);
         // TODO remove this since it's just a temporary workaround to change the status
         analysisModel.setStatus(STATUS.CREATED.toString());
+        analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
     }
 
@@ -91,6 +99,7 @@ public class AnalysisService
     public void updateStatus(String status, Long id) {
         AnalysisModel analysisModel = findById(id);
         analysisModel.setStatus(status);
+        analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
     }
 }
