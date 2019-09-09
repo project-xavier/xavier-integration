@@ -71,8 +71,9 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("rest-upload")
                 .to("direct:upload");
 
-        from("direct:upload").id("direct-upload")
+        from("direct:upload").id("direct-upload").tracing()
                 .unmarshal(new CustomizedMultipartDataFormat())
+                .to("log:INFO?showBody=true&showHeaders=true")
                 .choice()
                     .when(isAllExpectedParamsExist())
                         .split()
@@ -112,7 +113,7 @@ public class MainRouteBuilder extends RouteBuilder {
                             .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
                 .endDoTry()
                 .doCatch(Exception.class)
-                    .to("log:error?showCaughtException=true&showStackTrace=true")
+                    .to(":log:error?showCaughtException=true&showStackTrace=true")
                     .to("direct:mark-analysis-fail")
                 .end();
 
