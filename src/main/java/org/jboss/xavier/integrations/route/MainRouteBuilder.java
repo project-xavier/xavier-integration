@@ -212,7 +212,13 @@ public class MainRouteBuilder extends RouteBuilder {
     }
 
     private Predicate isAllExpectedParamsExist() {
-        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
+
+        return exchange -> {
+            insightsProperties.stream().forEach(e -> {
+                System.out.println(e + " : [" + exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class).get(e) + "]");
+            });
+            return insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
+        };
     }
 
     private Predicate isFilePart() {
