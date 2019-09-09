@@ -64,10 +64,13 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
     @Override
     public void configure() {
 
+/*
+        NOT USED anymore
+*/
         from("direct:aggregate-vmworkloadinventory")
             .id("aggregate-vmworkloadinventory")
             .process(exchange -> {
-                Integer expectedSize = ((Collection) exchange.getIn().getBody()).size();
+                Integer expectedSize = exchange.getIn().getBody(List.class).size();
                 String analysisId = ((Map<String, String>) exchange.getIn().getHeader("MA_metadata")).get(MainRouteBuilder.ANALYSIS_ID);
                 List<WorkloadInventoryReportModel> workloadInventoryReportModels  = workloadInventoryReportService.findByAnalysisId(Long.parseLong(analysisId));
                 int attempts = 0;
@@ -108,7 +111,6 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
-
 
                 // Refresh the  workloadSummaryReportModel
                 AnalysisModel analysisModel = analysisService.findById(analysisId);
