@@ -73,7 +73,6 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:upload").id("direct-upload").tracing()
                 .unmarshal(new CustomizedMultipartDataFormat())
-                .to("log:info?showBody=true&showHeaders=true")
                 .choice()
                     .when(isAllExpectedParamsExist())
                         .split()
@@ -184,7 +183,7 @@ public class MainRouteBuilder extends RouteBuilder {
                            neu.setHypervisor(neu.getHypervisor() + ((old != null) ? old.getHypervisor() : 0));
                            return neu;
                         } )
-                    .completionTimeout(2000L) //TODO find another way to know the size of the list ( TarSplitter does not inform CamelSplitSize )
+                    .completionTimeout(10000L) //TODO find another way to know the size of the list ( TarSplitter does not inform CamelSplitSize )
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:uploadFormInputDataModel");
     }
@@ -212,13 +211,7 @@ public class MainRouteBuilder extends RouteBuilder {
     }
 
     private Predicate isAllExpectedParamsExist() {
-
-        return exchange -> {
-            insightsProperties.stream().forEach(e -> {
-                System.out.println(e + " : [" + exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class).get(e) + "]");
-            });
-            return insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
-        };
+        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
     }
 
     private Predicate isFilePart() {
