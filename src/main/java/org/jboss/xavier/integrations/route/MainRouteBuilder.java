@@ -71,7 +71,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("rest-upload")
                 .to("direct:upload");
 
-        from("direct:upload").id("direct-upload").tracing()
+        from("direct:upload").id("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .choice()
                     .when(isAllExpectedParamsExist())
