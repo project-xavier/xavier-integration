@@ -10,7 +10,6 @@ import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
 import org.jboss.xavier.integrations.jpa.repository.*;
-import org.jboss.xavier.integrations.route.model.PageBean;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -380,10 +378,10 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         WorkloadSummaryReportModel workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
         Assert.assertNotNull(workloadSummaryReportModel);
         workloadSummaryReportModel = workloadSummaryReportRepository.findOne(workloadSummaryReportModel.getId());
-        List<ScanRunModel> scanRunModels = workloadSummaryReportModel.getScanRunModels();
+        Set<ScanRunModel> scanRunModels = workloadSummaryReportModel.getScanRunModels();
 
         Assert.assertNotNull(scanRunModels);
-        Assert.assertEquals(8, scanRunModels.size());
+        Assert.assertEquals(2, scanRunModels.size());
 
         scanRunModels.stream().filter(model -> model.getId() % 2 == 0).forEach(srm ->
                 {

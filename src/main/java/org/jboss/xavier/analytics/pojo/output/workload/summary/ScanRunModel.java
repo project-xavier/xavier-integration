@@ -24,7 +24,7 @@ import javax.persistence.SqlResultSetMapping;
                 targetClass = ScanRunModel.class,
                 columns = {
                         @ColumnResult(name = "target", type = String.class),
-                        @ColumnResult(name = "date", type = Timestamp.class),
+                        @ColumnResult(name = "scan_date", type = Timestamp.class),
                         @ColumnResult(name = "type", type = Boolean.class)
                 }
         )
@@ -32,7 +32,7 @@ import javax.persistence.SqlResultSetMapping;
 
 @NamedNativeQuery(
         name = "ScanRunModel.calculateScanRunModels",
-        query = "select provider as target, cast(creation_date as date) as date, bool_or(ssa_enabled) as type from workload_inventory_report_model  where analysis_id = :analysisId group by provider, date order by provider;",
+        query = "select provider as target, cast(creation_date as date) as scan_date, bool_or(ssa_enabled) as type from workload_inventory_report_model  where analysis_id = :analysisId group by provider, scan_date order by provider;",
         resultSetMapping = "mappingScanRunModels"
 )
 

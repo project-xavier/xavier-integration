@@ -68,7 +68,7 @@ public class WorkloadSummaryReportModel
 
     @JsonIgnore
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<ScanRunModel> scanRunModels;
+    private Set<ScanRunModel> scanRunModels;
 
     public WorkloadSummaryReportModel() {}
 
@@ -142,11 +142,11 @@ public class WorkloadSummaryReportModel
         this.workloadsDetectedOSTypeModels = workloadsDetectedOSTypeModels;
     }
 
-    public List<ScanRunModel> getScanRunModels() {
+    public Set<ScanRunModel> getScanRunModels() {
         return scanRunModels;
     }
 
-    public void setScanRunModels(List<ScanRunModel> scanRunModels) {
+    public void setScanRunModels(Set<ScanRunModel> scanRunModels) {
         scanRunModels.forEach(model -> model.setReport(this));
         this.scanRunModels = scanRunModels;
     }
