@@ -200,7 +200,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         //Then
         mockJmsQueueCostSavings.assertIsSatisfied();
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(9);
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().noneMatch(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getVmName().isEmpty())).isTrue();
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().filter(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName().equals("CentOS 7 (64-bit)")).count()).isEqualTo(1);
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().filter(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName().equals("Linux")).count()).isEqualTo(7);
@@ -213,11 +213,12 @@ public class MainRouteBuilder_DirectCalculateTest {
     @Test
     public void mainRouteBuilder_DirectCalculateWithMultipleJSONFilesGiven_ShouldSendOneMessageToICSAnd2ToWILQueue() throws Exception {
         //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name");
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
 
         mockJmsQueueCostSavings.expectedMessageCount(1);
-        mockJmsQueueWorkloadInventory.expectedMessageCount(2);
+        mockDirectWorkloadInventory.expectedMessageCount(2);
 
         String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
@@ -228,7 +229,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
         metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
         metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, 7L);
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
@@ -240,6 +241,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
         camelContext.startRoute("calculate-vmworkloadinventory");
+        camelContext.startRoute("flags-shared-disks");
+
 
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
@@ -251,29 +254,29 @@ public class MainRouteBuilder_DirectCalculateTest {
         Thread.sleep(5000);
         //Then
         mockJmsQueueCostSavings.assertIsSatisfied();
-        mockJmsQueueWorkloadInventory.assertIsSatisfied();
+        mockDirectWorkloadInventory.assertIsSatisfied();
 
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(34359738368L);
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
 
-        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+        assertThat(mockDirectWorkloadInventory.getExchanges()
                 .stream()
                 .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
                 .filter(e -> e.getVmName().equalsIgnoreCase("james-db-04-copy"))
                 .findFirst().get().getCpuCores()).isEqualTo(1);
-        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+        assertThat(mockDirectWorkloadInventory.getExchanges()
                 .stream()
                 .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
                 .filter(e -> e.getVmName().equalsIgnoreCase("james-db-04-copy"))
                 .findFirst().get().getDiskSpace()).isEqualTo(99123456789L);
 
-        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+        assertThat(mockDirectWorkloadInventory.getExchanges()
                 .stream()
                 .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
                 .filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy"))
                 .findFirst().get().getCpuCores()).isEqualTo(1);
 
-        assertThat(mockJmsQueueWorkloadInventory.getExchanges()
+        assertThat(mockDirectWorkloadInventory.getExchanges()
                 .stream()
                 .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
                 .filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy"))
