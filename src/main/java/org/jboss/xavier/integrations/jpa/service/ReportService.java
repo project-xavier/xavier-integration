@@ -12,7 +12,8 @@ public class ReportService
     @Autowired
     ReportRepository reportRepository;
 
-    public Iterable<ReportDataModel> findReports()
+/* TODO remove
+   public Iterable<ReportDataModel> findReports()
     {
         return reportRepository.findAll();
     }
@@ -25,5 +26,5 @@ public class ReportService
     public ReportDataModel findReportDetails(Long id)
     {
         return reportRepository.findOne(id);
-    }
+    }*/
 }

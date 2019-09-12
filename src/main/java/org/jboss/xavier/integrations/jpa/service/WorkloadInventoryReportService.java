@@ -45,10 +45,11 @@ public class WorkloadInventoryReportService
         return result;
     };
 
-    public List<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId) {
-        return reportRepository.findByAnalysisId(analysisId);
+    public List<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(String analysisOwner, Long analysisId) {
+        return reportRepository.findByAnalysisOwnerAndAnalysisId(analysisOwner, analysisId);
     }
 
+/*  TODO remove
     public Page<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean) {
         // Sort
         Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -61,9 +62,10 @@ public class WorkloadInventoryReportService
         Pageable pageable = new PageRequest(page, size, sort);
 
         return reportRepository.findByAnalysisId(analysisId, pageable);
-    }
+    }*/
 
-    public Page<WorkloadInventoryReportModel> findByAnalysisId(
+    public Page<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
+            String analysisOwner,
             Long analysisId,
             PageBean pageBean,
             SortBean sortBean,
@@ -80,7 +82,7 @@ public class WorkloadInventoryReportService
         Pageable pageable = new PageRequest(page, size, sort);
 
         // Filtering
-        Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisIdAndFilterBean(analysisId, filterBean);
+        Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);
 
         return reportRepository.findAll(specification, pageable);
     }

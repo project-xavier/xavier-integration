@@ -86,8 +86,8 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
 
-                // Refresh the  workloadSummaryReportModel
-                AnalysisModel analysisModel = analysisService.findById(analysisId);
+                // Refresh the workloadSummaryReportModel
+                AnalysisModel analysisModel = analysisService.findByOwnerAndId(exchange.getIn().getHeader(MainRouteBuilder.USERNAME, String.class), analysisId);
                 workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
 
                 // TODO Calculate parts of the Workload Summary Report which depends of previous data
