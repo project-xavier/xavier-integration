@@ -11,40 +11,6 @@ public class InitialSavingsEstimationReportService
     @Autowired
     InitialSavingsEstimationReportRepository reportRepository;
 
-/*  TODO remove
-    public Page<InitialSavingsEstimationReportModel> findReports()
-    {
-        Pageable page = new PageRequest(0, 5);
-        return reportRepository.findAll(page);
-    }
-
-    public Page<InitialSavingsEstimationReportModel> findReports(int page, int size)
-    {
-        Pageable pageable = new PageRequest(page, size);
-        return reportRepository.findAll(pageable);
-    }
-
-    public Iterable<InitialSavingsEstimationReportSummary> findReportSummary()
-    {
-        return reportRepository.findAllReportSummaryBy();
-    }
-
-    public Page<InitialSavingsEstimationReportSummary> findReportSummary(int page, int size)
-    {
-        Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
-        return reportRepository.findAllReportSummaryBy(pageable);
-    }
-
-    public InitialSavingsEstimationReportSummary findReportSummaryById(Long id)
-    {
-        return reportRepository.findReportSummaryById(id);
-    }
-
-    public InitialSavingsEstimationReportModel findReportDetails(Long id)
-    {
-        return reportRepository.findOne(id);
-    }*/
-
     public InitialSavingsEstimationReportModel findByAnalysisOwnerAndAnalysisId(String owner, Long id)
     {
         return reportRepository.findByAnalysisOwnerAndAnalysisId(owner, id);

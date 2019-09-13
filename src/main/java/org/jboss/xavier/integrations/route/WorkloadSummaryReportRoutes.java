@@ -69,7 +69,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 // Set the components into the WorkloadSummaryReportModel bean
                 workloadSummaryReportModel.setSummaryModels(new LinkedHashSet<>(summaryModels)); // LinkedHashSet to preserve the order
 
-                // TODO Calculate the other parts of the Workload Summary Report
+                // Calculate the other parts of the Workload Summary Report
                 // and set them into the workloadSummaryReportModel bean
                 ComplexityModel complexityModel = complexityService.calculateComplexityModels(analysisId);
                 workloadSummaryReportModel.setComplexityModel(complexityModel);
@@ -90,7 +90,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
                 AnalysisModel analysisModel = analysisService.findByOwnerAndId(exchange.getIn().getHeader(MainRouteBuilder.USERNAME, String.class), analysisId);
                 workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
 
-                // TODO Calculate parts of the Workload Summary Report which depends of previous data
+                // Calculate parts of the Workload Summary Report which depends of previous data
                 List<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels = workloadsDetectedOSTypeService.calculateWorkloadsDetectedOSTypeModels(analysisId);
                 workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(new LinkedHashSet<>(workloadsDetectedOSTypeModels)); // // LinkedHashSet to preserve the order
 

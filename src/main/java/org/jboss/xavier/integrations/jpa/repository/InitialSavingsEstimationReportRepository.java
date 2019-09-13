@@ -7,12 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InitialSavingsEstimationReportRepository extends JpaRepository<InitialSavingsEstimationReportModel, Long>
 {
-/*  TODO remove
-    Iterable<InitialSavingsEstimationReportSummary> findAllReportSummaryBy();
-
-    Page<InitialSavingsEstimationReportSummary> findAllReportSummaryBy(Pageable pageable);
-
-    InitialSavingsEstimationReportSummary findReportSummaryById(Long id);*/
-
     InitialSavingsEstimationReportModel findByAnalysisOwnerAndAnalysisId(String owner, Long id);
 }

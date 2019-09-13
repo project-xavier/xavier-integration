@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.component.rest.RestEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -800,6 +802,57 @@ public class XmlRoutes_RestReportTest {
 
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestEndpoints_NoRHIdentityGiven_ShouldReturnForbidden() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+        int expectedRestEndpointsTested = 12;
+        final AtomicInteger restEndpointsTested = new AtomicInteger(0);
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.getRoutes().stream()
+                .filter(route -> route.getEndpoint() instanceof RestEndpoint)
+                .forEach(route -> {
+                    try {
+                        camelContext.startRoute(route.getId());
+
+                        Map<String, Object> variables = new HashMap<>();
+                        Long one = 1L;
+                        variables.put("id", one);
+
+                        RestEndpoint restEndpoint = (RestEndpoint) route.getEndpoint();
+                        String url = camel_context + restEndpoint.getPath();
+                        if (restEndpoint.getUriTemplate() != null) url += restEndpoint.getUriTemplate();
+                        ResponseEntity<String> result = restTemplate.exchange(
+                                url,
+                                HttpMethod.resolve(restEndpoint.getMethod().toUpperCase()),
+                                new HttpEntity<>(null, null),
+                                String.class,
+                                variables);
+
+                        //Then
+                        assertThat(result).isNotNull();
+                        assertThat(result.getStatusCodeValue()).isEqualByComparingTo(403);
+                        assertThat(result.getBody()).isEqualTo("Forbidden");
+                        verifyZeroInteractions(analysisService);
+                        verifyZeroInteractions(initialSavingsEstimationReportService);
+                        verifyZeroInteractions(workloadInventoryReportService);
+                        verifyZeroInteractions(workloadSummaryReportService);
+                        verifyZeroInteractions(workloadService);
+                        verifyZeroInteractions(flagService);
+                        restEndpointsTested.incrementAndGet();
+                        camelContext.stopRoute(route.getId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+        assertThat(restEndpointsTested.get()).isEqualTo(expectedRestEndpointsTested);
         camelContext.stop();
     }
 }

@@ -49,21 +49,6 @@ public class WorkloadInventoryReportService
         return reportRepository.findByAnalysisOwnerAndAnalysisId(analysisOwner, analysisId);
     }
 
-/*  TODO remove
-    public Page<WorkloadInventoryReportModel> findByAnalysisId(Long analysisId, PageBean pageBean, SortBean sortBean) {
-        // Sort
-        Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
-        String orderBy = mapToSupportedSortField.apply(sortBean.getOrderBy());
-        Sort sort = new Sort(sortDirection, orderBy);
-
-        // Pagination
-        int page = pageBean.getPage();
-        int size = pageBean.getSize();
-        Pageable pageable = new PageRequest(page, size, sort);
-
-        return reportRepository.findByAnalysisId(analysisId, pageable);
-    }*/
-
     public Page<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
             String analysisOwner,
             Long analysisId,

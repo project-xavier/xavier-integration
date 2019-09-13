@@ -69,7 +69,6 @@ public class XmlRoutes_RestUserTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "user", HttpMethod.GET, entity, String.class);
 
         //Then
-        // TODO uncomment when reviewing the test
         assertThat(response).isNotNull();
         assertThat(response.getBody()).isEqualToIgnoringCase("{\"firstTimeCreatingReports\":false}");
         camelContext.stop();
@@ -94,7 +93,6 @@ public class XmlRoutes_RestUserTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "user", HttpMethod.GET, entity, String.class);
 
         //Then
-        // TODO uncomment when reviewing the test
         assertThat(response).isNotNull();
         assertThat(response.getBody()).isEqualToIgnoringCase("{\"firstTimeCreatingReports\":true}");
         camelContext.stop();

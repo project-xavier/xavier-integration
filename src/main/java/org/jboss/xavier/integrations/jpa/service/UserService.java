@@ -12,10 +12,6 @@ public class UserService
     @Inject
     AnalysisService analysisService;
 
-    // TODO remove it once persistence in the DB will be implemented
-    //@Value("${rest.user.value}")
-    private boolean firstTime;
-
     public User findUser(String username)
     {
         return new User(analysisService.countByOwner(username).intValue() == 0);
