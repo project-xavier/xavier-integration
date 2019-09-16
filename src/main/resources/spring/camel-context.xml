@@ -46,7 +46,7 @@
             <description>Mapping REST API</description>
             <get uri="/flag-assessment">
                 <route id="mappings-flag-assessment-findAll">
-                    <bean ref="flagAssessmentService" method="findAll(})" />
+                    <bean ref="flagAssessmentService" method="findAll()" />
                 </route>
             </get>
         </rest>
