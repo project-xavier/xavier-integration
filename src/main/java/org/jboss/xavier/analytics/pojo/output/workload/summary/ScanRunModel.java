@@ -105,10 +105,6 @@ public class ScanRunModel {
         return typeString + (type?" + SmartState": "");
     }
 
-    /*public Boolean getType() {
-        return type;
-    }*/
-
     public void setType(Boolean type) {
         this.type = type;
     }
