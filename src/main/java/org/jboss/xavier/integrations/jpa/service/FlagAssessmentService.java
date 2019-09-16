@@ -13,11 +13,6 @@ public class FlagAssessmentService
     @Autowired
     FlagAssessmentRepository flagAssessmentRepository;
 
-    public FlagAssessmentModel findOne(String flag)
-    {
-        return flagAssessmentRepository.findOne(flag);
-    }
-
     public List<FlagAssessmentModel> findAll()
     {
         return flagAssessmentRepository.findAll();

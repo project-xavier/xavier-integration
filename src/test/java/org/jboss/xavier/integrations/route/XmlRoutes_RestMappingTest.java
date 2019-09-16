@@ -6,6 +6,7 @@ import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.jpa.service.FlagAssessmentService;
+import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +15,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -55,32 +60,18 @@ public class XmlRoutes_RestMappingTest {
 
         //When
         camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("mappings-flag-assessment-findAll");
 
-        restTemplate.getForEntity(camel_context + "mappings/flag-assessment", String.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        restTemplate.exchange(camel_context + "mappings/flag-assessment", HttpMethod.GET, entity, String.class);
 
         //Then
         verify(flagAssessmentService).findAll();
-        camelContext.stop();
-    }
-
-    @Test
-    public void xmlRouteBuilder_RestMapping_ShouldCallFindFlagAssessment_ByFlag() throws Exception {
-        //Given
-        camelContext.setTracing(true);
-        camelContext.setAutoStartup(false);
-
-        //When
-        camelContext.start();
-        camelContext.startRoute("mappings-flag-assessment-byflag");
-
-        Map<String, Object> variables = new HashMap<>();
-        String flag = "RDM";
-        variables.put("flag", flag);
-        restTemplate.getForEntity(camel_context + "mappings/flag-assessment/{flag}", String.class, variables);
-
-        //Then
-        verify(flagAssessmentService).findOne(flag);
         camelContext.stop();
     }
 

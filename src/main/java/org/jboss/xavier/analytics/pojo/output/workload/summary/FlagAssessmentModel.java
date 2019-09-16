@@ -1,20 +1,35 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 public class FlagAssessmentModel implements java.io.Serializable {
 
-    @Id
-    private String flag;
-    private String label;
+    @JsonIgnore
+    @EmbeddedId
+    private FlagAssessmentIdentityModel id;
 
-    @OneToMany(mappedBy = "flagAssessmentModel", fetch = FetchType.EAGER)
-    private Set<FlagAssessmentOSModel> flagAssessmentOSModels;
+    // This comes from FlagAssessmentIdentityModel
+    @Column(insertable = false, updatable = false)
+    private String flag;
+
+    // This comes from FlagAssessmentIdentityModel
+    @Column(insertable = false, updatable = false)
+    private String osName;
+
+    private String flagLabel;
+    private String assessment;
+
+    public FlagAssessmentIdentityModel getId() {
+        return id;
+    }
+
+    public void setId(FlagAssessmentIdentityModel id) {
+        this.id = id;
+    }
 
     public String getFlag() {
         return flag;
@@ -24,19 +39,27 @@ public class FlagAssessmentModel implements java.io.Serializable {
         this.flag = flag;
     }
 
-    public String getLabel() {
-        return label;
+    public String getOsName() {
+        return osName;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setOsName(String osName) {
+        this.osName = osName;
     }
 
-    public Set<FlagAssessmentOSModel> getFlagAssessmentOSModels() {
-        return flagAssessmentOSModels;
+    public String getFlagLabel() {
+        return flagLabel;
     }
 
-    public void setFlagAssessmentOSModels(Set<FlagAssessmentOSModel> flagAssessmentOSModels) {
-        this.flagAssessmentOSModels = flagAssessmentOSModels;
+    public void setFlagLabel(String flagLabel) {
+        this.flagLabel = flagLabel;
+    }
+
+    public String getAssessment() {
+        return assessment;
+    }
+
+    public void setAssessment(String assessment) {
+        this.assessment = assessment;
     }
 }

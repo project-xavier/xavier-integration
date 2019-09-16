@@ -49,11 +49,6 @@
                     <bean ref="flagAssessmentService" method="findAll(})" />
                 </route>
             </get>
-            <get uri="/flag-assessment/{flag}">
-                <route id="mappings-flag-assessment-byflag">
-                    <bean ref="flagAssessmentService" method="findOne(${header.flag})" />
-                </route>
-            </get>
         </rest>
 
         <rest path="/report">
