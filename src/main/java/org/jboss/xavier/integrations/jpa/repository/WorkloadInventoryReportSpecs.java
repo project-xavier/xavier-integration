@@ -60,8 +60,14 @@ public class WorkloadInventoryReportSpecs {
         };
     }
 
-    public static Specification<WorkloadInventoryReportModel> getByAnalysisIdAndFilterBean(Long analysisId, WorkloadInventoryFilterBean filterBean) {
+    public static Specification<WorkloadInventoryReportModel> getByAnalysisOwnerAndAnalysisIdAndFilterBean(String analysisOwner, Long analysisId, WorkloadInventoryFilterBean filterBean) {
         List<Specification<WorkloadInventoryReportModel>> specifications = new ArrayList<>();
+
+        // analysisOwner
+        Specification<WorkloadInventoryReportModel> analysisOwnerSpec = (root, query, cb) -> {
+            Join<WorkloadInventoryReportModel, AnalysisModel> analysis = root.join("analysis", JoinType.INNER);
+            return cb.equal(analysis.get("owner"), analysisOwner);
+        };
 
         // analysisId
         Specification<WorkloadInventoryReportModel> analysisIdSpec = (root, query, cb) -> {
@@ -103,11 +109,11 @@ public class WorkloadInventoryReportSpecs {
         }
 
         if (filterBean.getFlagsIMS() != null && !filterBean.getFlagsIMS().isEmpty()) {
-            specifications.add(getIsMemberSpecification("flagsIMS", filterBean.getRecommendedTargetsIMS()));
+            specifications.add(getIsMemberSpecification("flagsIMS", filterBean.getFlagsIMS()));
         }
 
         // union of specifications
-        Specifications<WorkloadInventoryReportModel> where = Specifications.where(analysisIdSpec);
+        Specifications<WorkloadInventoryReportModel> where = Specifications.where(analysisOwnerSpec).and(analysisIdSpec);
         for (Specification<WorkloadInventoryReportModel> specification : specifications) {
             where = where.and(specification);
         }
