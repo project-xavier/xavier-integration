@@ -2,8 +2,9 @@ package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.*;
-import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
 
 @Entity
 public class FlagAssessmentModel implements java.io.Serializable {
