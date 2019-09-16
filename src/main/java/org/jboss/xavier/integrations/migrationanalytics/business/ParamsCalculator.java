@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
+import org.jboss.xavier.integrations.migrationanalytics.business.versioning.VersionService;
 import org.jboss.xavier.integrations.route.MainRouteBuilder;
 
 import javax.inject.Inject;
