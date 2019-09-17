@@ -78,11 +78,13 @@ public class VersionServiceTest {
 
     @Test
     public void getFallbackVersion_PropertiesFileGive_ReturnClosesHighestVersionPaths() {
-        assertThat(versionServiceBean.getPropertyWithFallbackVersion("10_3_0", "vmworkloadinventory.providerPath")).isEqualToIgnoringCase("providerPath_v10_2_3");
+        assertThat(versionServiceBean.getPropertyWithFallbackVersion("10_3", "vmworkloadinventory.providerPath")).isEqualToIgnoringCase("providerPath_v10_2_3");
         assertThat(versionServiceBean.getPropertyWithFallbackVersion("0_2_0", "hypervisor.cpuTotalCoresPath")).isEqualToIgnoringCase("cpu_total_cores");
         assertThat(versionServiceBean.getPropertyWithFallbackVersion("20_0_80", "vmworkloadinventory.providerPath")).isEqualToIgnoringCase("providerPath_v20");
         assertThat(versionServiceBean.getPropertyWithFallbackVersion("30_0_80", "vmworkloadinventory.providerPath")).isEqualToIgnoringCase("providerPath_v20_1_2");
+        assertThat(versionServiceBean.getPropertyWithFallbackVersion("30", "vmworkloadinventory.providerPath")).isEqualToIgnoringCase("providerPath_v20_1_2");
     }
+
 
 
 
