@@ -219,6 +219,7 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         mockJmsQueueCostSavings.expectedMessageCount(1);
         mockDirectWorkloadInventory.expectedMessageCount(2);
+        mockCalculateWorkloadSummaryReportModel.expectedMessageCount(1);
 
         String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
@@ -243,7 +244,6 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.startRoute("calculate-vmworkloadinventory");
         camelContext.startRoute("flags-shared-disks");
 
-
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
         camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
@@ -255,6 +255,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         //Then
         mockJmsQueueCostSavings.assertIsSatisfied();
         mockDirectWorkloadInventory.assertIsSatisfied();
+        mockCalculateWorkloadSummaryReportModel.assertIsSatisfied();
 
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(34359738368L);
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
