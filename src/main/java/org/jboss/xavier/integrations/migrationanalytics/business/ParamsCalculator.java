@@ -28,10 +28,10 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
     public UploadFormInputDataModel calculate(String cloudFormsJson, Map<String, Object> headers) {
         String payloadVersion = getManifestVersion(cloudFormsJson);
 
-        String hypervisorPath = versionService.getPropertyWithFallbackVersion(payloadVersion, ".hypervisor");
-        String cpuTotalCoresPath = versionService.getPropertyWithFallbackVersion(payloadVersion, ".hypervisor.cpuTotalCoresPath");
-        String cpuCoresPerSocketPath = versionService.getPropertyWithFallbackVersion(payloadVersion, ".hypervisor.cpuCoresPerSocketPath");
-        String totalSpacePath = versionService.getPropertyWithFallbackVersion(payloadVersion, ".totalSpacePath");
+        String hypervisorPath = versionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor");
+        String cpuTotalCoresPath = versionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuTotalCoresPath");
+        String cpuCoresPerSocketPath = versionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuCoresPerSocketPath");
+        String totalSpacePath = versionService.getPropertyWithFallbackVersion(payloadVersion, "totalSpacePath");
 
         // Calculations
         Integer numberofhypervisors = ((JSONArray) JsonPath.read(cloudFormsJson, hypervisorPath)).stream().map(e -> calculateHypervisors(e, cpuTotalCoresPath, cpuCoresPerSocketPath)).mapToInt(Integer::intValue).sum();
