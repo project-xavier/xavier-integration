@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -34,6 +36,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static org.apache.camel.builder.PredicateBuilder.not;
 
@@ -44,6 +47,7 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 public class MainRouteBuilder extends RouteBuilder {
 
     public static String ANALYSIS_ID = "analysisId";
+    public static String USERNAME = "analysisUsername";
 
     @Value("${insights.upload.host}")
     private String uploadHost;
@@ -73,6 +77,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("rest:post:/upload?consumes=multipart/form-data")
                 .id("rest-upload")
+                .to("direct:check-authenticated-request")
                 .to("direct:upload");
 
         from("direct:upload").id("direct-upload")
@@ -93,9 +98,10 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:analysis-model").id("analysis-model-creation")
                 .process(e -> {
+                    String userName = e.getIn().getHeader(USERNAME, String.class);
                     AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
                             (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
-                            (String) e.getIn().getHeader("CamelFileName"));
+                            (String) e.getIn().getHeader("CamelFileName"), userName);
                     e.getIn().getHeader("MA_metadata", Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
                 });
 
@@ -136,6 +142,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
+                .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
                 .setBody(constant(""))
                 .doTry()
                     .to("http4://oldhost")
@@ -157,8 +164,8 @@ public class MainRouteBuilder extends RouteBuilder {
                 .choice()
                     .when(isZippedFile("zip"))
                         .split(new ZipSplitter())
-                            .streaming()
-                            .to("direct:calculate")
+                        .streaming()
+                        .to("direct:calculate")
                     .endChoice()
                     .when(isZippedFile("tar.gz"))
                         .unmarshal().gzip()
@@ -191,6 +198,26 @@ public class MainRouteBuilder extends RouteBuilder {
                     .completionTimeout(10000L) //TODO find another way to know the size of the list ( TarSplitter does not inform CamelSplitSize )
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:uploadFormInputDataModel");
+                .to("jms:queue:uploadFormInputDataModel")
+                .end();
+
+        from("direct:check-authenticated-request")
+                .id("check-authenticated-request")
+                .to("direct:add-username-header")
+                .choice()
+                    .when(header(USERNAME).isEqualTo(""))
+                    .to("direct:request-forbidden");
+
+        from("direct:add-username-header")
+                .id("add-username-header")
+                .process(exchange ->  {
+                    String userName = this.getUserNameFromRHIdentity(exchange.getIn().getHeader("x-rh-identity", String.class));
+                    exchange.getIn().setHeader(USERNAME, userName);
+                });
+
+        from("direct:request-forbidden")
+                .id("request-forbidden")
+                .process(httpError403());
     }
 
     private Predicate isResponseSuccess() {
@@ -212,6 +239,14 @@ public class MainRouteBuilder extends RouteBuilder {
           exchange.getIn().setBody("{ \"error\": \"Bad Request\"}");
           exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
           exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+        };
+    }
+
+    private Processor httpError403() {
+        return exchange -> {
+          exchange.getIn().setBody("Forbidden");
+          exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpServletResponse.SC_FORBIDDEN);
+          exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
         };
     }
 
@@ -251,6 +286,19 @@ public class MainRouteBuilder extends RouteBuilder {
         internalNode.put(ANALYSIS_ID, analysisId);
 
         return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    public String getUserNameFromRHIdentity(String x_rh_identity_base64) {
+        String result = "";
+        try {
+            JsonNode node = new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
+            JsonNode usernameNode = node.get("identity").get("user").get("username");
+            result = usernameNode.textValue();
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).warning("Unable to retrieve the 'username' field from cookies due to the following exception. Hence 'username' value set to '" + result + "'.");
+            e.printStackTrace();
+        }
+        return result;
     }
 
     private Predicate isZippedFile(String extension) {
