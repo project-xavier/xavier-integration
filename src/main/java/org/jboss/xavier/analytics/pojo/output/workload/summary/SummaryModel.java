@@ -21,6 +21,9 @@ import javax.persistence.SqlResultSetMapping;
                 targetClass = SummaryModel.class,
                 columns = {
                         @ColumnResult(name = "provider", type = String.class),
+                        @ColumnResult(name = "product", type = String.class),
+                        @ColumnResult(name = "version", type = String.class),
+                        @ColumnResult(name = "hosts", type = Integer.class),
                         @ColumnResult(name = "clusters", type = Integer.class),
                         @ColumnResult(name = "sockets", type = Long.class),
                         @ColumnResult(name = "vms", type = Integer.class)
@@ -30,7 +33,11 @@ import javax.persistence.SqlResultSetMapping;
 
 @NamedNativeQuery(
         name = "SummaryModel.calculateSummaryModels",
-        query = "select provider, count(distinct cluster) as clusters, sum(cpu_cores)*2 as sockets, count(*) as vms from workload_inventory_report_model  where analysis_id = :analysisId group by provider order by provider;",
+        query = "select provider, product, version, count(distinct host_name) as hosts, count(distinct cluster) as clusters, sum(cpu_cores) as sockets, count(*) as vms \n" +
+                "from workload_inventory_report_model \n" +
+                "where analysis_id = :analysisId \n" +
+                "group by provider, product, version \n" +
+                "order by provider, product, version",
         resultSetMapping = "mappingSummaryModels"
 )
 
@@ -57,11 +64,17 @@ public class SummaryModel
     private Integer clusters;
     private Long sockets;
     private Integer vms;
+    private Integer hosts;
+    private String product;
+    private String version;
 
     public SummaryModel() {}
 
-    public SummaryModel(String provider, Integer clusters, Long sockets, Integer vms) {
+    public SummaryModel(String provider, String product, String version, Integer hosts, Integer clusters, Long sockets, Integer vms) {
         this.provider = provider;
+        this.product = product;
+        this.version = version;
+        this.hosts = hosts;
         this.clusters = clusters;
         this.sockets = sockets;
         this.vms = vms;
@@ -115,15 +128,42 @@ public class SummaryModel
         this.vms = vms;
     }
 
+    public Integer getHosts() {
+        return hosts;
+    }
+
+    public void setHosts(Integer hosts) {
+        this.hosts = hosts;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     @Override
     public String toString() {
         return "SummaryModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", providers='" + provider + '\'' +
+                ", providers='" + provider +
                 ", clusters=" + clusters +
                 ", sockets=" + sockets +
                 ", vms=" + vms +
+                ", hosts=" + hosts +
+                ", product=" + product +
+                ", version=" + version +
                 '}';
     }
 }

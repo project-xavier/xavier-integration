@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
@@ -12,6 +13,7 @@ import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -25,12 +27,17 @@ import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
+import static org.apache.camel.builder.PredicateBuilder.not;
 
 /**
  * A Camel Java8 DSL Router
@@ -39,6 +46,7 @@ import java.util.Map;
 public class MainRouteBuilder extends RouteBuilder {
 
     public static String ANALYSIS_ID = "analysisId";
+    public static String USERNAME = "analysisUsername";
 
     @Value("${insights.upload.host}")
     private String uploadHost;
@@ -55,14 +63,20 @@ public class MainRouteBuilder extends RouteBuilder {
     @Value("#{'${insights.properties}'.split(',')}")
     protected List<String> insightsProperties;
 
+    @Value("${camel.springboot.tracing}")
+    private boolean tracingEnabled;
+
     @Inject
     private AnalysisService analysisService;
 
+    private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
+
     public void configure() {
-        getContext().setTracing(true);
+        getContext().setTracing(tracingEnabled);
 
         from("rest:post:/upload?consumes=multipart/form-data")
                 .id("rest-upload")
+                .to("direct:check-authenticated-request")
                 .to("direct:upload");
 
         from("direct:upload").id("direct-upload")
@@ -83,27 +97,38 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:analysis-model").id("analysis-model-creation")
                 .process(e -> {
+                    String userName = e.getIn().getHeader(USERNAME, String.class);
                     AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
                             (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
-                            (String) e.getIn().getHeader("CamelFileName"));
+                            (String) e.getIn().getHeader("CamelFileName"), userName);
                     e.getIn().getHeader("MA_metadata", Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
                 });
 
         from("direct:store").id("direct-store")
-                .convertBodyTo(String.class)
-                .to("file:./upload")
+                .convertBodyTo(byte[].class) // we need this to fully read the stream and close it
                 .to("direct:analysis-model")
                 .to("direct:insights");
 
-        from("direct:insights")
-                .id("call-insights-upload-service")
-                .process(this::createMultipartToSendToInsights)
-                .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
-                .removeHeaders("Camel*")
-                .to("http4://" + uploadHost + "/api/ingress/v1/upload")
-                .to("log:INFO?showBody=true&showHeaders=true")
+        from("direct:insights").id("call-insights-upload-service")
+                .doTry()
+                    .process(this::createMultipartToSendToInsights)
+                    .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+                    .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
+                    .removeHeaders("Camel*")
+                    .to("http4://" + uploadHost + "/api/ingress/v1/upload")
+                    .choice()
+                        .when(not(isResponseSuccess()))
+                            .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
+                .endDoTry()
+                .doCatch(Exception.class)
+                    .to("log:error?showCaughtException=true&showStackTrace=true")
+                    .to("direct:mark-analysis-fail")
                 .end();
+
+        from("direct:mark-analysis-fail").id("markAnalysisFail")
+                .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader("MA_metadata", Map.class).get(ANALYSIS_ID))))
+                .stop();
+
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
                 .id("kafka-upload-message")
@@ -116,10 +141,22 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
+                .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
                 .setBody(constant(""))
-                .to("http4://oldhost")
-                .removeHeader("Exchange.HTTP_URI")
-                .to("direct:unzip-file");
+                .doTry()
+                    .to("http4://oldhost")
+                    .choice()
+                        .when(isResponseSuccess())
+                            .removeHeader("Exchange.HTTP_URI")
+                            .to("direct:unzip-file")
+                            .log("File ${header.CamelFileName} success")
+                        .otherwise()
+                            .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Download Service")
+                .endDoTry()
+                .doCatch(Exception.class)
+                    .to("log:error?showCaughtException=true&showStackTrace=true")
+                    .to("direct:mark-analysis-fail")
+                .end();
 
         from("direct:unzip-file")
                 .id("unzip-file")
@@ -143,21 +180,37 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("calculate")
                 .convertBodyTo(String.class)
                 .multicast()
-                    .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory")
+                    .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory", "direct:flags-shared-disks")
                 .end();
-
 
         from("direct:calculate-costsavings")
                 .id("calculate-costsavings")
-                .doTry()
-                    .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
-                    .log("Message to send to AMQ : ${body}")
-                    .to("jms:queue:uploadFormInputDataModel")
-                .endDoTry()
-                .doCatch(Exception.class)
-                    .to("log:error?showCaughtException=true&showStackTrace=true")
-                    .setBody(simple("Exception on parsing Cloudforms file"))
+                .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
+                .log("Message to send to AMQ : ${body}")
+                .to("jms:queue:uploadFormInputDataModel")
                 .end();
+
+        from("direct:check-authenticated-request")
+                .id("check-authenticated-request")
+                .to("direct:add-username-header")
+                .choice()
+                    .when(header(USERNAME).isEqualTo(""))
+                    .to("direct:request-forbidden");
+
+        from("direct:add-username-header")
+                .id("add-username-header")
+                .process(exchange ->  {
+                    String userName = this.getUserNameFromRHIdentity(exchange.getIn().getHeader("x-rh-identity", String.class));
+                    exchange.getIn().setHeader(USERNAME, userName);
+                });
+
+        from("direct:request-forbidden")
+                .id("request-forbidden")
+                .process(httpError403());
+    }
+
+    private Predicate isResponseSuccess() {
+        return e -> httpSuccessCodes.contains(e.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class));
     }
 
     public Map<String,String> extractMAmetadataHeaderFromIdentity(FilePersistedNotification filePersistedNotification) throws IOException {
@@ -165,7 +218,8 @@ public class MainRouteBuilder extends RouteBuilder {
         JsonNode node= new ObjectMapper().reader().readTree(identity_json);
 
         Map header = new HashMap<String, String>();
-        node.get("identity").get("internal").fieldNames().forEachRemaining(field -> header.put(field, node.get("identity").get("internal").get(field).asText()));
+        JsonNode internalNode = node.get("identity").get("internal");
+        internalNode.fieldNames().forEachRemaining(field -> header.put(field, internalNode.get(field).asText()));
         return header;
     }
 
@@ -174,6 +228,14 @@ public class MainRouteBuilder extends RouteBuilder {
           exchange.getIn().setBody("{ \"error\": \"Bad Request\"}");
           exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
           exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+        };
+    }
+
+    private Processor httpError403() {
+        return exchange -> {
+          exchange.getIn().setBody("Forbidden");
+          exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpServletResponse.SC_FORBIDDEN);
+          exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
         };
     }
 
@@ -190,42 +252,49 @@ public class MainRouteBuilder extends RouteBuilder {
         multipartEntityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         multipartEntityBuilder.setContentType(ContentType.MULTIPART_FORM_DATA);
 
-        String file = exchange.getIn().getBody(String.class);
-        multipartEntityBuilder.addPart("file", new ByteArrayBody(file.getBytes(), ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
+        byte[] file = exchange.getIn().getBody(byte[].class);
+        multipartEntityBuilder.addPart("file", new ByteArrayBody(file, ContentType.create(mimeType), exchange.getIn().getHeader(Exchange.FILE_NAME, String.class)));
         exchange.getIn().setBody(multipartEntityBuilder.build());
     }
 
     public String getRHIdentity(String x_rh_identity_base64, String filename, Map<String, Object> headers) throws IOException {
         JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
 
-        ObjectNode objectNode = (ObjectNode) node.get("identity").get("internal");
-        objectNode.put("filename", filename);
+        ObjectNode internalNode = (ObjectNode) node.get("identity").get("internal");
+        internalNode.put("filename", filename);
 
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        insightsProperties.forEach(e -> objectNode.put(e, ((Map<String,String>) headers.get("MA_metadata")).get(e)));
+        Map<String, String> ma_metadataCasted = (Map<String, String>) headers.get("MA_metadata");
+        insightsProperties.forEach(e -> internalNode.put(e, ma_metadataCasted.get(e)));
         // add the 'analysis_id' value
-        String analysisId = ((Map<String,String>) headers.get("MA_metadata")).get(ANALYSIS_ID);
+        String analysisId = ma_metadataCasted.get(ANALYSIS_ID);
         if (analysisId == null)
         {
             throw new IllegalArgumentException("'" + ANALYSIS_ID + "' field not available but it's mandatory");
         }
-        objectNode.put(ANALYSIS_ID, analysisId);
+        internalNode.put(ANALYSIS_ID, analysisId);
 
         return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
     }
 
-    private Predicate isZippedFile(String extension) {
-        return exchange -> {
-            boolean zipContentType = isZipContentType(exchange);
-            String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
-            boolean zipExtension = extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
-            return zipContentType && zipExtension;
-        };
+    public String getUserNameFromRHIdentity(String x_rh_identity_base64) {
+        String result = "";
+        try {
+            JsonNode node = new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
+            JsonNode usernameNode = node.get("identity").get("user").get("username");
+            result = usernameNode.textValue();
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).warning("Unable to retrieve the 'username' field from cookies due to the following exception. Hence 'username' value set to '" + result + "'.");
+            e.printStackTrace();
+        }
+        return result;
     }
 
-    private boolean isZipContentType(Exchange exchange) {
-        String mimetype = exchange.getMessage().getHeader(CustomizedMultipartDataFormat.CONTENT_TYPE).toString();
-        return "application/zip".equalsIgnoreCase(mimetype) || "application/gzip".equalsIgnoreCase(mimetype) || "application/tar+gz".equalsIgnoreCase(mimetype);
+    private Predicate isZippedFile(String extension) {
+        return exchange -> {
+            String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
+            return extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
+        };
     }
 
     private Processor processMultipart() {

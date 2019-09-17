@@ -31,6 +31,10 @@
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
+        <interceptFrom id="interceptor-username" uri="rest:*">
+            <to uri="direct:check-authenticated-request" />
+        </interceptFrom>
+
         <restConfiguration apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
             <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
@@ -38,22 +42,30 @@
             <apiProperty key="cors" value="true"/>
         </restConfiguration>
 
+        <rest path="/mappings">
+            <description>Mapping REST API</description>
+            <get uri="/flag-assessment">
+                <route id="mappings-flag-assessment-findAll">
+                    <bean ref="flagAssessmentService" method="findAll()" />
+                </route>
+            </get>
+        </rest>
+
         <rest path="/report">
             <description>Report REST API</description>
             <get uri="/">
-                <description>Get the list of all the reports</description>
+                <description>Get the list of all the reports for the user</description>
                 <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" />
                 <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
                 <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
                 <route id="reports-get-all">
-                    <log message="${headers} ${body}" />
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>
-                            <bean ref="analysisService" method="findReports(${header.page}, ${header.size})" />
+                            <bean ref="analysisService" method="findAllByOwner(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.page}, ${header.size})" />
                         </when>
                         <otherwise>
-                            <bean ref="analysisService" method="findReports(${header.filterText}, ${header.page}, ${header.size})" />
+                            <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.filterText}, ${header.page}, ${header.size})" />
                         </otherwise>
                     </choice>
                 </route>
@@ -61,13 +73,13 @@
             <get uri="/{id}">
                 <description>Get the details of a report</description>
                 <route id="report-get-details">
-                    <bean ref="analysisService" method="findById(${header.id})" />
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})" />
                 </route>
             </get>
             <delete uri="/{id}">
                 <description>Delete a report</description>
                 <route id="report-delete">
-                    <bean ref="analysisService" method="findById(${header.id})"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
                     <choice>
                         <when>
                             <simple>${body} != null</simple>
@@ -90,7 +102,7 @@
             <get uri="/{id}/initial-saving-estimation">
                 <description>Get the Initial Cost Saving report</description>
                 <route id="reports-get-details">
-                    <bean ref="initialSavingsEstimationReportService" method="findOneByAnalysisId(${header.id})" />
+                    <bean ref="initialSavingsEstimationReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})" />
                 </route>
             </get>
             <get uri="/{id}/workload-inventory">
@@ -99,26 +111,82 @@
                 <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
                 <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
                 <param name="orderAsc" type="query" defaultValue="false" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <param name="provider" type="query" required="false" description="Define a filter" />
+                <param name="datacenter" type="query" required="false" description="Define a filter" />
+                <param name="cluster" type="query" required="false" description="Define a filter" />
+                <param name="vmName" type="query" required="false" description="Define a filter" />
+                <param name="osName" type="query" required="false" description="Define a filter" />
+                <param name="workload" type="query" required="false" description="Define a filter" />
+                <param name="complexity" type="query" required="false" description="Define a filter" />
+                <param name="recommendedTargetIMS" type="query" required="false" description="Define a filter" />
+                <param name="flagIMS" type="query" required="false" description="Define a filter" />
                 <route id="workload-inventory-report-get-details">
                     <to uri="direct:to-paginationBean"/>
                     <to uri="direct:to-sortBean"/>
-                    <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id}, ${header.pageBean}, ${header.sortBean})" />
+                    <to uri="direct:to-workloadInventoryFilterBean"/>
+                    <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
                 </route>
             </get>
             <get uri="/{id}/workload-inventory/csv" produces="text/csv">
                 <description>Get the Workload Inventory Reports in CSV format</description>
                 <route id="workload-inventory-report-get-details-as-csv">
-                    <bean ref="workloadInventoryReportService" method="findByAnalysisId(${header.id})" />
+                    <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})" />
                     <to uri="direct:toWorkloadInventoryReportCsv" />
                     <setHeader headerName="Content-Disposition">
                         <simple>attachment;filename=workloadInventory_${header.id}.csv</simple>
                     </setHeader>
                 </route>
             </get>
+            <get uri="/{id}/workload-inventory/available-filters">
+                <description>Get available filters</description>
+                <route id="workload-inventory-report-available-filters">
+                    <!-- if the user is the owner of the analysis then it's fine to get the filters -->
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} != null</simple>
+                            <bean ref="workloadInventoryReportService" method="findAvailableFiltersByAnalysisId(${header.id})" />
+                        </when>
+                        <otherwise>
+                            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_FORBIDDEN}</simple>
+                            </setHeader>
+                            <setBody>
+                                <constant>Forbidden</constant>
+                            </setBody>
+                        </otherwise>
+                    </choice>
+
+                </route>
+            </get>
             <get uri="/{id}/workload-summary">
                 <description>Get the Workload Summary Report</description>
                 <route id="workload-summary-report-get">
-                    <bean ref="workloadSummaryReportService" method="findByAnalysisId(${header.id})" />
+                    <bean ref="workloadSummaryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})" />
+                </route>
+            </get>
+            <get uri="/{id}/workload-summary/workloads">
+                <description>Get the Workloads detected</description>
+                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
+                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
+                <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
+                <param name="orderAsc" type="query" defaultValue="false" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <route id="workload-summary-workloads-report-get">
+                    <to uri="direct:to-paginationBean"/>
+                    <to uri="direct:to-sortBean"/>
+                    <bean ref="workloadService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
+                </route>
+            </get>
+            <get uri="/{id}/workload-summary/flags">
+                <description>Get the Workloads detected</description>
+                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
+                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
+                <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
+                <param name="orderAsc" type="query" defaultValue="false" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <route id="workload-summary-flags-report-get">
+                    <to uri="direct:to-paginationBean"/>
+                    <to uri="direct:to-sortBean"/>
+                    <bean ref="flagService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
                 </route>
             </get>
         </rest>
@@ -128,7 +196,7 @@
             <get uri="/" outType="org.jboss.xavier.integrations.route.model.user.User">
                 <description>Get session user info</description>
                 <route id="get-user-info">
-                    <bean ref="userService" method="findUser" />
+                    <bean ref="userService" method="findUser(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}})" />
                 </route>
             </get>
         </rest>
@@ -153,16 +221,23 @@
 
         <route id="route-ma">
             <from uri="jms:queue:uploadFormInputDataModel" />
-            <log message="Message received" />
-            <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
-            <setHeader headerName="analysisId">
-                <simple>${body.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.ANALYSIS_ID}}</simple>
-            </setHeader>
-            <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
-            <to uri="direct:decisionserver" id="route-ma-decisionserver"/>
-            <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
-            <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
-            <bean ref="analysisService" method="setInitialSavingsEstimationReportModel(${body}, ${header.analysisId})" />
+            <doTry>
+                <log message="Message received" />
+                <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
+                <setHeader headerName="analysisId">
+                    <simple>${body.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.ANALYSIS_ID}}</simple>
+                </setHeader>
+                <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
+                <to uri="direct:decisionserver" id="route-ma-decisionserver"/>
+                <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
+                <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
+                <bean ref="analysisService" method="setInitialSavingsEstimationReportModel(${body}, ${header.analysisId})" />
+
+                <doCatch>
+                    <exception>java.lang.Exception</exception>
+                    <bean ref="analysisService" method='updateStatus("FAILED", ${header.analysisId})'/>
+                </doCatch>
+            </doTry>
         </route>
 
         <!--
@@ -184,8 +259,15 @@
             <marshal id="route-marshal">
                 <xstream/>
             </marshal>
-            <to id="log-request" uri="log:INFO?showBody=true&amp;showHeaders=true" />
+            <log message="Body ${body}; Headers ${headers}" loggingLevel="DEBUG"/>
             <to id="route-to-decision-server-rest" uri="http://{{service:{{kieserver.service}}:{{kieserver.devel-service}}}}/{{kieserver.path}}?authMethod=Basic&amp;authUsername={{kieserver.username}}&amp;authPassword={{kieserver.password}}"/>
+            <choice>
+                <when>
+                    <simple>${header.CamelHttpResponseCode} != 200</simple>
+                    <throwException exceptionType="org.apache.commons.httpclient.HttpException" message="Unsuccessful response from KIE Server"/>
+                    <stop/>
+                </when>
+            </choice>
             <!-- Unmarshal the response -->
             <unmarshal id="route-unmarshal">
                 <xstream/>

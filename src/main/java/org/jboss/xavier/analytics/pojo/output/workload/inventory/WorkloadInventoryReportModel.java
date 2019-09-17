@@ -9,9 +9,18 @@ import org.hibernate.annotations.Parameter;
 import org.jboss.xavier.analytics.pojo.BindyStringSetFormatFactory;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.transaction.Transactional;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -93,6 +102,7 @@ public class WorkloadInventoryReportModel
     @DataField(pos = 10, columnName = "Workload")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_workloads",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
@@ -108,6 +118,7 @@ public class WorkloadInventoryReportModel
     // their "AMM" counterparts
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_recommended_targetsims",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
@@ -117,13 +128,25 @@ public class WorkloadInventoryReportModel
     @DataField(pos = 13, columnName = "Flags IMS")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_flagsims",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
     )
     private Set<String> flagsIMS;
 
+    @DataField(pos = 14, columnName = "Product")
+    private String product;
+
+    @DataField(pos = 15, columnName = "Version")
+    private String version;
+
+    @DataField(pos = 16, columnName = "HostName")
+    private String host_name;
+
     private Date creationDate;
+
+    private Boolean ssaEnabled;
 
     public WorkloadInventoryReportModel() {}
 
@@ -275,5 +298,37 @@ public class WorkloadInventoryReportModel
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getHost_name() {
+        return host_name;
+    }
+
+    public void setHost_name(String host_name) {
+        this.host_name = host_name;
+    }
+
+    public Boolean getSsaEnabled() {
+        return ssaEnabled;
+    }
+
+    public void setSsaEnabled(Boolean ssaEnabled) {
+        this.ssaEnabled = ssaEnabled;
     }
 }
