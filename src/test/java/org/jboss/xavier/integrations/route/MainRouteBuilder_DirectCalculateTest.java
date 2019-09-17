@@ -92,6 +92,7 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate-costsavings", body, headers);
 
+        Thread.sleep(11000L);
         //Then
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
 
@@ -209,4 +210,78 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.stop();
     }
 
+    @Test
+    public void mainRouteBuilder_DirectCalculateWithMultipleJSONFilesGiven_ShouldSendOneMessageToICSAnd2ToWILQueue() throws Exception {
+        //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        mockJmsQueueCostSavings.expectedMessageCount(1);
+        mockDirectWorkloadInventory.expectedMessageCount(2);
+
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("filename", fileName);
+        metadata.put("dummy", "dummy");
+        metadata.put(Calculator.YEAR_1_HYPERVISORPERCENTAGE, 10D);
+        metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
+        metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
+        metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("MA_metadata", metadata);
+        headers.put("Content-type", "application/zip");
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("unzip-file");
+        camelContext.startRoute("calculate");
+        camelContext.startRoute("calculate-costsavings");
+        camelContext.startRoute("calculate-vmworkloadinventory");
+        camelContext.startRoute("flags-shared-disks");
+
+
+        String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
+
+        camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
+            exchange.getIn().setHeaders(headers);
+        });
+
+        Thread.sleep(5000);
+        //Then
+        mockJmsQueueCostSavings.assertIsSatisfied();
+        mockDirectWorkloadInventory.assertIsSatisfied();
+
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(34359738368L);
+        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
+
+        assertThat(mockDirectWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-04-copy"))
+                .findFirst().get().getCpuCores()).isEqualTo(1);
+        assertThat(mockDirectWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-04-copy"))
+                .findFirst().get().getDiskSpace()).isEqualTo(99123456789L);
+
+        assertThat(mockDirectWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy"))
+                .findFirst().get().getCpuCores()).isEqualTo(1);
+
+        assertThat(mockDirectWorkloadInventory.getExchanges()
+                .stream()
+                .map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("james-db-03-copy"))
+                .findFirst().get().getDiskSpace()).isEqualTo(5000000000L);
+
+        camelContext.stop();
+    }
 }

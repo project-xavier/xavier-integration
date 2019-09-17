@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
@@ -18,6 +17,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
@@ -169,8 +169,9 @@ public class MainRouteBuilder extends RouteBuilder {
                     .when(isZippedFile("tar.gz"))
                         .unmarshal().gzip()
                         .split(new TarSplitter())
-                        .streaming()
-                        .to("direct:calculate")
+                            .streaming()
+                            .to("direct:calculate")
+                        .end()
                     .endChoice()
                     .otherwise()
                         .to("direct:calculate")
@@ -183,9 +184,17 @@ public class MainRouteBuilder extends RouteBuilder {
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory", "direct:flags-shared-disks")
                 .end();
 
-        from("direct:calculate-costsavings")
-                .id("calculate-costsavings")
-                .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
+
+        from("direct:calculate-costsavings").id("calculate-costsavings")
+                    .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
+                .aggregate(simple("${header.MA_metadata['analysisId']}"))
+                    .aggregationStrategy()
+                        .body(UploadFormInputDataModel.class, (old,neu) -> {
+                           neu.setTotalDiskSpace(neu.getTotalDiskSpace() + ((old != null) ? old.getTotalDiskSpace() : 0));
+                           neu.setHypervisor(neu.getHypervisor() + ((old != null) ? old.getHypervisor() : 0));
+                           return neu;
+                        } )
+                    .completionTimeout(10000L) //TODO find another way to know the size of the list ( TarSplitter does not inform CamelSplitSize )
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:uploadFormInputDataModel")
                 .end();
