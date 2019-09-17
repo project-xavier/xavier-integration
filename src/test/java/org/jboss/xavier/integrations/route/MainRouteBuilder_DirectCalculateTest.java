@@ -123,15 +123,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         headers.put("MA_metadata", metadata);
         headers.put("Content-type", "application/zip");
 
-        Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
-        expectedVmNamesWithSharedDisk.add("dev-windows-server-2008-TEST");
-        expectedVmNamesWithSharedDisk.add("james-db-03-copy");
-        expectedVmNamesWithSharedDisk.add("dev-windows-server-2008");
-        expectedVmNamesWithSharedDisk.add("pemcg-rdm-test");
-
         //When
         camelContext.start();
-        camelContext.startRoute("unzip-file");
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
         camelContext.startRoute("calculate-vmworkloadinventory");
@@ -149,9 +142,6 @@ public class MainRouteBuilder_DirectCalculateTest {
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(563902124032L);
         assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
         assertThat(mockDirectWorkloadInventory.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class).getVmName()).isNotEmpty();
-        Set<String> vmNamesWithSharedDisk = mockCalculateWorkloadSummaryReportModel.getExchanges().get(0).getIn().getBody(Set.class);
-        assertThat(vmNamesWithSharedDisk.size()).isEqualTo(4);
-        assertThat(vmNamesWithSharedDisk).isEqualTo(expectedVmNamesWithSharedDisk);
         camelContext.stop();
     }
 
@@ -178,13 +168,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         headers.put("MA_metadata", metadata);
         headers.put("Content-type", "application/zip");
 
-        Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
-        expectedVmNamesWithSharedDisk.add("tomcat");
-        expectedVmNamesWithSharedDisk.add("lb");
-
         //When
         camelContext.start();
-        camelContext.startRoute("unzip-file");
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
         camelContext.startRoute("calculate-vmworkloadinventory");
@@ -204,9 +189,6 @@ public class MainRouteBuilder_DirectCalculateTest {
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().noneMatch(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getVmName().isEmpty())).isTrue();
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().filter(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName().equals("CentOS 7 (64-bit)")).count()).isEqualTo(1);
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().filter(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName().equals("Linux")).count()).isEqualTo(7);
-        Set<String> vmNamesWithSharedDisk = mockCalculateWorkloadSummaryReportModel.getExchanges().get(0).getIn().getBody(Set.class);
-        assertThat(vmNamesWithSharedDisk.size()).isEqualTo(2);
-        assertThat(vmNamesWithSharedDisk).isEqualTo(expectedVmNamesWithSharedDisk);
         camelContext.stop();
     }
 

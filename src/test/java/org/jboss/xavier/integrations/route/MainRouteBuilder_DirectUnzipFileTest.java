@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("direct:store|direct:calculate")
+@MockEndpointsAndSkip("direct:store|direct:calculate|direct:calculate-workloadsummaryreportmodel")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
@@ -38,6 +38,9 @@ public class MainRouteBuilder_DirectUnzipFileTest {
     @EndpointInject(uri = "mock:direct:calculate")
     private MockEndpoint mockCalculate;
 
+    @EndpointInject(uri = "mock:direct:calculate-workloadsummaryreportmodel")
+    private MockEndpoint mockCalculateWorkloadSummaryReportModel;
+
     @Value("#{'${insights.properties}'.split(',')}")
     List<String> properties;
 
@@ -50,6 +53,7 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockCalculate.expectedMessageCount(3);
+        mockCalculateWorkloadSummaryReportModel.expectedMessageCount(1);
 
         //When
         camelContext.start();
@@ -68,10 +72,11 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         headers.put("MA_metadata", metadata);
 
 
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers); 
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers);
 
         //Then
         mockCalculate.assertIsSatisfied();
+        mockCalculateWorkloadSummaryReportModel.assertIsSatisfied();
 
         camelContext.stop();
     }
@@ -82,6 +87,7 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockCalculate.expectedMessageCount(2);
+        mockCalculateWorkloadSummaryReportModel.expectedMessageCount(1);
 
         //When
         camelContext.start();
@@ -97,22 +103,24 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("filename", nameOfFile);
         metadata.put("dummy", "CID123");
-        headers.put("MA_metadata", metadata);        
-        
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers); 
+        headers.put("MA_metadata", metadata);
+
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers);
 
         //Then
         mockCalculate.assertIsSatisfied();
+        mockCalculateWorkloadSummaryReportModel.assertIsSatisfied();
 
         camelContext.stop();
     }
-    
+
     @Test
     public void mainRouteBuilder_routeDirectUnzip_TarGzFileWith2FilesGivenAndTarGzContentType_ShouldReturn2Messages() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockCalculate.expectedMessageCount(2);
+        mockCalculateWorkloadSummaryReportModel.expectedMessageCount(1);
 
         //When
         camelContext.start();
@@ -128,12 +136,13 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("filename", nameOfFile);
         metadata.put("dummy", "CID123");
-        headers.put("MA_metadata", metadata);        
-        
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers); 
+        headers.put("MA_metadata", metadata);
+
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers);
 
         //Then
         mockCalculate.assertIsSatisfied();
+        mockCalculateWorkloadSummaryReportModel.assertIsSatisfied();
 
         camelContext.stop();
     }
@@ -144,6 +153,7 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockCalculate.expectedMessageCount(1);
+        mockCalculateWorkloadSummaryReportModel.expectedMessageCount(1);
 
         //When
         camelContext.start();
@@ -161,10 +171,11 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         metadata.put("dummy", "CID123");
         headers.put("MA_metadata", metadata);
 
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers); 
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", resourceAsStream, headers);
 
         //Then
         mockCalculate.assertIsSatisfied();
+        mockCalculateWorkloadSummaryReportModel.assertIsSatisfied();
 
         camelContext.stop();
     }

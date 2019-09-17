@@ -10,27 +10,33 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
+import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.junit.Test;
+import org.junit.experimental.theories.Theories;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("direct:calculate-workloadsummaryreportmodel")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
@@ -41,8 +47,8 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
     @Inject
     AnalysisService analysisService;
 
-    @EndpointInject(uri = "mock:direct:calculate-workloadsummaryreportmodel")
-    private MockEndpoint mockWorkloadSummaryReportModel;
+    @MockBean
+    private WorkloadInventoryReportService workloadInventoryReportService;
 
     @Test
     public void mainRouteBuilder_DirectCalculate_JSONGiven_ShouldReturnExpectedCalculatedValues() throws Exception {
@@ -50,16 +56,22 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
         AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
-
-        String customerId = "CID123";
-        String fileName = "cloudforms-export-v1.json";
-        Long analysisId = analysisModel.getId();
-
         Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
         expectedVmNamesWithSharedDisk.add("dev-windows-server-2008-TEST");
         expectedVmNamesWithSharedDisk.add("james-db-03-copy");
         expectedVmNamesWithSharedDisk.add("dev-windows-server-2008");
         expectedVmNamesWithSharedDisk.add("pemcg-rdm-test");
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>(expectedVmNamesWithSharedDisk.size());
+        expectedVmNamesWithSharedDisk.forEach(vm -> {
+            WorkloadInventoryReportModel workloadInventoryReportModel = new WorkloadInventoryReportModel();
+            workloadInventoryReportModel.setVmName(vm);
+            workloadInventoryReportModels.add(workloadInventoryReportModel);
+        });
+        when(workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId("user name", analysisModel.getId())).thenReturn(workloadInventoryReportModels);
+
+        String customerId = "CID123";
+        String fileName = "cloudforms-export-v1.json";
+        Long analysisId = analysisModel.getId();
 
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("filename", fileName);
@@ -68,6 +80,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user name");
 
         //When
         camelContext.start();
@@ -76,12 +89,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
 
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:flags-shared-disks", body, headers);
 
-        Thread.sleep(5000);
-
-        //Then
-        Set<String> vmNamesWithSharedDisk = mockWorkloadSummaryReportModel.getExchanges().get(0).getIn().getBody(Set.class);
-        assertThat(vmNamesWithSharedDisk.size()).isEqualTo(4);
-        assertThat(vmNamesWithSharedDisk).isEqualTo(expectedVmNamesWithSharedDisk);
+        verify(workloadInventoryReportService).saveAll(workloadInventoryReportModels);
 
         camelContext.stop();
     }
@@ -92,14 +100,21 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
         AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
+        expectedVmNamesWithSharedDisk.add("tomcat");
+        expectedVmNamesWithSharedDisk.add("lb");
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>(expectedVmNamesWithSharedDisk.size());
+        expectedVmNamesWithSharedDisk.forEach(vm -> {
+            WorkloadInventoryReportModel workloadInventoryReportModel = new WorkloadInventoryReportModel();
+            workloadInventoryReportModel.setVmName(vm);
+            workloadInventoryReportModels.add(workloadInventoryReportModel);
+        });
+        when(workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId("user name", analysisModel.getId())).thenReturn(workloadInventoryReportModels);
+
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1_0_0.json";
         Long analysisId = analysisModel.getId();
-
-        Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
-        expectedVmNamesWithSharedDisk.add("tomcat");
-        expectedVmNamesWithSharedDisk.add("lb");
 
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("filename", fileName);
@@ -108,6 +123,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user name");
 
         //When
         camelContext.start();
@@ -116,12 +132,8 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
 
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:flags-shared-disks", body, headers);
 
-        Thread.sleep(5000);
-
         //Then
-        Set<String> vmNamesWithSharedDisk = mockWorkloadSummaryReportModel.getExchanges().get(0).getIn().getBody(Set.class);
-        assertThat(vmNamesWithSharedDisk.size()).isEqualTo(2);
-        assertThat(vmNamesWithSharedDisk).isEqualTo(expectedVmNamesWithSharedDisk);
+        verify(workloadInventoryReportService).saveAll(workloadInventoryReportModels);
 
         camelContext.stop();
     }
