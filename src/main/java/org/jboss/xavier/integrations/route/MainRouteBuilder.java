@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
@@ -197,7 +196,6 @@ public class MainRouteBuilder extends RouteBuilder {
                         } )
                     .completionTimeout(10000L) //TODO find another way to know the size of the list ( TarSplitter does not inform CamelSplitSize )
                 .log("Message to send to AMQ : ${body}")
-                .to("jms:queue:uploadFormInputDataModel");
                 .to("jms:queue:uploadFormInputDataModel")
                 .end();
 

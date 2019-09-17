@@ -8,13 +8,20 @@ import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.ComplexityModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.RecommendedTargetsIMSModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.repository.FlagRepository;
+import org.jboss.xavier.integrations.jpa.repository.ScanRunRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadSummaryReportRepository;
-import org.jboss.xavier.integrations.jpa.repository.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +33,15 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -386,6 +401,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
         headers.put("MA_metadata", metadata);
+        headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(vmWorkloadInventoryModels);

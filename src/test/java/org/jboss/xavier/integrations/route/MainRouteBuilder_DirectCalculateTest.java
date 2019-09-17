@@ -213,7 +213,7 @@ public class MainRouteBuilder_DirectCalculateTest {
     @Test
     public void mainRouteBuilder_DirectCalculateWithMultipleJSONFilesGiven_ShouldSendOneMessageToICSAnd2ToWILQueue() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
 
