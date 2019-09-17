@@ -25,8 +25,8 @@ public class FlagSharedDisksCalculator extends AbstractVMWorkloadInventoryCalcul
         // The filename with an associate Set with more than 1 VM name, will be a shared disk and
         // all the VM in the Set will have the "Shared Disk" flag.
         final Map<String, Set<String>> fileNamesInVms = new HashMap<>();
-        String deviceTypeProperty = env.getProperty("cloudforms.manifest." + manifestVersion + ".vmworkloadinventory.vmDisksDeviceTypeProperty");
-        String fileNameProperty = env.getProperty("cloudforms.manifest." + manifestVersion + ".vmworkloadinventory.vmDisksFileNameProperty");
+        String deviceTypeProperty = env.getProperty("cloudforms.manifest.v" + manifestVersion + ".vmworkloadinventory.vmDisksDeviceTypeProperty");
+        String fileNameProperty = env.getProperty("cloudforms.manifest.v" + manifestVersion + ".vmworkloadinventory.vmDisksFileNameProperty");
         vms.stream().forEach(vm -> {
             String vmName = readValueFromExpandedEnvVarPath(VMNAMEPATH, vm);
             List<Map<String, String>> disks = readListValuesFromExpandedEnvVarPath(VMDISKSPATH, vm);
