@@ -175,7 +175,9 @@ public class MainRouteBuilder extends RouteBuilder {
                     .endChoice()
                     .otherwise()
                         .to("direct:calculate")
-                .end();
+                .end()
+                // at this time it's safe to generate the WSR
+                .to("direct:calculate-workloadsummaryreportmodel");
 
         from("direct:calculate")
                 .id("calculate")

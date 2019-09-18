@@ -118,13 +118,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
         //When
         camelContext.start();
         camelContext.startRoute("calculate-workloadsummaryreportmodel");
-
-        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
-        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
@@ -133,7 +131,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
-            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
 
@@ -172,13 +170,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
         //When
         camelContext.start();
         camelContext.startRoute("calculate-workloadsummaryreportmodel");
-
-        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
-        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
@@ -187,7 +183,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
-            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
 
@@ -213,13 +209,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
         //When
         camelContext.start();
         camelContext.startRoute("calculate-workloadsummaryreportmodel");
-
-        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
-        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
@@ -228,7 +222,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
-            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
 
@@ -253,13 +247,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
         //When
         camelContext.start();
         camelContext.startRoute("calculate-workloadsummaryreportmodel");
-
-        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
-        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
@@ -268,7 +260,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
-            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
 
@@ -297,13 +289,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
         //When
         camelContext.start();
         camelContext.startRoute("calculate-workloadsummaryreportmodel");
-
-        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
-        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
@@ -312,7 +302,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
-            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
 
@@ -342,13 +332,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
         //When
         camelContext.start();
         camelContext.startRoute("calculate-workloadsummaryreportmodel");
-
-        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
-        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
@@ -357,7 +345,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
-            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
 
@@ -389,13 +377,11 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
+        String fileName = "cloudforms-export-v1-multiple-files.tar.gz";
 
         //When
         camelContext.start();
         camelContext.startRoute("calculate-workloadsummaryreportmodel");
-
-        Collection<VMWorkloadInventoryModel> vmWorkloadInventoryModels = new ArrayList<>(collectionSize);
-        IntStream.range(0, collectionSize).forEach(value -> vmWorkloadInventoryModels.add(new VMWorkloadInventoryModel()));
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
@@ -404,7 +390,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         headers.put("analysisUsername", "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
-            exchange.getIn().setBody(vmWorkloadInventoryModels);
+            exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
 

@@ -69,8 +69,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilder {
                         }).collect(Collectors.toList());
                     workloadInventoryReportService.saveAll(workloadInventoryReportModelsToUpdate);
                 })
-                // at this time all the flags have been persisted so it's safe to generate the WSR
-                .to("direct:calculate-workloadsummaryreportmodel")
             .endDoTry()
             .doCatch(Exception.class)
                 .to("log:error?showCaughtException=true&showStackTrace=true")
