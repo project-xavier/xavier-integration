@@ -162,43 +162,45 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("unzip-file")
                 .choice()
                     .when(isZippedFile("zip"))
-                        .split(new ZipSplitter())
+                        .split(new ZipSplitter()).aggregationStrategy(this::calculateICSAggregated)
                         .streaming()
                         .to("direct:calculate")
                     .endChoice()
                     .when(isZippedFile("tar.gz"))
                         .unmarshal().gzip()
-                        .split(new TarSplitter())
+                        .split(new TarSplitter()).aggregationStrategy(this::calculateICSAggregated)
                             .streaming()
                             .to("direct:calculate")
                         .end()
                     .endChoice()
                     .otherwise()
                         .to("direct:calculate")
+                        .process(exchange -> exchange.getIn().getHeaders().put("uploadformdata", exchange.getIn().getBody(UploadFormInputDataModel.class)))
+                    .end()
                 .end()
                 // at this time it's safe to generate the WSR
+                .to("direct:send-costsavings")
                 .to("direct:calculate-workloadsummaryreportmodel");
 
         from("direct:calculate")
                 .id("calculate")
                 .convertBodyTo(String.class)
-                .multicast()
+                .multicast().aggregationStrategy(new org.apache.camel.processor.aggregate.GroupedBodyAggregationStrategy())
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory", "direct:flags-shared-disks")
+                .setBody(e -> e.getIn().getBody(List.class).get(0))
                 .end();
 
 
-        from("direct:calculate-costsavings").id("calculate-costsavings")
-                    .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
-                .aggregate(simple("${header.MA_metadata['analysisId']}"))
-                    .aggregationStrategy()
-                        .body(UploadFormInputDataModel.class, (old,neu) -> {
-                           neu.setTotalDiskSpace(neu.getTotalDiskSpace() + ((old != null) ? old.getTotalDiskSpace() : 0));
-                           neu.setHypervisor(neu.getHypervisor() + ((old != null) ? old.getHypervisor() : 0));
-                           return neu;
-                        } )
-                    .completionTimeout(10000L) //TODO find another way to know the size of the list ( TarSplitter does not inform CamelSplitSize )
+        from("direct:send-costsavings").id("send-costsavings")
+                .log("SEND-COSTSAVINGS")
+                .setBody(header("uploadformdata"))
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:uploadFormInputDataModel")
+                .end();
+
+        from("direct:calculate-costsavings").id("calculate-costsavings")
+                .log("COST SAVINGS")
+                .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
                 .end();
 
         from("direct:check-authenticated-request")
@@ -218,6 +220,15 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:request-forbidden")
                 .id("request-forbidden")
                 .process(httpError403());
+    }
+
+    private Exchange calculateICSAggregated(Exchange old, Exchange neu) {
+            UploadFormInputDataModel newObj = (UploadFormInputDataModel) neu.getIn().getBody(List.class).get(0);
+            UploadFormInputDataModel oldObj = (old != null) ? old.getIn().getHeader("uploadformdata", UploadFormInputDataModel.class) : null;
+            newObj.setTotalDiskSpace(newObj.getTotalDiskSpace() + ((old != null) ? oldObj.getTotalDiskSpace() : 0));
+            newObj.setHypervisor(newObj.getHypervisor() + ((old != null) ? oldObj.getHypervisor() : 0));
+            neu.getIn().getHeaders().put("uploadformdata", newObj);
+        return neu;
     }
 
     private Predicate isResponseSuccess() {

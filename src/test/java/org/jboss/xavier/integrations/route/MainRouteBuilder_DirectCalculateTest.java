@@ -23,9 +23,7 @@ import javax.inject.Inject;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,10 +85,13 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         //When
         camelContext.start();
+        camelContext.startRoute("unzip-file");
+        camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
+        camelContext.startRoute("send-costsavings");
         String body = IOUtils.resourceToString(fileName, StandardCharsets.UTF_8, MainRouteBuilder_DirectCalculateTest.class.getClassLoader());
 
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:calculate-costsavings", body, headers);
+        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", body, headers);
 
         Thread.sleep(11000L);
         //Then
@@ -125,13 +126,15 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         //When
         camelContext.start();
+        camelContext.startRoute("unzip-file");
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
+        camelContext.startRoute("send-costsavings");
         camelContext.startRoute("calculate-vmworkloadinventory");
         camelContext.startRoute("flags-shared-disks");
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
-        camelContext.createProducerTemplate().request("direct:calculate", exchange -> {
+        camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
@@ -170,13 +173,15 @@ public class MainRouteBuilder_DirectCalculateTest {
 
         //When
         camelContext.start();
+        camelContext.startRoute("unzip-file");
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
+        camelContext.startRoute("send-costsavings");
         camelContext.startRoute("calculate-vmworkloadinventory");
         camelContext.startRoute("flags-shared-disks");
         String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
-        camelContext.createProducerTemplate().request("direct:calculate", exchange -> {
+        camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
             exchange.getIn().setHeaders(headers);
         });
@@ -223,10 +228,9 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.startRoute("unzip-file");
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
+        camelContext.startRoute("send-costsavings");
         camelContext.startRoute("calculate-vmworkloadinventory");
         camelContext.startRoute("flags-shared-disks");
-
-        String body = IOUtils.toString(getClass().getClassLoader().getResourceAsStream(fileName), Charset.forName("UTF-8"));
 
         camelContext.createProducerTemplate().request("direct:unzip-file", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
