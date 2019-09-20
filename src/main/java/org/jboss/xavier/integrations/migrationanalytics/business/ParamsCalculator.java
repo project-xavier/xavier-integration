@@ -25,7 +25,7 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
         Map mapa = (Map) e;
         Integer cputotalcores = (Integer) mapa.get(cpuTotalCoresPath);
         Integer cpucorespersocket = (Integer) mapa.get(cpuCoresPerSocketPath);
-        return Double.valueOf(Math.ceil(cputotalcores / (cpucorespersocket * 2.0))).intValue();
+        return (int) Math.ceil(cputotalcores / (cpucorespersocket * 2.0));
     }
 
     @Override

@@ -5,7 +5,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ComplexityModel;
@@ -35,7 +34,6 @@ import org.springframework.test.context.ActiveProfiles;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -127,8 +125,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
-        headers.put("analysisUsername", "user@name");
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
@@ -179,8 +177,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
-        headers.put("analysisUsername", "user@name");
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
@@ -218,8 +216,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
-        headers.put("analysisUsername", "user@name");
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
@@ -256,8 +254,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
-        headers.put("analysisUsername", "user@name");
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
@@ -298,8 +296,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
-        headers.put("analysisUsername", "user@name");
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
@@ -341,8 +339,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
-        headers.put("analysisUsername", "user@name");
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));
@@ -386,8 +384,8 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Map<String, String> metadata = new HashMap<>();
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
-        headers.put("analysisUsername", "user@name");
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(MainRouteBuilder.USERNAME, "user@name");
 
         Exchange message = camelContext.createProducerTemplate().request("direct:calculate-workloadsummaryreportmodel", exchange -> {
             exchange.getIn().setBody(getClass().getClassLoader().getResourceAsStream(fileName));

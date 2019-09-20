@@ -1,20 +1,15 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.EndpointInject;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
-import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.junit.Test;
-import org.junit.experimental.theories.Theories;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,16 +19,14 @@ import org.springframework.test.context.ActiveProfiles;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -79,7 +72,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
         headers.put(MainRouteBuilder.USERNAME, "user name");
 
         //When
@@ -122,7 +115,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest {
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
         headers.put(MainRouteBuilder.USERNAME, "user name");
 
         //When

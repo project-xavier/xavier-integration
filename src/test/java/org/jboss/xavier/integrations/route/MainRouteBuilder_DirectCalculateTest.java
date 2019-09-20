@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel")
+@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel|direct:flags-shared-disks")
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class})
 @ActiveProfiles("test")
@@ -81,7 +81,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId);
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
 
         //When
         camelContext.start();
@@ -89,6 +89,8 @@ public class MainRouteBuilder_DirectCalculateTest {
         camelContext.startRoute("calculate");
         camelContext.startRoute("calculate-costsavings");
         camelContext.startRoute("send-costsavings");
+        camelContext.startRoute("calculate-vmworkloadinventory");
+        camelContext.startRoute("flags-shared-disks");
         String body = IOUtils.resourceToString(fileName, StandardCharsets.UTF_8, MainRouteBuilder_DirectCalculateTest.class.getClassLoader());
 
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:unzip-file", body, headers);
@@ -121,7 +123,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
         headers.put("Content-type", "application/zip");
 
         //When
@@ -168,7 +170,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
         headers.put("Content-type", "application/zip");
 
         //When
@@ -220,7 +222,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
 
         Map<String, Object> headers = new HashMap<>();
-        headers.put("MA_metadata", metadata);
+        headers.put(MainRouteBuilder.MA_METADATA, metadata);
         headers.put("Content-type", "application/zip");
 
         //When

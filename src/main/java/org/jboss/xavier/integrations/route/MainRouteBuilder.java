@@ -11,6 +11,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.processor.aggregate.GroupedBodyAggregationStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
@@ -45,6 +46,8 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilder {
 
+    public static final String UPLOADFORMDATA = "uploadformdata";
+    public static final String MA_METADATA = "MA_metadata";
     public static String ANALYSIS_ID = "analysisId";
     public static String USERNAME = "analysisUsername";
 
@@ -98,10 +101,10 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:analysis-model").id("analysis-model-creation")
                 .process(e -> {
                     String userName = e.getIn().getHeader(USERNAME, String.class);
-                    AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader("MA_metadata", Map.class).get("reportName"),
-                            (String) e.getIn().getHeader("MA_metadata", Map.class).get("reportDescription"),
-                            (String) e.getIn().getHeader("CamelFileName"), userName);
-                    e.getIn().getHeader("MA_metadata", Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
+                    AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportName"),
+                            (String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportDescription"),
+                            (String) e.getIn().getHeader(Exchange.FILE_NAME), userName);
+                    e.getIn().getHeader(MA_METADATA, Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
                 });
 
         from("direct:store").id("direct-store")
@@ -126,7 +129,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .end();
 
         from("direct:mark-analysis-fail").id("markAnalysisFail")
-                .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader("MA_metadata", Map.class).get(ANALYSIS_ID))))
+                .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))))
                 .stop();
 
 
@@ -140,7 +143,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .id("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .convertBodyTo(FilePersistedNotification.class)
-                .setHeader("MA_metadata", method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
+                .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
                 .setBody(constant(""))
                 .doTry()
@@ -175,7 +178,7 @@ public class MainRouteBuilder extends RouteBuilder {
                     .endChoice()
                     .otherwise()
                         .to("direct:calculate")
-                        .process(exchange -> exchange.getIn().getHeaders().put("uploadformdata", exchange.getIn().getBody(UploadFormInputDataModel.class)))
+                        .process(exchange -> exchange.getIn().getHeaders().put(UPLOADFORMDATA, exchange.getIn().getBody(UploadFormInputDataModel.class)))
                     .end()
                 .end()
                 // at this time it's safe to generate the WSR
@@ -185,22 +188,20 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:calculate")
                 .id("calculate")
                 .convertBodyTo(String.class)
-                .multicast().aggregationStrategy(new org.apache.camel.processor.aggregate.GroupedBodyAggregationStrategy())
+                .multicast().aggregationStrategy(new GroupedBodyAggregationStrategy())
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory", "direct:flags-shared-disks")
                 .setBody(e -> e.getIn().getBody(List.class).get(0))
                 .end();
 
 
         from("direct:send-costsavings").id("send-costsavings")
-                .log("SEND-COSTSAVINGS")
-                .setBody(header("uploadformdata"))
+                .setBody(header(UPLOADFORMDATA))
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:uploadFormInputDataModel")
                 .end();
 
         from("direct:calculate-costsavings").id("calculate-costsavings")
-                .log("COST SAVINGS")
-                .transform().method("calculator", "calculate(${body}, ${header.MA_metadata})")
+                .transform().method("calculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
                 .end();
 
         from("direct:check-authenticated-request")
@@ -224,10 +225,10 @@ public class MainRouteBuilder extends RouteBuilder {
 
     private Exchange calculateICSAggregated(Exchange old, Exchange neu) {
             UploadFormInputDataModel newObj = (UploadFormInputDataModel) neu.getIn().getBody(List.class).get(0);
-            UploadFormInputDataModel oldObj = (old != null) ? old.getIn().getHeader("uploadformdata", UploadFormInputDataModel.class) : null;
-            newObj.setTotalDiskSpace(newObj.getTotalDiskSpace() + ((old != null) ? oldObj.getTotalDiskSpace() : 0));
-            newObj.setHypervisor(newObj.getHypervisor() + ((old != null) ? oldObj.getHypervisor() : 0));
-            neu.getIn().getHeaders().put("uploadformdata", newObj);
+            UploadFormInputDataModel oldObj = (old != null) ? old.getIn().getHeader(UPLOADFORMDATA, UploadFormInputDataModel.class) : null;
+            newObj.setTotalDiskSpace(newObj.getTotalDiskSpace() + ((oldObj != null) ? oldObj.getTotalDiskSpace() : 0));
+            newObj.setHypervisor(newObj.getHypervisor() + ((oldObj != null) ? oldObj.getHypervisor() : 0));
+            neu.getIn().getHeaders().put(UPLOADFORMDATA, newObj);
         return neu;
     }
 
@@ -262,7 +263,7 @@ public class MainRouteBuilder extends RouteBuilder {
     }
 
     private Predicate isAllExpectedParamsExist() {
-        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader("MA_metadata", new HashMap<String,Object>(), Map.class)).get(e)));
+        return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader(MA_METADATA, new HashMap<String,Object>(), Map.class)).get(e)));
     }
 
     private Predicate isFilePart() {
@@ -286,7 +287,7 @@ public class MainRouteBuilder extends RouteBuilder {
         internalNode.put("filename", filename);
 
         // we add all properties defined on the Insights Properties, that we should have as Headers of the message
-        Map<String, String> ma_metadataCasted = (Map<String, String>) headers.get("MA_metadata");
+        Map<String, String> ma_metadataCasted = (Map<String, String>) headers.get(MA_METADATA);
         insightsProperties.forEach(e -> internalNode.put(e, ma_metadataCasted.get(e)));
         // add the 'analysis_id' value
         String analysisId = ma_metadataCasted.get(ANALYSIS_ID);
@@ -314,7 +315,7 @@ public class MainRouteBuilder extends RouteBuilder {
 
     private Predicate isZippedFile(String extension) {
         return exchange -> {
-            String filename = (String) exchange.getIn().getHeader("MA_metadata", Map.class).get("filename");
+            String filename = (String) exchange.getIn().getHeader(MA_METADATA, Map.class).get("filename");
             return extension.equalsIgnoreCase(filename.substring(filename.length() - extension.length()));
         };
     }
