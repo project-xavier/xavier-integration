@@ -1,7 +1,9 @@
 package org.jboss.xavier.integrations.migrationanalytics.business.versioning;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+@EqualsAndHashCode
 public class ManifestVersion implements Comparable<ManifestVersion> {
     @Getter
     private final String[] version;

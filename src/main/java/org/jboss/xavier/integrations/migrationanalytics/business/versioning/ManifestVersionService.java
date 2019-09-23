@@ -18,7 +18,8 @@ import java.util.stream.StreamSupport;
 
 @Named
 public class ManifestVersionService {
-    protected static final String CLOUDFORMS_MANIFEST_PATTERN = "cloudforms.manifest.[0-9_]*.";
+    protected static final String CLOUDFORMS_MANIFEST = "cloudforms.manifest.";
+    protected static final String CLOUDFORMS_MANIFEST_PATTERN = CLOUDFORMS_MANIFEST + "[0-9_]*.";
     @Inject
     private Environment env;
 
@@ -34,7 +35,7 @@ public class ManifestVersionService {
     public String getPropertyWithFallbackVersion(String payloadVersion, String path) {
         String fallbackVersion = getFallbackVersionPath(payloadVersion, path);
 
-        return properties.get(CLOUDFORMS_MANIFEST_PATTERN + fallbackVersion + "." + path);
+        return properties.get(CLOUDFORMS_MANIFEST + fallbackVersion + "." + path);
     }
 
     public String getFallbackVersionPath(String payloadVersion, String path) {

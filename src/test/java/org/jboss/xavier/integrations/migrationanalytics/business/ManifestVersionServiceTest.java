@@ -28,23 +28,23 @@ public class ManifestVersionServiceTest {
     @Test
     public void expandVersion_fewShortAndLargeVersionsGiven_ReturnsFullVersionTexts() {
         ManifestVersionService manifestVersionService = new ManifestVersionService();
-        assertThat(manifestVersionService.expandVersion("v1")).isEqualToIgnoringCase("v1_0_0");
-        assertThat(manifestVersionService.expandVersion("v1_0")).isEqualToIgnoringCase("v1_0_0");
-        assertThat(manifestVersionService.expandVersion("v1_0_0")).isEqualToIgnoringCase("v1_0_0");
+        assertThat(manifestVersionService.expandVersion("1")).isEqualToIgnoringCase("1_0_0");
+        assertThat(manifestVersionService.expandVersion("1_0")).isEqualToIgnoringCase("1_0_0");
+        assertThat(manifestVersionService.expandVersion("1_0_0")).isEqualToIgnoringCase("1_0_0");
     }
 
     @Test
     public void getFallbackVersion_FewShortAndLongVersions_ReturnsClosestHighestVersions() {
         ManifestVersionService manifestVersionService = new ManifestVersionService();
         Map<String,String> properties = new HashMap<>();
-        properties.put("cloudforms.manifest.v1_0.primero", "val1");
-        properties.put("cloudforms.manifest.v1_1.primero", "val2");
-        properties.put("cloudforms.manifest.v1_1_2.primero","val3");
-        properties.put("cloudforms.manifest.v2.primero","val4");
-        properties.put("cloudforms.manifest.v1_2.primero","val5");
-        properties.put("cloudforms.manifest.v2_2.primero","val6");
-        properties.put("cloudforms.manifest.v2_1_3.primero","val7");
-        properties.put("cloudforms.manifest.v3_1_3.segundo","val8");
+        properties.put("cloudforms.manifest.1_0.primero", "val1");
+        properties.put("cloudforms.manifest.1_1.primero", "val2");
+        properties.put("cloudforms.manifest.1_1_2.primero","val3");
+        properties.put("cloudforms.manifest.2.primero","val4");
+        properties.put("cloudforms.manifest.1_2.primero","val5");
+        properties.put("cloudforms.manifest.2_2.primero","val6");
+        properties.put("cloudforms.manifest.2_1_3.primero","val7");
+        properties.put("cloudforms.manifest.3_1_3.segundo","val8");
         manifestVersionService.setProperties(properties);
         assertThat(manifestVersionService.getFallbackVersionPath("1_0_0", "primero")).isEqualToIgnoringCase("1_0_0");
         assertThat(manifestVersionService.getFallbackVersionPath("1_3", "primero")).isEqualToIgnoringCase("1_2_0");
