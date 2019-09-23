@@ -1,7 +1,7 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.DocumentContext;
-import org.jboss.xavier.integrations.migrationanalytics.business.versioning.VersionService;
+import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
@@ -48,7 +48,7 @@ public class AbstractVMWorkloadInventoryCalculator {
     protected Environment env;
 
     @Inject
-    protected VersionService versionService;
+    protected ManifestVersionService manifestVersionService;
 
     protected DocumentContext jsonParsed;
     protected String manifestVersion;
@@ -96,7 +96,7 @@ public class AbstractVMWorkloadInventoryCalculator {
     }
 
     protected String getExpandedPath(String envVarPath, Map vmStructMap) {
-        String path = versionService.getPropertyWithFallbackVersion(manifestVersion, envVarPath);
+        String path = manifestVersionService.getPropertyWithFallbackVersion(manifestVersion, envVarPath);
         return expandParamsInPath(path, vmStructMap);
     }
 

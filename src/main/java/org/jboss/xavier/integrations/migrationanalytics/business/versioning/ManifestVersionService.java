@@ -17,7 +17,8 @@ import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 @Named
-public class VersionService {
+public class ManifestVersionService {
+    protected static final String CLOUDFORMS_MANIFEST_PATTERN = "cloudforms.manifest.[0-9_]*.";
     @Inject
     private Environment env;
 
@@ -33,26 +34,25 @@ public class VersionService {
     public String getPropertyWithFallbackVersion(String payloadVersion, String path) {
         String fallbackVersion = getFallbackVersionPath(payloadVersion, path);
 
-        return properties.get("cloudforms.manifest.v" + fallbackVersion + "." + path);
+        return properties.get(CLOUDFORMS_MANIFEST_PATTERN + fallbackVersion + "." + path);
     }
 
     public String getFallbackVersionPath(String payloadVersion, String path) {
-        ManifestPathVersion fallbackversion = properties.keySet()
+        ManifestVersion fallbackversion = properties.keySet()
                 .stream()
-                .filter(e -> e.matches("cloudforms.manifest.v[0-9_]*." + path))
+                .filter(e -> e.matches(CLOUDFORMS_MANIFEST_PATTERN + path))
                 .map(e -> e.split("\\.")[2])
-                .map(e -> e.replace("v", ""))
                 .map(this::expandVersion)
-                .map(ManifestPathVersion::new)
+                .map(ManifestVersion::new)
                 .sorted(Comparator.reverseOrder())
                 .filter(e -> isVersionEqualOrLower(payloadVersion, e))
                 .findFirst()
-                .orElse(new ManifestPathVersion("0_0_0"));
+                .orElse(new ManifestVersion("0_0_0"));
 
-        return fallbackversion.getVersion();
+        return fallbackversion.getFullVersion();
     }
 
-    private boolean isVersionEqualOrLower(String payloadVersion, ManifestPathVersion e) {
+    private boolean isVersionEqualOrLower(String payloadVersion, ManifestVersion e) {
         return e.compareTo(expandVersion(payloadVersion)) <= 0;
     }
 
@@ -61,13 +61,13 @@ public class VersionService {
                     .filter(ps -> ps instanceof EnumerablePropertySource)
                     .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
                     .flatMap(Arrays::stream)
-                .filter(e -> e.matches("cloudforms.manifest.v[0-9_]*.*"))
+                .filter(e -> e.matches(CLOUDFORMS_MANIFEST_PATTERN + "*"))
                 .collect(Collectors.toMap( this::getKey, e-> env.getProperty(e)));
     }
 
     private String getKey(String property) {
         String[] elements = property.split("\\.");
-        return property.replace(elements[2], "v" + expandVersion(elements[2].replace("v", "")));
+        return property.replace(elements[2], expandVersion(elements[2]));
     }
 
     public String expandVersion(String e) {

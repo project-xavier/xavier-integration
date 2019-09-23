@@ -4,7 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.jboss.xavier.integrations.migrationanalytics.business.versioning.VersionService;
+import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
 import org.jboss.xavier.integrations.route.MainRouteBuilder;
 
 import javax.inject.Inject;
@@ -15,7 +15,7 @@ import java.util.Map;
 @Named("calculator")
 public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
     @Inject
-    VersionService versionService;
+    ManifestVersionService manifestVersionService;
 
     private static Integer calculateHypervisors(Object e, String cpuTotalCoresPath, String cpuCoresPerSocketPath) {
         Map mapa = (Map) e;
@@ -28,10 +28,10 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
     public UploadFormInputDataModel calculate(String cloudFormsJson, Map<String, Object> headers) {
         String payloadVersion = getManifestVersion(cloudFormsJson);
 
-        String hypervisorPath = versionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor");
-        String cpuTotalCoresPath = versionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuTotalCoresPath");
-        String cpuCoresPerSocketPath = versionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuCoresPerSocketPath");
-        String totalSpacePath = versionService.getPropertyWithFallbackVersion(payloadVersion, "totalSpacePath");
+        String hypervisorPath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor");
+        String cpuTotalCoresPath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuTotalCoresPath");
+        String cpuCoresPerSocketPath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuCoresPerSocketPath");
+        String totalSpacePath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "totalSpacePath");
 
         // Calculations
         Integer numberofhypervisors = ((JSONArray) JsonPath.read(cloudFormsJson, hypervisorPath)).stream().map(e -> calculateHypervisors(e, cpuTotalCoresPath, cpuCoresPerSocketPath)).mapToInt(Integer::intValue).sum();
