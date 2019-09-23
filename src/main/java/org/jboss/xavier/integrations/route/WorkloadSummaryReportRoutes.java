@@ -1,29 +1,31 @@
 package org.jboss.xavier.integrations.route;
 
-import org.apache.camel.CamelExecutionException;
 import org.apache.camel.builder.RouteBuilder;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
-import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ComplexityModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.RecommendedTargetsIMSModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.RecommendedTargetsIMSModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.jpa.service.ComplexityService;
-import org.jboss.xavier.integrations.jpa.service.RecommendedTargetsIMSService;
 import org.jboss.xavier.integrations.jpa.service.FlagService;
+import org.jboss.xavier.integrations.jpa.service.RecommendedTargetsIMSService;
+import org.jboss.xavier.integrations.jpa.service.ScanRunService;
 import org.jboss.xavier.integrations.jpa.service.SummaryService;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.jpa.service.WorkloadService;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
-import org.jboss.xavier.integrations.jpa.service.*;
-import org.springframework.beans.factory.annotation.Value;
+import org.jboss.xavier.integrations.jpa.service.WorkloadsDetectedOSTypeService;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Named
@@ -50,6 +52,9 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
     FlagService flagService;
 
     @Inject
+    ScanRunService scanRunService;
+
+    @Inject
     SummaryService summaryService;
 
     @Inject
@@ -61,7 +66,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
         from("direct:calculate-workloadsummaryreportmodel")
             .id("calculate-workloadsummaryreportmodel")
             .process(exchange -> {
-                Long analysisId = Long.parseLong(((Map<String, String>) exchange.getIn().getHeader("MA_metadata")).get(MainRouteBuilder.ANALYSIS_ID));
+                Long analysisId = Long.parseLong(((Map<String, String>) exchange.getIn().getHeader(MainRouteBuilder.MA_METADATA)).get(MainRouteBuilder.ANALYSIS_ID));
                 WorkloadSummaryReportModel workloadSummaryReportModel = new WorkloadSummaryReportModel();
 
                 //retrieve each model one after the other
@@ -82,6 +87,9 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
 
                 List<FlagModel> flagModels = flagService.calculateFlagModels(analysisId);
                 workloadSummaryReportModel.setFlagModels(flagModels);
+
+                Set<ScanRunModel> scanRunModels = scanRunService.calculateScanRunModels(analysisId);
+                workloadSummaryReportModel.setScanRunModels(scanRunModels);
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
