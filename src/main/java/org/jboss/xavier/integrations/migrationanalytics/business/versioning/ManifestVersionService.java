@@ -38,7 +38,7 @@ public class ManifestVersionService {
         return properties.get(CLOUDFORMS_MANIFEST + fallbackVersion + "." + path);
     }
 
-    public String getFallbackVersionPath(String payloadVersion, String path) {
+    String getFallbackVersionPath(String payloadVersion, String path) {
         ManifestVersion fallbackversion = properties.keySet()
                 .stream()
                 .filter(e -> e.matches(CLOUDFORMS_MANIFEST_PATTERN + path))
@@ -71,7 +71,7 @@ public class ManifestVersionService {
         return property.replace(elements[2], expandVersion(elements[2]));
     }
 
-    public String expandVersion(String e) {
+    String expandVersion(String e) {
         return e.concat(IntStream.range(1, 4 - e.split("_").length).mapToObj(f -> "_0").collect(Collectors.joining()));
     }
 }

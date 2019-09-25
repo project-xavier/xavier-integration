@@ -1,9 +1,8 @@
-package org.jboss.xavier.integrations.migrationanalytics.business;
+package org.jboss.xavier.integrations.migrationanalytics.business.versioning;
 
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

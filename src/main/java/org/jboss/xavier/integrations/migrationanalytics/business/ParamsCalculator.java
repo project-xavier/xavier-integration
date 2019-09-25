@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
 import org.jboss.xavier.integrations.route.MainRouteBuilder;
 
@@ -17,9 +16,6 @@ import java.util.Map;
 public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
     @Inject
     ManifestVersionService manifestVersionService;
-
-    @Inject
-    private AnalysisService analysisService;
 
     private static Integer calculateHypervisors(Object e, String cpuTotalCoresPath, String cpuCoresPerSocketPath) {
         Map mapa = (Map) e;

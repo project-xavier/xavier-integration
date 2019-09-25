@@ -20,7 +20,7 @@ public interface Calculator<T> {
         String versionJsonpath = "$.manifest.manifest.version";
 
         try {
-            return JsonPath.parse(cloudFormsJson).read(versionJsonpath, String.class).replace(".", "_").replace("v", "");
+            return JsonPath.parse(cloudFormsJson).read(versionJsonpath, String.class).replace(".", "_");
         } catch (Exception e) {
             return "0";
         }
