@@ -145,6 +145,9 @@ public class MainRouteBuilder extends RouteBuilder {
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
+                .process(exchange -> analysisService.findByOwnerAndId(exchange.getIn().getHeader(USERNAME, String.class),
+                                                                      (Long) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))
+                                                    .setPayloadURL(exchange.getIn().getBody(FilePersistedNotification.class).getUrl()))
                 .setBody(constant(""))
                 .doTry()
                     .to("http4://oldhost")
