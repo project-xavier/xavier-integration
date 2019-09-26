@@ -1,14 +1,21 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.Route;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.rest.RestEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
-import org.jboss.xavier.integrations.jpa.service.*;
+import org.jboss.xavier.integrations.jpa.service.AnalysisService;
+import org.jboss.xavier.integrations.jpa.service.FlagService;
+import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
+import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
+import org.jboss.xavier.integrations.jpa.service.WorkloadService;
+import org.jboss.xavier.integrations.jpa.service.WorkloadSummaryReportService;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
@@ -31,6 +38,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -862,4 +870,44 @@ public class XmlRoutes_RestReportTest {
         assertThat(restEndpointsTested.get()).isEqualTo(expectedRestEndpointsTested);
         camelContext.stop();
     }
-}
+
+    @Test
+    public void xmlRouteBuilder_RestPayload_AnalysisIdGiven_ShouldReturnAPayload() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        camelContext.getRouteDefinition("report-payload-download").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+                @Override
+                public void configure() throws Exception {
+                    mockEndpointsAndSkip("http4://.*");
+                    weaveByToUri("http4://.*").after()
+                            .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
+                            .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz"));
+                }
+            });
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("report-payload-download");
+        camelContext.startRoute("check-authenticated-request");
+        camelContext.startRoute("add-username-header");
+
+        AnalysisModel analysisModel = new AnalysisModel();
+        analysisModel.setId(9L);
+        analysisModel.setPayloadURL("http://www.google.com");
+        doReturn(analysisModel).when(analysisService).findByOwnerAndId(any(), any());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("username", "testuser");
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+        HttpEntity<String> entity = new HttpEntity<>("", headers);
+        ResponseEntity<InputStream> answer = restTemplate.exchange(camel_context + "report/15/payload", HttpMethod.GET, entity, InputStream.class);
+
+        //Then
+        //assertThat(IOUtils.contentEquals(answer.getBody(), this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz"))).isTrue();
+
+        camelContext.stop();
+        }
+
+    }

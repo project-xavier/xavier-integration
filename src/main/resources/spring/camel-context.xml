@@ -189,6 +189,19 @@
                     <bean ref="flagService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
                 </route>
             </get>
+            <get uri="/{id}/payload">
+                <route id="report-payload-download">
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <log message="BODY : ${body}"/>
+                    <setHeader headerName="Exchange.HTTP_URI">
+                        <simple>${body.payloadURL}</simple>
+                    </setHeader>
+                    <setBody>
+                        <simple></simple>
+                    </setBody>
+                    <to uri="http4://oldhost"/>
+                </route>
+            </get>
         </rest>
 
         <rest path="/user">
