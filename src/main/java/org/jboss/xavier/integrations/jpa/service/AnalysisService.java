@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.jpa.service;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
@@ -123,5 +124,9 @@ public class AnalysisService
         analysisModel.setPayloadURL(payloadURL);
         analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
+    }
+
+    public String unescape(String htmlString) {
+        return StringEscapeUtils.unescapeHtml4(htmlString);
     }
 }

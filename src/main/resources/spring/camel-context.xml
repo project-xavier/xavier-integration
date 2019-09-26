@@ -192,14 +192,26 @@
             <get uri="/{id}/payload">
                 <route id="report-payload-download">
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
-                    <log message="BODY : ${body}"/>
-                    <setHeader headerName="Exchange.HTTP_URI">
-                        <simple>${body.payloadURL}</simple>
-                    </setHeader>
-                    <setBody>
-                        <simple></simple>
-                    </setBody>
-                    <to uri="http4://oldhost"/>
+                    <choice>
+                        <when>
+                            <simple>${body.payloadURL} != null</simple>
+                            <setHeader headerName="Exchange.HTTP_URI">
+                                <bean ref="analysisService" method="unescape(${body.payloadURL})"/>
+                            </setHeader>
+                            <setBody>
+                                <simple/>
+                            </setBody>
+                            <to uri="http4://oldhost"/>
+                        </when>
+                        <otherwise>
+                            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_NOT_FOUND}</simple>
+                            </setHeader>
+                            <setBody>
+                                <constant>Not Found</constant>
+                            </setBody>
+                        </otherwise>
+                    </choice>
                 </route>
             </get>
         </rest>

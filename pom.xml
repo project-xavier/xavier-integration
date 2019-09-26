@@ -172,6 +172,11 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-bindy-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.8</version>
+        </dependency>
 
         <!-- For decision server auto-configuration -->
         <dependency>
