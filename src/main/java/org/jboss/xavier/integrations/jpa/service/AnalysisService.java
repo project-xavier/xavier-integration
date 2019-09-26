@@ -117,4 +117,11 @@ public class AnalysisService
         analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
     }
+
+    public void updatePayloadURL(String payloadURL, Long id) {
+        AnalysisModel analysisModel = findById(id);
+        analysisModel.setPayloadURL(payloadURL);
+        analysisModel.setLastUpdate(new Date());
+        analysisRepository.save(analysisModel);
+    }
 }
