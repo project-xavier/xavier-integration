@@ -7,6 +7,7 @@ import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInvento
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -51,6 +52,8 @@ public class AnalysisModel
     private Date inserted;
     private Date lastUpdate;
     private String owner;
+
+    @Column(length = 512)
     private String payloadURL;
 
     public Long getId() {
