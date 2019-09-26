@@ -10,6 +10,8 @@ import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.codec.binary.Base64;
 import org.jboss.xavier.Application;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,9 +49,14 @@ public class MainRouteBuilder_DirectDownloadTest {
     @EndpointInject(uri = "mock:direct:mark-analysis-fail")
     private MockEndpoint mockMarkAnalysisFail;
 
+    @Inject
+    AnalysisService analysisService;
+
     @Test
     public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockUnzipFile.expectedMessageCount(1);
@@ -58,7 +66,9 @@ public class MainRouteBuilder_DirectDownloadTest {
         camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
-                weaveByToUri("http4:.*").after().setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"));
+                weaveByToUri("http4:.*").after()
+                        .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
+                        .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"));
             }
         });
 
@@ -70,7 +80,7 @@ public class MainRouteBuilder_DirectDownloadTest {
         Map<String, Object> headers = new HashMap<>();
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("dummy", "CID1234");
-        metadata.put(MainRouteBuilder.ANALYSIS_ID,"3");
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
         headers.put(MainRouteBuilder.MA_METADATA, metadata);
 
         String rhidentityFrom3Scale = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";
@@ -85,12 +95,15 @@ public class MainRouteBuilder_DirectDownloadTest {
         assertThat(mockOldHost.getExchanges().get(0).getIn().getHeader(MainRouteBuilder.MA_METADATA, Map.class).get("dummy")).isEqualTo("CID1234");
         assertThat(mockOldHost.getExchanges().get(0).getIn().getHeader(MainRouteBuilder.MA_METADATA, Map.class).get("auth_time")).isEqualTo("0");
         mockUnzipFile.assertIsSatisfied();
+        assertThat(analysisService.findByOwnerAndId(analysisModel.getOwner(), analysisModel.getId()).getPayloadURL()).isEqualToIgnoringCase(body.getUrl());
         camelContext.stop();
     }
 
     @Test
     public void mainRouteBuilder_DirectDownloadFile_HTTPErrorDownloadingFileGiven_ShouldMarkAnalysisAsFailed() throws Exception {
         //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         mockMarkAnalysisFail.expectedMessageCount(1);
@@ -109,7 +122,7 @@ public class MainRouteBuilder_DirectDownloadTest {
         Map<String, Object> headers = new HashMap<>();
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("dummy", "CID1234");
-        metadata.put(MainRouteBuilder.ANALYSIS_ID,"3");
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
         headers.put(MainRouteBuilder.MA_METADATA, metadata);
 
         String rhidentityFrom3Scale = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";
