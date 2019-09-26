@@ -199,7 +199,7 @@
                     <setBody>
                         <simple></simple>
                     </setBody>
-                    <to uri="http://oldhost"/>
+                    <to uri="http4://oldhost"/>
                 </route>
             </get>
         </rest>

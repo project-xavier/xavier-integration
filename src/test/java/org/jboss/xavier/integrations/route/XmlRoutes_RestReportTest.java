@@ -39,7 +39,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -881,8 +881,8 @@ public class XmlRoutes_RestReportTest {
         camelContext.getRouteDefinition("report-payload-download").adviceWith(camelContext, new AdviceWithRouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    mockEndpointsAndSkip("http://.*");
-                    weaveByToUri("http://.*").after()
+                    mockEndpointsAndSkip("http4://.*");
+                    weaveByToUri("http4://.*").after()
                             .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
                             .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"));
                 }
@@ -903,10 +903,10 @@ public class XmlRoutes_RestReportTest {
         headers.set("username", "testuser");
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>("", headers);
-        ResponseEntity<InputStream> answer = restTemplate.exchange(camel_context + "report/15/payload", HttpMethod.GET, entity, InputStream.class);
+        ResponseEntity<String> answer = restTemplate.exchange(camel_context + "report/15/payload", HttpMethod.GET, entity, String.class);
 
         //Then
-        assertThat(IOUtils.contentEquals(answer.getBody(), this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"))).isTrue();
+        assertThat(answer.getBody()).isEqualToIgnoringCase(IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, this.getClass().getClassLoader()));
 
         camelContext.stop();
         }
