@@ -30,6 +30,13 @@ public class AdministrationRestRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+
+        /*
+         * Generates a zip with 2 files. The first file contains metrics between last MONDAY and THE MONDAY before it
+         * using 00:00:00 time. The second file contains all metrics until NOW.
+         * NOTE: MONDAY at 00:00:00 is expressed in the Time zone where the application is running.
+         * E.g. If the server is running in UTC+2 then the date will be: MONDAY 00:00:00 UTC+2
+         */
         from("rest:get:/administration/report/csv?produces=application/octet-stream")
                 .id("administration-report-csv")
 
