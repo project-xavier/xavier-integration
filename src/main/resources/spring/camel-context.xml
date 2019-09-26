@@ -196,7 +196,7 @@
                         <when>
                             <simple>${body.payloadURL} != null</simple>
                             <setHeader headerName="Exchange.HTTP_URI">
-                                <bean ref="analysisService" method="unescape(${body.payloadURL})"/>
+                                <method ref="analysisService" method="unescape(${body.payloadURL})"/>
                             </setHeader>
                             <setBody>
                                 <simple/>
