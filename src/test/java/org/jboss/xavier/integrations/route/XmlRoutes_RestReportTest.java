@@ -8,6 +8,7 @@ import org.apache.camel.component.rest.RestEndpoint;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
+import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
@@ -880,10 +881,10 @@ public class XmlRoutes_RestReportTest {
         camelContext.getRouteDefinition("report-payload-download").adviceWith(camelContext, new AdviceWithRouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    mockEndpointsAndSkip("http4://.*");
-                    weaveByToUri("http4://.*").after()
+                    mockEndpointsAndSkip("http://.*");
+                    weaveByToUri("http://.*").after()
                             .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
-                            .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz"));
+                            .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"));
                 }
             });
 
@@ -905,7 +906,7 @@ public class XmlRoutes_RestReportTest {
         ResponseEntity<InputStream> answer = restTemplate.exchange(camel_context + "report/15/payload", HttpMethod.GET, entity, InputStream.class);
 
         //Then
-        //assertThat(IOUtils.contentEquals(answer.getBody(), this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1-multiple-files.tar.gz"))).isTrue();
+        assertThat(IOUtils.contentEquals(answer.getBody(), this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"))).isTrue();
 
         camelContext.stop();
         }
