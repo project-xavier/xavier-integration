@@ -196,12 +196,12 @@
                         <when>
                             <simple>${body.payloadURL} != null</simple>
                             <setHeader headerName="Exchange.HTTP_URI">
-                                <method ref="analysisService" method="unescape(${body.payloadURL})"/>
+                                <simple>${body.payloadURL}</simple>
                             </setHeader>
                             <setBody>
-                                <simple/>
+                                <constant>""</constant>
                             </setBody>
-                            <to uri="http4://oldhost"/>
+                            <to uri="http4://oldhost?copyHeaders=false&amp;httpMethod=GET"/>
                         </when>
                         <otherwise>
                             <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
