@@ -10,7 +10,11 @@ addons:
       secure: $SONAR_TOKEN
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
-  - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V >> install.log 2>&1
+after_success:
+  - tail --lines=2000 install.log
+after_failure:
+  - tail --lines=2000 install.log
 jobs:
   include:
     - stage: Test
