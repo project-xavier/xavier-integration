@@ -192,6 +192,9 @@
             <get uri="/{id}/payload">
                 <route id="report-payload-download">
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <setHeader headerName="filename">
+                        <simple>${body.payloadName}</simple>
+                    </setHeader>
                     <choice>
                         <when>
                             <simple>${body} != null &amp;&amp; ${body.payloadURL} != null</simple>
@@ -200,9 +203,12 @@
                             </setHeader>
                             <removeHeader headerName="Exchange.HTTP_PATH"/>
                             <setBody>
-                                <constant>""</constant>
+                                <constant> </constant>
                             </setBody>
                             <to uri="http4://oldhost?copyHeaders=false&amp;httpMethod=GET"/>
+                            <setHeader headerName="Content-Disposition">
+                                <simple>attachment; filename="${header.filename}")</simple>
+                            </setHeader>
                         </when>
                         <otherwise>
                             <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
