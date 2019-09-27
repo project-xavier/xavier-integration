@@ -198,6 +198,7 @@
                             <setHeader headerName="Exchange.HTTP_URI">
                                 <simple>${body.payloadURL}</simple>
                             </setHeader>
+                            <removeHeader headerName="Exchange.HTTP_PATH"/>
                             <setBody>
                                 <constant>""</constant>
                             </setBody>
