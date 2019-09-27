@@ -205,7 +205,7 @@
                             <setBody>
                                 <constant> </constant>
                             </setBody>
-                            <to uri="http4://oldhost?copyHeaders=false&amp;httpMethod=GET"/>
+                            <to uri="http4://oldhost"/>
                             <setHeader headerName="Content-Disposition">
                                 <simple>attachment; filename="${header.payloadname}"</simple>
                             </setHeader>
