@@ -15,11 +15,16 @@ public class AdministrationMetricsMapper {
     public AdministrationMetricsModel toAdministrationMetricsModel(AdministrationMetricsProjection projection) {
         AdministrationMetricsModel model = new AdministrationMetricsModel();
         model.setOwner(projection.getOwner());
-        model.setOwnerDomain(projection.getOwnerDomain());
         model.setPayloadName(projection.getPayloadName());
         model.setAnalysisStatus(projection.getAnalysisStatus());
         model.setAnalysisInserted(projection.getAnalysisInserted());
         model.setTotalVms(projection.getTotalVms());
+
+        String owner = projection.getOwner();
+        if (owner.contains("@")) {
+            model.setOwnerDomain(owner.substring(owner.indexOf("@") + 1));
+        }
+
         return model;
     }
 }

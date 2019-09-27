@@ -8,8 +8,6 @@ public interface AdministrationMetricsProjection {
 
     String getOwner();
 
-    String getOwnerDomain();
-
     String getPayloadName();
 
     String getAnalysisStatus();

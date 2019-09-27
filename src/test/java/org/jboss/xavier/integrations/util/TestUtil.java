@@ -13,6 +13,7 @@ public class TestUtil
         camelContext.startRoute("request-forbidden");
         camelContext.startRoute("add-username-header");
         camelContext.startRoute("check-authenticated-request");
+        camelContext.startRoute("check-authorized-request");
     }
 
     public static String getBase64RHIdentity()
