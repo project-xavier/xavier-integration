@@ -10,15 +10,15 @@ addons:
       secure: $SONAR_TOKEN
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
-  - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V >> install.log 2>&1
-after_success:
-  - tail --lines=2000 install.log
-after_failure:
-  - tail --lines=2000 install.log
+  - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
     - stage: Test
       script:
-        - mvn test -Pcoverage
+        - mvn test -Pcoverage >> testJob.log 2>&1
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
+      after_success:
+        - tail --lines=6000 testJob.log
+      after_failure:
+        - tail --lines=6000 testJob.log
