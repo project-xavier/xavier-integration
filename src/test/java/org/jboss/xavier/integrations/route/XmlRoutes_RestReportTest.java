@@ -896,6 +896,7 @@ public class XmlRoutes_RestReportTest {
 
         AnalysisModel analysisModel = new AnalysisModel();
         analysisModel.setId(9L);
+        analysisModel.setPayloadName("cloudforms-export-v1_0_0.json");
         analysisModel.setPayloadURL("http://www.google.com");
         doReturn(analysisModel).when(analysisService).findByOwnerAndId(any(), any());
 
@@ -907,6 +908,7 @@ public class XmlRoutes_RestReportTest {
 
         //Then
         assertThat(answer.getBody()).isEqualToIgnoringCase(IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, this.getClass().getClassLoader()));
+        assertThat(answer.getHeaders().get("Content-Disposition").get(0)).isEqualToIgnoringCase("attachment; filename=\"cloudforms-export-v1_0_0.json\"");
 
         camelContext.stop();
         }

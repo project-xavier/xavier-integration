@@ -192,7 +192,7 @@
             <get uri="/{id}/payload">
                 <route id="report-payload-download">
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
-                    <setHeader headerName="filename">
+                    <setHeader headerName="payloadname">
                         <simple>${body.payloadName}</simple>
                     </setHeader>
                     <choice>
@@ -207,7 +207,7 @@
                             </setBody>
                             <to uri="http4://oldhost?copyHeaders=false&amp;httpMethod=GET"/>
                             <setHeader headerName="Content-Disposition">
-                                <simple>attachment; filename="${header.filename}")</simple>
+                                <simple>attachment; filename="${header.payloadname}"</simple>
                             </setHeader>
                         </when>
                         <otherwise>
