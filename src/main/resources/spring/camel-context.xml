@@ -66,11 +66,6 @@
         </rest>
 
         <rest path="/administration" produces="application/octet-stream">
-            <get uri="/flag-assessment">
-                <route id="mappings-flag-assessment-findAll2">
-                    <bean ref="flagAssessmentService" method="findAll()" />
-                </route>
-            </get>
             <get uri="/report/csv">
                 <route id="administration-report-csv">
                     <setHeader headerName="CSVCorrelationID">
