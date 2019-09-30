@@ -77,6 +77,9 @@ public class MainRouteBuilder extends RouteBuilder {
     public void configure() {
         getContext().setTracing(tracingEnabled);
 
+        onException(Exception.class)
+                .to("direct:mark-analysis-fail");
+
         from("rest:post:/upload?consumes=multipart/form-data")
                 .id("rest-upload")
                 .to("direct:check-authenticated-request")
@@ -113,23 +116,21 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("direct:insights");
 
         from("direct:insights").id("call-insights-upload-service")
-                .doTry()
-                    .process(this::createMultipartToSendToInsights)
-                    .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-                    .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
-                    .removeHeaders("Camel*")
-                    .to("http4://" + uploadHost + "/api/ingress/v1/upload")
-                    .choice()
-                        .when(not(isResponseSuccess()))
-                            .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
-                .endDoTry()
-                .doCatch(Exception.class)
-                    .to("log:error?showCaughtException=true&showStackTrace=true")
-                    .to("direct:mark-analysis-fail")
+                .process(this::createMultipartToSendToInsights)
+                .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+                .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
+                .removeHeaders("Camel*")
+                .to("http4://" + uploadHost + "/api/ingress/v1/upload")
+                .choice()
+                    .when(not(isResponseSuccess()))
+                        .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
                 .end();
 
         from("direct:mark-analysis-fail").id("markAnalysisFail")
-                .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))))
+                .choice()
+                    .when(this::isConsiderExceptionToMarkAnalysis)
+                        .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))))
+                .end()
                 .stop();
 
 
@@ -146,19 +147,14 @@ public class MainRouteBuilder extends RouteBuilder {
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
                 .setBody(constant(""))
-                .doTry()
-                    .to("http4://oldhost")
-                    .choice()
-                        .when(isResponseSuccess())
-                            .removeHeader("Exchange.HTTP_URI")
-                            .to("direct:unzip-file")
-                            .log("File ${header.CamelFileName} success")
-                        .otherwise()
-                            .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Download Service")
-                .endDoTry()
-                .doCatch(Exception.class)
-                    .to("log:error?showCaughtException=true&showStackTrace=true")
-                    .to("direct:mark-analysis-fail")
+                .to("http4://oldhost")
+                .choice()
+                    .when(isResponseSuccess())
+                        .removeHeader("Exchange.HTTP_URI")
+                        .to("direct:unzip-file")
+                        .log("File ${header.CamelFileName} success")
+                    .otherwise()
+                        .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Download Service")
                 .end();
 
         from("direct:unzip-file")
@@ -221,6 +217,16 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:request-forbidden")
                 .id("request-forbidden")
                 .process(httpError403());
+    }
+
+    private boolean isConsiderExceptionToMarkAnalysis(Exchange exchange) {
+        boolean considerException = false;
+        Map header = exchange.getIn().getHeader(MA_METADATA, Map.class);
+        if (header != null && header.get(ANALYSIS_ID) != null) {
+            AnalysisModel analysisModel = analysisService.findByOwnerAndId(exchange.getIn().getHeader(MainRouteBuilder.USERNAME, String.class), Long.parseLong((String) header.get(ANALYSIS_ID)));
+            considerException = !AnalysisService.STATUS.CREATED.toString().equalsIgnoreCase(analysisModel.getStatus());
+        }
+        return considerException;
     }
 
     private Exchange calculateICSAggregated(Exchange old, Exchange neu) {
