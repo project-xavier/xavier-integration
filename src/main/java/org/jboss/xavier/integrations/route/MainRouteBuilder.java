@@ -319,7 +319,7 @@ public class MainRouteBuilder extends RouteBuilder {
             result = usernameNode.textValue();
         } catch (Exception e) {
             Logger.getLogger(this.getClass().getName()).warning("Unable to retrieve the 'username' field from cookies due to the following exception. Hence 'username' value set to '" + result + "'.");
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return result;
     }

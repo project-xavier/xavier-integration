@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -856,7 +857,8 @@ public class XmlRoutes_RestReportTest {
                         restEndpointsTested.incrementAndGet();
                         camelContext.stopRoute(route.getId());
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
+                        Logger.getLogger(this.getClass().getName()).warning(e.getMessage());
                     }
                 });
         assertThat(restEndpointsTested.get()).isEqualTo(expectedRestEndpointsTested);
