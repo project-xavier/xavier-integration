@@ -23,10 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -860,6 +857,32 @@ public class XmlRoutes_RestReportTest {
                     }
                 });
         assertThat(restEndpointsTested.get()).isEqualTo(expectedRestEndpointsTested);
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestAdministrationCsv_ShouldCallGetMetrics() throws Exception {
+        //Given
+        camelContext.setTracing(true);
+        camelContext.setAutoStartup(false);
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("administration-report-csv-aggregator");
+        camelContext.startRoute("administration-metrics-model-to-csv");
+        camelContext.startRoute("administration-report-csv");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity("admin2@redhat.com"));
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "administration/report/csv", HttpMethod.GET, entity, String.class);
+
+        //Then
+        verify(analysisService, times(2)).getAdministrationMetrics(any(), any());
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
         camelContext.stop();
     }
 }
