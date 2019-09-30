@@ -77,15 +77,17 @@ public class MainRouteBuilder extends RouteBuilder {
     public void configure() {
         getContext().setTracing(tracingEnabled);
 
-        onException(Exception.class)
-                .to("direct:mark-analysis-fail");
+        onException(Exception.class).routeId("exception-handler")
+                .handled(true)
+                .to("direct:mark-analysis-fail")
+        .end();
 
         from("rest:post:/upload?consumes=multipart/form-data")
-                .id("rest-upload")
+                .routeId("rest-upload")
                 .to("direct:check-authenticated-request")
                 .to("direct:upload");
 
-        from("direct:upload").id("direct-upload")
+        from("direct:upload").routeId("direct-upload")
                 .unmarshal(new CustomizedMultipartDataFormat())
                 .choice()
                     .when(isAllExpectedParamsExist())
@@ -101,7 +103,7 @@ public class MainRouteBuilder extends RouteBuilder {
                       .process(httpError400())
                     .end();
 
-        from("direct:analysis-model").id("analysis-model-creation")
+        from("direct:analysis-model").routeId("analysis-model-creation")
                 .process(e -> {
                     String userName = e.getIn().getHeader(USERNAME, String.class);
                     AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportName"),
@@ -110,12 +112,12 @@ public class MainRouteBuilder extends RouteBuilder {
                     e.getIn().getHeader(MA_METADATA, Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
                 });
 
-        from("direct:store").id("direct-store")
+        from("direct:store").routeId("direct-store")
                 .convertBodyTo(byte[].class) // we need this to fully read the stream and close it
                 .to("direct:analysis-model")
                 .to("direct:insights");
 
-        from("direct:insights").id("call-insights-upload-service")
+        from("direct:insights").routeId("call-insights-upload-service")
                 .process(this::createMultipartToSendToInsights)
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
                 .setHeader("x-rh-identity", method(MainRouteBuilder.class, "getRHIdentity(${header.x-rh-identity}, ${header.CamelFileName}, ${headers})"))
@@ -126,22 +128,21 @@ public class MainRouteBuilder extends RouteBuilder {
                         .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
                 .end();
 
-        from("direct:mark-analysis-fail").id("markAnalysisFail")
+        from("direct:mark-analysis-fail").routeId("markAnalysisFail")
                 .choice()
                     .when(this::isConsiderExceptionToMarkAnalysis)
                         .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))))
-                .end()
-                .stop();
+                .end();
 
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
-                .id("kafka-upload-message")
+                .routeId("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
                 .to("direct:download-file");
 
         from("direct:download-file")
-                .id("download-file")
+                .routeId("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
@@ -158,7 +159,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .end();
 
         from("direct:unzip-file")
-                .id("unzip-file")
+                .routeId("unzip-file")
                 .choice()
                     .when(isZippedFile("zip"))
                         .split(new ZipSplitter()).aggregationStrategy(this::calculateICSAggregated)
@@ -182,7 +183,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .to("direct:calculate-workloadsummaryreportmodel");
 
         from("direct:calculate")
-                .id("calculate")
+                .routeId("calculate")
                 .convertBodyTo(String.class)
                 .multicast().aggregationStrategy(new GroupedBodyAggregationStrategy())
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory", "direct:flags-shared-disks")
@@ -190,32 +191,32 @@ public class MainRouteBuilder extends RouteBuilder {
                 .end();
 
 
-        from("direct:send-costsavings").id("send-costsavings")
+        from("direct:send-costsavings").routeId("send-costsavings")
                 .setBody(header(UPLOADFORMDATA))
                 .log("Message to send to AMQ : ${body}")
                 .to("jms:queue:uploadFormInputDataModel")
                 .end();
 
-        from("direct:calculate-costsavings").id("calculate-costsavings")
+        from("direct:calculate-costsavings").routeId("calculate-costsavings")
                 .transform().method("calculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
                 .end();
 
         from("direct:check-authenticated-request")
-                .id("check-authenticated-request")
+                .routeId("check-authenticated-request")
                 .to("direct:add-username-header")
                 .choice()
                     .when(header(USERNAME).isEqualTo(""))
                     .to("direct:request-forbidden");
 
         from("direct:add-username-header")
-                .id("add-username-header")
+                .routeId("add-username-header")
                 .process(exchange ->  {
                     String userName = this.getUserNameFromRHIdentity(exchange.getIn().getHeader("x-rh-identity", String.class));
                     exchange.getIn().setHeader(USERNAME, userName);
                 });
 
         from("direct:request-forbidden")
-                .id("request-forbidden")
+                .routeId("request-forbidden")
                 .process(httpError403());
     }
 
