@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,8 +55,7 @@ public class AbstractVMWorkloadInventoryCalculator {
             List<List<Map>> value = jsonParsed.read(expandParamsInPath);
             value.stream().flatMap(Collection::stream).collect(Collectors.toList()).forEach(e-> files.put((String) e.get(keyfield), (String) e.get(valuefield)));
         } catch (Exception e) {
-//            e.printStackTrace();
-            Logger.getLogger(this.getClass().getName()).warning(e.getMessage());
+            e.printStackTrace();
         }
         return files;
     }
