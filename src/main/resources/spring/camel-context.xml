@@ -214,17 +214,6 @@
             </marshal>
         </route>
 
-        <route id="call-kie-extract-reports" trace="true">
-            <from uri="jms:queue:inputDataModel" />
-            <log message="Message received" />
-            <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
-            <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
-            <to id="decisionserver" uri="direct:decisionserver"/>
-            <bean id="route-extract-reports" method="extractReports" ref="decisionServerHelper"/>
-            <log id="route-log-totalPrice" message="totalPrice = ${body.totalPrice}"/>
-            <to uri="jpa:org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel" />
-        </route>
-
         <route id="route-ma">
             <from uri="jms:queue:uploadFormInputDataModel" />
                 <log message="Message received" />
