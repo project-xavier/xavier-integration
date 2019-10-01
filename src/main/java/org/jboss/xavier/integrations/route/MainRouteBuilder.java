@@ -129,9 +129,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .end();
 
         from("direct:mark-analysis-fail").routeId("markAnalysisFail")
-                .choice()
-                    .when(this::isConsiderExceptionToMarkAnalysis)
-                        .process(e -> analysisService.updateStatus(AnalysisService.STATUS.FAILED.toString(), Long.parseLong((String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))))
+                .process(this::markAnalysisAsFailed)
                 .end();
 
 
@@ -220,14 +218,16 @@ public class MainRouteBuilder extends RouteBuilder {
                 .process(httpError403());
     }
 
-    private boolean isConsiderExceptionToMarkAnalysis(Exchange exchange) {
-        boolean considerException = false;
-        Map header = exchange.getIn().getHeader(MA_METADATA, Map.class);
-        if (header != null && header.get(ANALYSIS_ID) != null) {
-            AnalysisModel analysisModel = analysisService.findByOwnerAndId(exchange.getIn().getHeader(MainRouteBuilder.USERNAME, String.class), Long.parseLong((String) header.get(ANALYSIS_ID)));
-            considerException = !AnalysisService.STATUS.CREATED.toString().equalsIgnoreCase(analysisModel.getStatus());
+    private void markAnalysisAsFailed(Exchange e) {
+        try {
+            String analysisId = e.getIn().getHeader(ANALYSIS_ID, "", String.class);
+            if (analysisId.isEmpty()) {
+                analysisId = (String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID);
+            }
+            analysisService.markAsFailedIfNotCreated(Long.parseLong(analysisId));
+        } catch (Exception ex) {
+            // doing nothing
         }
-        return considerException;
     }
 
     private Exchange calculateICSAggregated(Exchange old, Exchange neu) {

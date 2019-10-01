@@ -31,6 +31,12 @@
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
+        <onException>
+            <exception>java.lang.Exception</exception>
+            <handled><constant>true</constant></handled>
+            <to uri="direct:mark-analysis-fail"/>
+        </onException>
+
         <interceptFrom id="interceptor-username" uri="rest:*">
             <to uri="direct:check-authenticated-request" />
         </interceptFrom>
@@ -221,7 +227,6 @@
 
         <route id="route-ma">
             <from uri="jms:queue:uploadFormInputDataModel" />
-            <doTry>
                 <log message="Message received" />
                 <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
                 <setHeader headerName="analysisId">
@@ -232,12 +237,6 @@
                 <bean id="route-extract-ics-reports" method="extractInitialSavingsEstimationReportModel" ref="decisionServerHelper"/>
                 <log id="route-log-sourceLicenseValue" message="totalPrice = ${body.sourceCostsModel.sourceLicenseValue}"/>
                 <bean ref="analysisService" method="setInitialSavingsEstimationReportModel(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.ANALYSIS_ID}})" />
-
-                <doCatch>
-                    <exception>java.lang.Exception</exception>
-                    <bean ref="analysisService" method='updateStatus("FAILED", ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.ANALYSIS_ID}})'/>
-                </doCatch>
-            </doTry>
         </route>
 
         <!--

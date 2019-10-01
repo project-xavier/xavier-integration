@@ -94,6 +94,7 @@ public class XmlRoutes_RouteMaTest {
         camelContext.setAutoStartup(false);
         camelContext.start();
         camelContext.startRoute("route-ma");
+        camelContext.startRoute("markAnalysisFail");
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("Content-Type", "application/zip");
@@ -101,7 +102,9 @@ public class XmlRoutes_RouteMaTest {
 
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:route-ma", getInputDataModelSample(analysisModel.getId()), headers);
 
-        assertThat(analysisService.findByOwnerAndId("user name", analysisModel.getId()).getStatus()).isEqualToIgnoringCase("FAILED");
+        AnalysisModel analysisModelRetrieved = analysisService.findByOwnerAndId("user name", analysisModel.getId());
+        assertThat(analysisModelRetrieved.getInitialSavingsEstimationReportModel()).isNull();
+        assertThat(analysisModelRetrieved.getStatus()).isEqualToIgnoringCase("FAILED");
 
         camelContext.stop();
     }
@@ -132,6 +135,7 @@ public class XmlRoutes_RouteMaTest {
         camelContext.start();
         camelContext.startRoute("route-ma");
         camelContext.startRoute("decision-server-rest");
+        camelContext.startRoute("markAnalysisFail");
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("Content-Type", "application/zip");

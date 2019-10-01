@@ -117,4 +117,13 @@ public class AnalysisService
         analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
     }
+
+    public void markAsFailedIfNotCreated(Long id) {
+        AnalysisModel analysisModel = findById(id);
+        if (!STATUS.CREATED.toString().equalsIgnoreCase(analysisModel.getStatus())) {
+            analysisModel.setStatus(STATUS.FAILED.toString());
+            analysisModel.setLastUpdate(new Date());
+            analysisRepository.save(analysisModel);
+        }
+    }
 }
