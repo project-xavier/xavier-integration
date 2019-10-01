@@ -218,7 +218,7 @@ public class MainRouteBuilder extends RouteBuilder {
                 .process(httpError403());
     }
 
-    private void markAnalysisAsFailed(Exchange e) {
+    public void markAnalysisAsFailed(Exchange e) {
         try {
             String analysisId = e.getIn().getHeader(ANALYSIS_ID, "", String.class);
             if (analysisId.isEmpty()) {

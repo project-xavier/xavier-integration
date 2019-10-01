@@ -34,7 +34,7 @@
         <onException>
             <exception>java.lang.Exception</exception>
             <handled><constant>true</constant></handled>
-            <to uri="direct:mark-analysis-fail"/>
+            <bean ref="mainRouteBuilder" method="markAnalysisAsFailed(${exchange})"/>
         </onException>
 
         <interceptFrom id="interceptor-username" uri="rest:*">
