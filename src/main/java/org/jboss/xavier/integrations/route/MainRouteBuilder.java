@@ -226,7 +226,7 @@ public class MainRouteBuilder extends RouteBuilder {
             }
             analysisService.markAsFailedIfNotCreated(Long.parseLong(analysisId));
         } catch (Exception ex) {
-            // doing nothing
+            log.error("Exception ocurred while marking the Analysis as failed.", ex);
         }
     }
 
