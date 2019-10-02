@@ -89,7 +89,9 @@ public class AnalysisService
         analysisModel.setWorkloadSummaryReportModels(reportModel);
         reportModel.setAnalysis(analysisModel);
         // TODO remove this since it's just a temporary workaround to change the status
-        analysisModel.setStatus(STATUS.CREATED.toString());
+        if (!STATUS.FAILED.toString().equalsIgnoreCase(analysisModel.getStatus())) {
+            analysisModel.setStatus(STATUS.CREATED.toString());
+        }
         analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
     }

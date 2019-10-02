@@ -19,7 +19,7 @@ public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
         onException(Exception.class).routeId("exception-handler")
                 .handled(true)
                 .process(this::markAnalysisAsFailed)
-                .end();
+                .stop();
     }
 
     public void markAnalysisAsFailed(Exchange e) {

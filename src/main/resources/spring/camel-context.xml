@@ -35,6 +35,7 @@
             <exception>java.lang.Exception</exception>
             <handled><constant>true</constant></handled>
             <bean ref="mainRouteBuilder" method="markAnalysisAsFailed(${exchange})"/>
+            <stop/>
         </onException>
 
         <interceptFrom id="interceptor-username" uri="rest:*">
