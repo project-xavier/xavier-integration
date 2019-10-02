@@ -40,8 +40,7 @@ public class FlagSharedDisksCalculatorTest {
 
         String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1.json", StandardCharsets.UTF_8, FlagSharedDisksCalculatorTest.class.getClassLoader());
         Map<String, Object> headers = new HashMap<>();
-        Long analysisId = 30L;
-        headers.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
+        headers.put(MainRouteBuilder.ANALYSIS_ID, "30");
 
         Set<String> vmNamesWithSharedDisk = calculator.calculate(cloudFormsJson, headers);
         assertThat(Integer.valueOf(vmNamesWithSharedDisk.size())).isEqualTo(4);
@@ -56,8 +55,7 @@ public class FlagSharedDisksCalculatorTest {
 
         String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, FlagSharedDisksCalculatorTest.class.getClassLoader());
         Map<String, Object> headers = new HashMap<>();
-        Long analysisId = 30L;
-        headers.put(MainRouteBuilder.ANALYSIS_ID, analysisId);
+        headers.put(MainRouteBuilder.ANALYSIS_ID, "30");
 
         Set<String> vmNamesWithSharedDisk = calculator.calculate(cloudFormsJson, headers);
         assertThat(Integer.valueOf(vmNamesWithSharedDisk.size())).isEqualTo(2);

@@ -1,6 +1,5 @@
 package org.jboss.xavier.integrations.route;
 
-import org.apache.camel.builder.RouteBuilder;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ComplexityModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagModel;
@@ -10,7 +9,6 @@ import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
-import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.jpa.service.ComplexityService;
 import org.jboss.xavier.integrations.jpa.service.FlagService;
 import org.jboss.xavier.integrations.jpa.service.RecommendedTargetsIMSService;
@@ -29,7 +27,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 @Named
-public class WorkloadSummaryReportRoutes extends RouteBuilder {
+public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
 
     private final Logger logger = Logger.getLogger(WorkloadSummaryReportRoutes.class.getName());
 
@@ -57,14 +55,11 @@ public class WorkloadSummaryReportRoutes extends RouteBuilder {
     @Inject
     SummaryService summaryService;
 
-    @Inject
-    AnalysisService analysisService;
-
     @Override
-    public void configure() {
-
+    public void configure() throws Exception {
+        super.configure();
         from("direct:calculate-workloadsummaryreportmodel")
-            .id("calculate-workloadsummaryreportmodel")
+            .routeId("calculate-workloadsummaryreportmodel")
             .process(exchange -> {
                 Long analysisId = Long.parseLong(((Map<String, String>) exchange.getIn().getHeader(MainRouteBuilder.MA_METADATA)).get(MainRouteBuilder.ANALYSIS_ID));
                 WorkloadSummaryReportModel workloadSummaryReportModel = new WorkloadSummaryReportModel();

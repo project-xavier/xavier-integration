@@ -71,7 +71,7 @@ public class MainRouteBuilder_DirectWorkloadInventoryTest {
         metadata.put("reportName", "report name");
         metadata.put("reportDescription", "report description");
         metadata.put("file", "fichero.zip");
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, 1L);
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, "1");
         headers.put(MainRouteBuilder.MA_METADATA, metadata);
 
         Exchange testExchange = camelContext.createProducerTemplate().request("direct:vm-workload-inventory", exchange -> {

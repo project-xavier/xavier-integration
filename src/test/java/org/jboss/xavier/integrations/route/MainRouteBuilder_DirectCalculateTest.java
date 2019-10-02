@@ -78,7 +78,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, year2hypervisorpercentage);
         metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, year3hypervisorpercentage);
         metadata.put(Calculator.GROWTHRATEPERCENTAGE, growthratepercentage);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId);
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisId.toString());
 
         Map<String, Object> headers = new HashMap<>();
         headers.put(MainRouteBuilder.MA_METADATA, metadata);
@@ -120,7 +120,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
         metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
         metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
 
         Map<String, Object> headers = new HashMap<>();
         headers.put(MainRouteBuilder.MA_METADATA, metadata);
@@ -167,7 +167,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
         metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
         metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
 
         Map<String, Object> headers = new HashMap<>();
         headers.put(MainRouteBuilder.MA_METADATA, metadata);
@@ -219,7 +219,7 @@ public class MainRouteBuilder_DirectCalculateTest {
         metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
         metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
         metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
 
         Map<String, Object> headers = new HashMap<>();
         headers.put(MainRouteBuilder.MA_METADATA, metadata);

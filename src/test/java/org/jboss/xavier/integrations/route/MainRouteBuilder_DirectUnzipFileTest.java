@@ -73,7 +73,7 @@ public class MainRouteBuilder_DirectUnzipFileTest {
             headers.put(Exchange.FILE_NAME, nameOfFile);
 
             Map<String,Object> metadata = new HashMap<>();
-            metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
+            metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
             metadata.put("filename", nameOfFile);
             metadata.put("dummy", "CID123");
             headers.put(MainRouteBuilder.MA_METADATA, metadata);
@@ -117,7 +117,7 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         metadata.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, 20D);
         metadata.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, 30D);
         metadata.put(Calculator.GROWTHRATEPERCENTAGE, 7D);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
         headers.put(MainRouteBuilder.MA_METADATA, metadata);
 
         //When
@@ -155,7 +155,7 @@ public class MainRouteBuilder_DirectUnzipFileTest {
         headers.put(Exchange.FILE_NAME, nameOfFile);
 
         Map<String,Object> metadata = new HashMap<>();
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId());
+        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
         metadata.put("filename", nameOfFile);
         metadata.put("dummy", "CID123");
         headers.put(MainRouteBuilder.MA_METADATA, metadata);

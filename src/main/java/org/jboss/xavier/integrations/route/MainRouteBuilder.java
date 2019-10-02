@@ -7,7 +7,6 @@ import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -20,14 +19,12 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
-import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,7 +41,7 @@ import static org.apache.camel.builder.PredicateBuilder.not;
  * A Camel Java8 DSL Router
  */
 @Component
-public class MainRouteBuilder extends RouteBuilder {
+public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     public static final String UPLOADFORMDATA = "uploadformdata";
     public static final String MA_METADATA = "MA_metadata";
@@ -69,18 +66,13 @@ public class MainRouteBuilder extends RouteBuilder {
     @Value("${camel.springboot.tracing}")
     private boolean tracingEnabled;
 
-    @Inject
-    private AnalysisService analysisService;
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
-    public void configure() {
-        getContext().setTracing(tracingEnabled);
+    public void configure() throws Exception {
+        super.configure();
 
-        onException(Exception.class).routeId("exception-handler")
-                .handled(true)
-                .to("direct:mark-analysis-fail")
-        .end();
+        getContext().setTracing(tracingEnabled);
 
         from("rest:post:/upload?consumes=multipart/form-data")
                 .routeId("rest-upload")
@@ -127,11 +119,6 @@ public class MainRouteBuilder extends RouteBuilder {
                     .when(not(isResponseSuccess()))
                         .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
                 .end();
-
-        from("direct:mark-analysis-fail").routeId("markAnalysisFail")
-                .process(this::markAnalysisAsFailed)
-                .end();
-
 
         from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=latest&autoCommitEnable=true")
                 .routeId("kafka-upload-message")
@@ -216,18 +203,6 @@ public class MainRouteBuilder extends RouteBuilder {
         from("direct:request-forbidden")
                 .routeId("request-forbidden")
                 .process(httpError403());
-    }
-
-    public void markAnalysisAsFailed(Exchange e) {
-        try {
-            String analysisId = e.getIn().getHeader(ANALYSIS_ID, "", String.class);
-            if (analysisId.isEmpty()) {
-                analysisId = (String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID);
-            }
-            analysisService.markAsFailedIfNotCreated(Long.parseLong(analysisId));
-        } catch (Exception ex) {
-            log.error("Exception ocurred while marking the Analysis as failed.", ex);
-        }
     }
 
     private Exchange calculateICSAggregated(Exchange old, Exchange neu) {
