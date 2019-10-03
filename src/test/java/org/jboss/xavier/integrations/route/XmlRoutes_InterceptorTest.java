@@ -76,7 +76,7 @@ public class XmlRoutes_InterceptorTest {
         Supplier<Stream<Route>> streamRestRouteSupplier = () -> camelContext.getRoutes().stream()
                 .filter(route -> {
                     String endpointUri = route.getEndpoint().getEndpointUri();
-                    return endpointUri.startsWith("rest://") && endpointUri.contains("administration");
+                    return endpointUri.startsWith("rest://");
                 });
 
         long expectedRestEndpointsTested = streamRestRouteSupplier.get().count();
@@ -124,7 +124,7 @@ public class XmlRoutes_InterceptorTest {
     }
 
     @Test
-    public void xmlRouteBuilder_AuthorizedInterceptor_GivenRHIdentity_and_UnauthorizedUser_ShouldReturnForbidden() throws Exception {
+    public void xmlRouteBuilder_AuthorizedInterceptor_AdministrationEndpoints_GivenRHIdentity_and_UnauthorizedUser_ShouldReturnForbidden() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
