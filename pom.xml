@@ -27,6 +27,7 @@
         <fabric8.generator.name>${project.fabric8.name}</fabric8.generator.name>
         <fabric8.generator.alias>${project.fabric8.name}</fabric8.generator.alias>
 
+        <!--this is used by logback-test.xml-->
         <logRootLevel>info</logRootLevel>
     </properties>
 
@@ -238,18 +239,8 @@
     <build>
         <testResources>
             <testResource>
-                <directory>src/test/resources</directory>
+                <directory>src/test/filteredResources</directory>
                 <filtering>true</filtering>
-                <includes>
-                    <include>logback-test.xml</include>
-                </includes>
-            </testResource>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>false</filtering>
-                <includes>
-                    <include>**/*.xml</include>
-                </includes>
             </testResource>
         </testResources>
         <plugins>
