@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class UserService
@@ -13,8 +14,8 @@ public class UserService
     @Inject
     AnalysisService analysisService;
 
-    @Value("${rest.authorization.administration}")
-    private String[] authorizedAdminUsers;
+    @Value("${rest.authorization.administration}#{T(java.util.Collections).emptyList()}")
+    private List<String> authorizedAdminUsers;
 
     public User findUser(String username)
     {
@@ -22,7 +23,7 @@ public class UserService
     }
 
     public boolean isUserAllowedToAdministratorResources(String username) {
-        return Arrays.asList(authorizedAdminUsers).contains(username);
+        return authorizedAdminUsers.contains(username);
     }
 
 }
