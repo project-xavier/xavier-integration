@@ -14,8 +14,8 @@ public class UserService
     @Inject
     AnalysisService analysisService;
 
-    @Value("${rest.authorization.administration}#{T(java.util.Collections).emptyList()}")
-    private List<String> authorizedAdminUsers;
+    @Value("${rest.authorization.administration}")
+    private String[] authorizedAdminUsers = new String[0];
 
     public User findUser(String username)
     {
@@ -23,7 +23,7 @@ public class UserService
     }
 
     public boolean isUserAllowedToAdministratorResources(String username) {
-        return authorizedAdminUsers.contains(username);
+        return Arrays.asList(authorizedAdminUsers).contains(username);
     }
 
 }

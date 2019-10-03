@@ -65,8 +65,8 @@
             </get>
         </rest>
 
-        <rest path="/administration" produces="application/octet-stream">
-            <get uri="/report/csv">
+        <rest path="/administration">
+            <get uri="/report/csv" produces="application/octet-stream">
                 <route id="administration-report-csv">
                     <setHeader headerName="CSVCorrelationID">
                         <method ref="utils" method="generateUUID"/>
@@ -88,7 +88,7 @@
                     <bean ref="analysisService" method="getAdministrationMetrics(${header.fromDate}, ${header.toDate})"/>
                     <bean ref="administrationMetricsMapper" method="toAdministrationMetricsModels"/>
                     <to uri="direct:administrationMetricsModelToCsv"/>
-                    <setHeader headerName="CamelFileName">
+                    <setHeader headerName="Exchange.FILE_NAME">
                         <simple>${date:header.fromDate:yyyyMMddHHmmssz}-to-${date:header.toDate:yyyyMMddHHmmssz}.csv</simple>
                     </setHeader>
                     <to uri="direct:administration-report-csv-aggregator" />
@@ -97,7 +97,7 @@
                     <bean ref="analysisService" method="getAdministrationMetrics(${header.unixEpochDate}, ${header.nowDate})"/>
                     <bean ref="administrationMetricsMapper" method="toAdministrationMetricsModels"/>
                     <to uri="direct:administrationMetricsModelToCsv"/>
-                    <setHeader headerName="CamelFileName">
+                    <setHeader headerName="Exchange.FILE_NAME">
                         <simple>all.csv</simple>
                     </setHeader>
                     <to uri="direct:administration-report-csv-aggregator" />
@@ -282,7 +282,7 @@
                 <correlationExpression>
                     <header>CSVCorrelationID</header>
                 </correlationExpression>
-                <setHeader headerName="CamelFileName">
+                <setHeader headerName="Exchange.FILE_NAME">
                     <simple>${header.CSVCorrelationID}.zip</simple>
                 </setHeader>
                 <to uri="file:tmpFolder"/>
