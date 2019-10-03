@@ -872,6 +872,7 @@ public class XmlRoutes_RestReportTest {
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("administration-report-csv-aggregator");
         camelContext.startRoute("administration-metrics-model-to-csv");
+        camelContext.startRoute("administration-report-csv-generator");
         camelContext.startRoute("administration-report-csv");
 
         HttpHeaders headers = new HttpHeaders();

@@ -71,41 +71,28 @@
                     <setHeader headerName="CSVCorrelationID">
                         <method ref="utils" method="generateUUID"/>
                     </setHeader>
-                    <setHeader headerName="unixEpochDate">
-                        <method ref="dateUtils" method="getUnixEpochDate"/>
-                    </setHeader>
-                    <setHeader headerName="nowDate">
-                        <simple>${date:now}</simple>
-                    </setHeader>
-                    <setHeader headerName="fromDate">
-                        <method ref="dateUtils" method="getLastMondayMinus7days"/>
-                    </setHeader>
-                    <setHeader headerName="toDate">
-                        <method ref="dateUtils" method="getLastMonday"/>
+                    <setHeader headerName="workingDir">
+                        <constant>tmpFolder</constant>
                     </setHeader>
 
-                    <log message="Creating csv first file from date ${date:header.fromDate} to ${date:header.toDate}" />
-                    <bean ref="analysisService" method="getAdministrationMetrics(${header.fromDate}, ${header.toDate})"/>
-                    <bean ref="administrationMetricsMapper" method="toAdministrationMetricsModels"/>
-                    <to uri="direct:administrationMetricsModelToCsv"/>
+                    <setHeader headerName="fromDate"><method ref="dateUtils" method="getUnixEpochDate"/></setHeader>
+                    <setHeader headerName="toDate"><simple>${date:now}</simple></setHeader>
                     <setHeader headerName="Exchange.FILE_NAME">
                         <simple>${date:header.fromDate:yyyyMMddHHmmssz}-to-${date:header.toDate:yyyyMMddHHmmssz}.csv</simple>
                     </setHeader>
-                    <to uri="direct:administration-report-csv-aggregator" />
+                    <to uri="direct:administrationReportCsvGenerator"/>
 
-                    <log message="Creating csv second file from date ${date:header.fromDate} to ${date:header.toDate}" />
-                    <bean ref="analysisService" method="getAdministrationMetrics(${header.unixEpochDate}, ${header.nowDate})"/>
-                    <bean ref="administrationMetricsMapper" method="toAdministrationMetricsModels"/>
-                    <to uri="direct:administrationMetricsModelToCsv"/>
+                    <setHeader headerName="fromDate"><method ref="dateUtils" method="getLastMondayMinus7days"/></setHeader>
+                    <setHeader headerName="toDate"><method ref="dateUtils" method="getLastMonday"/></setHeader>
                     <setHeader headerName="Exchange.FILE_NAME">
                         <simple>all.csv</simple>
                     </setHeader>
-                    <to uri="direct:administration-report-csv-aggregator" />
+                    <to uri="direct:administrationReportCsvGenerator"/>
 
                     <pollEnrich>
-                        <simple>file:tmpFolder?fileName=${header.CSVCorrelationID}.zip&amp;delete=true</simple>
+                        <simple>file:${header.workingDir}?fileName=${header.CSVCorrelationID}.zip&amp;delete=true</simple>
                     </pollEnrich>
-                    <setHeader headerName="Content-Disposition">
+                    <setHeader headerName="$simple{type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
                         <simple>attachment;filename=${date:now:yyyyMMddHHmmssz}.zip</simple>
                     </setHeader>
                 </route>
@@ -269,6 +256,15 @@
             </marshal>
         </route>
 
+        <route id="administration-report-csv-generator">
+            <from uri="direct:administrationReportCsvGenerator"/>
+            <log message="Creating csv file using fromDate: ${date:header.fromDate}, toDate ${date:header.toDate}" />
+            <bean ref="analysisService" method="getAdministrationMetrics(${header.fromDate}, ${header.toDate})"/>
+            <bean ref="administrationMetricsMapper" method="toAdministrationMetricsModels"/>
+            <to uri="direct:administrationMetricsModelToCsv"/>
+            <to uri="direct:administration-report-csv-aggregator" />
+        </route>
+
         <route id="administration-metrics-model-to-csv">
             <from uri="direct:administrationMetricsModelToCsv" />
             <marshal>
@@ -285,7 +281,7 @@
                 <setHeader headerName="Exchange.FILE_NAME">
                     <simple>${header.CSVCorrelationID}.zip</simple>
                 </setHeader>
-                <to uri="file:tmpFolder"/>
+                <toD uri="file:${header.workingDir}"/>
             </aggregate>
         </route>
 
