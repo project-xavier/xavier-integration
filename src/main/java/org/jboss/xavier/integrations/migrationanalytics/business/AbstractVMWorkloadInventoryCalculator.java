@@ -43,6 +43,7 @@ public class AbstractVMWorkloadInventoryCalculator {
     public static final String VERSIONPATH = "vmworkloadinventory.versionPath";
     public static final String HOSTNAMEPATH = "vmworkloadinventory.hostNamePath";
     public static final String VMDISKSPATH = "vmworkloadinventory.vmDisksPath";
+    public static final String DATACOLLECTEDON = "datacollectedon" ;
 
     @Autowired
     protected Environment env;
@@ -68,14 +69,20 @@ public class AbstractVMWorkloadInventoryCalculator {
     protected <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, Class type) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
 
-        Object value = jsonParsed.read(expandParamsInPath);
-        if (value instanceof Collection) {
-            value = ((List<T>) value).get(0);
-        }
-        if (Long.class.isAssignableFrom(type)) {
-            value = Long.valueOf(((Number) value).longValue());
-        } else if (Integer.class.isAssignableFrom(type)) {
-            value = Integer.valueOf(((Number) value).intValue());
+        Object value;
+
+        try {
+            value = jsonParsed.read(expandParamsInPath);
+            if (value instanceof Collection) {
+                value = ((List<T>) value).get(0);
+            }
+            if (Long.class.isAssignableFrom(type)) {
+                value = ((Number) value).longValue();
+            } else if (Integer.class.isAssignableFrom(type)) {
+                value = ((Number) value).intValue();
+            }
+        } catch (Exception e) {
+            value = null;
         }
         return (T) value;
     }

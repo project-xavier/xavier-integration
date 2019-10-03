@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
         expectedModel.setCpuCores(1);
         expectedModel.setCluster("V2V_Cluster");
         expectedModel.setSystemServicesNames(Arrays.asList("{02B0078E-2148-45DD-B7D3-7E37AAB3B31D}","xmlprov","wudfsvc"));
-        expectedModel.setVmDiskFilenames(Arrays.asList("[NFS_Datastore] dev-windows-server-2008/dev-windows-server-2008.vmdk"));
+        expectedModel.setVmDiskFilenames(Collections.singletonList("[NFS_Datastore] dev-windows-server-2008/dev-windows-server-2008.vmdk"));
         expectedModel.setAnalysisId(analysisId);
 
         expectedModel.setHost_name("esx13.v2v.bos.redhat.com");
@@ -95,7 +96,10 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
         Thread.sleep(5000);
 
         //Then
-        assertThat(mockVmWorkloadInventory.getExchanges().stream().map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class)).filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST")).findFirst().get()).isEqualToComparingFieldByFieldRecursively(expectedModel);
+        assertThat(mockVmWorkloadInventory.getExchanges().stream().map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("dev-windows-server-2008-TEST"))
+                .findFirst().get())
+                .isEqualToIgnoringNullFields(expectedModel);
         assertThat(mockVmWorkloadInventory.getExchanges().size()).isEqualTo(21);
 
         camelContext.stop();
@@ -155,7 +159,10 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
         Thread.sleep(5000);
 
         //Then
-        assertThat(mockVmWorkloadInventory.getExchanges().stream().map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class)).filter(e -> e.getVmName().equalsIgnoreCase("oracle_db")).findFirst().get()).isEqualToComparingFieldByFieldRecursively(expectedModel);
+        assertThat(mockVmWorkloadInventory.getExchanges().stream().map(e -> e.getIn().getBody(VMWorkloadInventoryModel.class))
+                .filter(e -> e.getVmName().equalsIgnoreCase("oracle_db"))
+                .findFirst().get())
+                .isEqualToIgnoringNullFields(expectedModel);
         assertThat(mockVmWorkloadInventory.getExchanges().size()).isEqualTo(8);
 
         camelContext.stop();

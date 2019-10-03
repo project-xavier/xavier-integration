@@ -146,6 +146,8 @@ public class WorkloadInventoryReportModel
 
     private Date creationDate;
 
+    private Date scanRunDate;
+
     private Boolean ssaEnabled;
 
     public WorkloadInventoryReportModel() {}
@@ -330,5 +332,13 @@ public class WorkloadInventoryReportModel
 
     public void setSsaEnabled(Boolean ssaEnabled) {
         this.ssaEnabled = ssaEnabled;
+    }
+
+    public Date getScanRunDate() {
+        return scanRunDate;
+    }
+
+    public void setScanRunDate(Date scanRunDate) {
+        this.scanRunDate = scanRunDate;
     }
 }

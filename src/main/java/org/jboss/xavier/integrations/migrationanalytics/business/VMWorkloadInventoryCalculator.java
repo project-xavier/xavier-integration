@@ -8,9 +8,12 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -44,7 +47,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setHasRdmDisk(readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap));
 
         List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
-        model.setDiskSpace(diskSpaceList.stream().filter(e -> e != null).mapToLong(Number::longValue).sum());
+        model.setDiskSpace(diskSpaceList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum());
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap, Integer.class));
 
@@ -55,6 +58,14 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setProduct(readValueFromExpandedEnvVarPath(PRODUCTPATH, vmStructMap));
         model.setVersion(readValueFromExpandedEnvVarPath(VERSIONPATH, vmStructMap));
         model.setHost_name(readValueFromExpandedEnvVarPath(HOSTNAMEPATH, vmStructMap));
+
+        Date scanRunDate;
+        try {
+            scanRunDate = new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse(readValueFromExpandedEnvVarPath(DATACOLLECTEDON, vmStructMap));
+        } catch (Exception e) {
+            scanRunDate = new Date();
+        }
+        model.setScanRunDate(scanRunDate);
 
         model.setAnalysisId(analysisId);
 
