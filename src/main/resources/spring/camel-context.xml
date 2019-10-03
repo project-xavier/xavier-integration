@@ -72,6 +72,9 @@
                     <setHeader headerName="workingDir">
                         <constant>tmpFolder</constant>
                     </setHeader>
+                    <setHeader headerName="workingFile">
+                        <simple>${header.CSVCorrelationID}</simple>
+                    </setHeader>
 
                     <setHeader headerName="fromDate"><method ref="dateUtils" method="getUnixEpochDate"/></setHeader>
                     <setHeader headerName="toDate"><simple>${date:now}</simple></setHeader>
@@ -88,7 +91,7 @@
                     <to uri="direct:administrationReportCsvGenerator"/>
 
                     <pollEnrich>
-                        <simple>file:${header.workingDir}?fileName=${header.CSVCorrelationID}.zip&amp;delete=true</simple>
+                        <simple>file:${header.workingDir}?fileName=${header.workingFile}.zip&amp;delete=true</simple>
                     </pollEnrich>
                     <setHeader headerName="$simple{type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
                         <simple>attachment;filename=${date:now:yyyyMMddHHmmssz}.zip</simple>
@@ -277,7 +280,7 @@
                     <header>CSVCorrelationID</header>
                 </correlationExpression>
                 <setHeader headerName="Exchange.FILE_NAME">
-                    <simple>${header.CSVCorrelationID}.zip</simple>
+                    <simple>${header.workingFile}.zip</simple>
                 </setHeader>
                 <toD uri="file:${header.workingDir}"/>
             </aggregate>
