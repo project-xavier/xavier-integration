@@ -103,7 +103,7 @@
                     <to uri="direct:administration-report-csv-aggregator" />
 
                     <pollEnrich>
-                        <simple>file:tmpFolder?fileName=${header.CSVCorrelationID}.zip</simple>
+                        <simple>file:tmpFolder?fileName=${header.CSVCorrelationID}.zip&amp;delete=true</simple>
                     </pollEnrich>
                     <setHeader headerName="Content-Disposition">
                         <simple>attachment;filename=${date:now:yyyyMMddHHmmssz}.zip</simple>
