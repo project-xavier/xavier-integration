@@ -214,7 +214,6 @@ public class MainRouteBuilder extends RouteBuilder {
 
         from("direct:check-authorized-request")
                 .id("check-authorized-request")
-                .to("direct:check-authenticated-request")
                 .choice()
                     .when(exchange -> {
                         String username = (String) exchange.getIn().getHeader(USERNAME);
