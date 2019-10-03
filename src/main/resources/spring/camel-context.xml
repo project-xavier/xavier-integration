@@ -66,15 +66,9 @@
         <rest path="/administration">
             <get uri="/report/csv" produces="application/octet-stream">
                 <route id="administration-report-csv">
-                    <setHeader headerName="CSVCorrelationID">
-                        <method ref="utils" method="generateUUID"/>
-                    </setHeader>
-                    <setHeader headerName="workingDir">
-                        <constant>tmpFolder</constant>
-                    </setHeader>
-                    <setHeader headerName="workingFile">
-                        <simple>${header.CSVCorrelationID}</simple>
-                    </setHeader>
+                    <setHeader headerName="correlationId"><method ref="utils" method="generateUUID"/></setHeader>
+                    <setHeader headerName="workingDir"><constant>tmpFolder</constant></setHeader>
+                    <setHeader headerName="workingFile"><simple>${header.correlationId}</simple></setHeader>
 
                     <setHeader headerName="fromDate"><method ref="dateUtils" method="getUnixEpochDate"/></setHeader>
                     <setHeader headerName="toDate"><simple>${date:now}</simple></setHeader>
@@ -277,7 +271,7 @@
             <from uri="direct:administration-report-csv-aggregator"/>
             <aggregate strategyRef="zipAggregationStrategy" completionSize="2">
                 <correlationExpression>
-                    <header>CSVCorrelationID</header>
+                    <header>correlationId</header>
                 </correlationExpression>
                 <setHeader headerName="Exchange.FILE_NAME">
                     <simple>${header.workingFile}.zip</simple>
