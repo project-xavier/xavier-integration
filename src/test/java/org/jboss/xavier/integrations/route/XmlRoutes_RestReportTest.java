@@ -9,6 +9,7 @@ import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.*;
+import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
@@ -883,6 +884,7 @@ public class XmlRoutes_RestReportTest {
         verify(analysisService, times(2)).getAdministrationMetrics(any(), any());
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+        assertThat(response.getHeaders().get(CustomizedMultipartDataFormat.CONTENT_DISPOSITION)).isNotNull();
         camelContext.stop();
     }
 }
