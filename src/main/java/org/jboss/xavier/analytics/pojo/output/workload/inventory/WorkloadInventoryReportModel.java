@@ -144,9 +144,7 @@ public class WorkloadInventoryReportModel
     @DataField(pos = 16, columnName = "HostName")
     private String host_name;
 
-    private Date creationDate;
-
-    private Date scanRunDate;
+    private Date creationDate; //TODO to be consistent with input bean, refactor to scanRunDate
 
     private Boolean ssaEnabled;
 
@@ -334,11 +332,4 @@ public class WorkloadInventoryReportModel
         this.ssaEnabled = ssaEnabled;
     }
 
-    public Date getScanRunDate() {
-        return scanRunDate;
-    }
-
-    public void setScanRunDate(Date scanRunDate) {
-        this.scanRunDate = scanRunDate;
-    }
 }
