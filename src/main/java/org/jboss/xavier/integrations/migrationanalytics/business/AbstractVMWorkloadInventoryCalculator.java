@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.DocumentContext;
+import lombok.extern.slf4j.Slf4j;
 import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -16,7 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class AbstractVMWorkloadInventoryCalculator {
+
     public static final String VMPATH = "vmworkloadinventory.vmPath";
     public static final String CLUSTERPATH = "vmworkloadinventory.clusterPath";
     public static final String DATACENTERPATH = "vmworkloadinventory.datacenterPath";
@@ -83,6 +86,7 @@ public class AbstractVMWorkloadInventoryCalculator {
             }
         } catch (Exception e) {
             value = null;
+            log.warn("Exception reading value from JSON", e);
         }
         return (T) value;
     }

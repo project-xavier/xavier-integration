@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.integrations.route.MainRouteBuilder;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@Slf4j
 public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCalculator implements Calculator<Collection<VMWorkloadInventoryModel>> {
 
     @Override
@@ -64,6 +66,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             scanRunDate = new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse(readValueFromExpandedEnvVarPath(DATACOLLECTEDON, vmStructMap));
         } catch (Exception e) {
             scanRunDate = new Date();
+            log.warn("Using now date as fallback for Scan Run Date");
         }
         model.setScanRunDate(scanRunDate);
 

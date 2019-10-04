@@ -19,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -131,6 +132,7 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest {
         expectedModel.setSystemServicesNames(Arrays.asList("NetworkManager-dispatcher","NetworkManager-wait-online","NetworkManager"));
         expectedModel.setVmDiskFilenames(Arrays.asList("[NFS-Storage] oracle_db_1/", "[NFS-Storage] oracle_db_1/oracle_db.vmdk", "[NFS-Storage] oracle_db_1/"));
         expectedModel.setAnalysisId(analysisId);
+        expectedModel.setScanRunDate(new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse("2019-09-18T14:52:45.871Z"));
         expectedModel.setHost_name("host-47");
         expectedModel.setVersion("6.7.2");
         expectedModel.setProduct("VMware vCenter");
