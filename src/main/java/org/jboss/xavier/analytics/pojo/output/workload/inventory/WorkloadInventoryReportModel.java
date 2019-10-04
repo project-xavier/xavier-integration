@@ -1,11 +1,16 @@
 package org.jboss.xavier.analytics.pojo.output.workload.inventory;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
+import org.apache.camel.dataformat.bindy.annotation.DataField;
+import org.apache.camel.dataformat.bindy.annotation.FormatFactories;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.jboss.xavier.analytics.pojo.BindyStringSetFormatFactory;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 
 import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -20,19 +25,34 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+@FormatFactories({BindyStringSetFormatFactory.class})
+@CsvRecord(separator = ",", crlf = "UNIX", generateHeaderColumns = true)
 @Entity
 @Transactional
 @Table(
         indexes = {
                 @Index(name = "WorkloadInventoryReportModel_" +
                         WorkloadInventoryReportModel.ANALYSIS_ID + "_index",
-                        columnList = WorkloadInventoryReportModel.ANALYSIS_ID, unique = false)
+                        columnList = WorkloadInventoryReportModel.ANALYSIS_ID, unique = false),
+                @Index(name = "WorkloadInventoryReportModel_" +
+                        WorkloadInventoryReportModel.VM_NAME + "_index",
+                        columnList = WorkloadInventoryReportModel.VM_NAME, unique = false),
+                @Index(name = "WorkloadInventoryReportModel_" +
+                        WorkloadInventoryReportModel.OS_NAME + "_index",
+                        columnList = WorkloadInventoryReportModel.OS_NAME, unique = false),
+                @Index(name = "WorkloadInventoryReportModel_" +
+                        WorkloadInventoryReportModel.COMPLEXITY + "_index",
+                        columnList = WorkloadInventoryReportModel.COMPLEXITY, unique = false)
         }
 )
 public class WorkloadInventoryReportModel
 {
     static final long serialVersionUID = 1L;
+
     static final String ANALYSIS_ID = "analysis_id";
+    static final String VM_NAME = "vm_name";
+    static final String OS_NAME = "os_name";
+    static final String COMPLEXITY = "complexity";
 
     @Id
     @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO, generator = "WORKLOADINVENTORYREPORTMODEL_ID_GENERATOR")
@@ -50,40 +70,83 @@ public class WorkloadInventoryReportModel
     @JsonBackReference
     private AnalysisModel analysis;
 
+    @DataField(pos = 1, columnName = "Provider")
     private String provider;
+
+    @DataField(pos = 2, columnName = "Datacenter")
     private String datacenter;
+
+    @DataField(pos = 3, columnName = "Cluster")
     private String cluster;
+
+    @DataField(pos = 4 , columnName = "VM name")
+    @Column(name = VM_NAME)
     private String vmName;
+
+    @DataField(pos = 5, columnName = "OS type")
+    @Column(name = OS_NAME)
     private String osName;
+
+    @DataField(pos = 6, columnName = "Operating system description")
     private String osDescription;
+
+    @DataField(pos = 7, precision = 2, columnName = "Disk space")
     private Long diskSpace;
+
+    @DataField(pos = 8, columnName = "Memory")
     private Long memory;
+
+    @DataField(pos = 9, columnName = "CPU cores")
     private Integer cpuCores;
+
+    @DataField(pos = 10, columnName = "Workload")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_workloads",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
     )
     private Set<String> workloads;
+
+    @DataField(pos = 11, columnName = "Effort")
+    @Column(name = COMPLEXITY)
     private String complexity;
+
+    @DataField(pos = 12, columnName = "Recommended targets")
     // with "IMS" suffix in case one day we will have
     // their "AMM" counterparts
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_recommended_targetsims",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
     )
     private Set<String> recommendedTargetsIMS;
+
+    @DataField(pos = 13, columnName = "Flags IMS")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "workload_inventory_report_model_flagsims",
             indexes = {
                     @Index(columnList = "workload_inventory_report_model_id", unique = false)
             }
     )
     private Set<String> flagsIMS;
+
+    @DataField(pos = 14, columnName = "Product")
+    private String product;
+
+    @DataField(pos = 15, columnName = "Version")
+    private String version;
+
+    @DataField(pos = 16, columnName = "HostName")
+    private String host_name;
+
     private Date creationDate;
+
+    private Boolean ssaEnabled;
 
     public WorkloadInventoryReportModel() {}
 
@@ -235,5 +298,37 @@ public class WorkloadInventoryReportModel
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getHost_name() {
+        return host_name;
+    }
+
+    public void setHost_name(String host_name) {
+        this.host_name = host_name;
+    }
+
+    public Boolean getSsaEnabled() {
+        return ssaEnabled;
+    }
+
+    public void setSsaEnabled(Boolean ssaEnabled) {
+        this.ssaEnabled = ssaEnabled;
     }
 }

@@ -7,6 +7,7 @@ import org.apache.camel.dataformat.mime.multipart.MimeMultipartDataFormat;
 import org.apache.camel.impl.DefaultAttachment;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.MessageHelper;
+import org.jboss.xavier.integrations.route.MainRouteBuilder;
 
 import javax.mail.BodyPart;
 import javax.mail.Header;
@@ -52,10 +53,10 @@ public class CustomizedMultipartDataFormat extends MimeMultipartDataFormat {
 
         Message camelMessage = exchange.getOut();
         MessageHelper.copyHeaders(exchange.getIn(), camelMessage, true);
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         IOHelper.copyAndCloseInput(stream, bos);
-        
+
         InternetHeaders headers = new InternetHeaders();
         extractHeader(CONTENT_TYPE, camelMessage, headers);
         extractHeader(MIME_VERSION, camelMessage, headers);
@@ -67,7 +68,7 @@ public class CustomizedMultipartDataFormat extends MimeMultipartDataFormat {
 
         if (content instanceof MimeMultipart) {
             MimeMultipart mp = (MimeMultipart) content;
-            for (int i = 0; i < mp.getCount(); i++) { 
+            for (int i = 0; i < mp.getCount(); i++) {
                 BodyPart bp = mp.getBodyPart(i);
                 DefaultAttachment camelAttachment = new DefaultAttachment(bp.getDataHandler());
 
@@ -79,11 +80,11 @@ public class CustomizedMultipartDataFormat extends MimeMultipartDataFormat {
                 }
                 // All non file parts are considered parameters and set as headers of the whole message
                 if (!camelAttachment.getHeader(CONTENT_DISPOSITION).contains("filename")) {
-                    Map ma_metadata = camelMessage.getHeader("MA_metadata", new HashMap<String,String>(), java.util.Map.class);
+                    Map ma_metadata = camelMessage.getHeader(MainRouteBuilder.MA_METADATA, new HashMap<String,String>(), java.util.Map.class);
                     ma_metadata.put(getFieldNameFromMultipart(camelAttachment), camelAttachment.getDataHandler().getContent());
-                    camelMessage.setHeader("MA_metadata", ma_metadata);
+                    camelMessage.setHeader(MainRouteBuilder.MA_METADATA, ma_metadata);
                 }
-                
+
                 camelMessage.addAttachmentObject(getAttachmentKey(bp), camelAttachment);
             }
         }
@@ -102,11 +103,11 @@ public class CustomizedMultipartDataFormat extends MimeMultipartDataFormat {
         matcher.find();
         return matcher.group(1);
     }
-    
+
     private String getAttachmentKey(BodyPart bp) throws MessagingException, UnsupportedEncodingException {
         // use the filename as key for the map
         String key = bp.getFileName();
-        
+
         // if there is no file name we use the Content-ID header
         if (key == null && bp instanceof MimeBodyPart) {
             key = ((MimeBodyPart) bp).getContentID();
@@ -115,7 +116,7 @@ public class CustomizedMultipartDataFormat extends MimeMultipartDataFormat {
                 key = key.substring(1, key.length() - 1);
             }
         }
-        
+
         // or a generated content id
         if (key == null) {
             key = UUID.randomUUID().toString() + "@camel.apache.org";

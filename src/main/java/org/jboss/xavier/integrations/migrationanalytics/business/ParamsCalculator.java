@@ -4,7 +4,8 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
-import org.springframework.core.env.Environment;
+import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
+import org.jboss.xavier.integrations.route.MainRouteBuilder;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -14,29 +15,29 @@ import java.util.Map;
 @Named("calculator")
 public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
     @Inject
-    private Environment env;
+    ManifestVersionService manifestVersionService;
 
     private static Integer calculateHypervisors(Object e, String cpuTotalCoresPath, String cpuCoresPerSocketPath) {
         Map mapa = (Map) e;
         Integer cputotalcores = (Integer) mapa.get(cpuTotalCoresPath);
         Integer cpucorespersocket = (Integer) mapa.get(cpuCoresPerSocketPath);
-        return cputotalcores / (cpucorespersocket * 2);
+        return (int) Math.ceil(cputotalcores / (cpucorespersocket * 2.0));
     }
 
     @Override
     public UploadFormInputDataModel calculate(String cloudFormsJson, Map<String, Object> headers) {
         String payloadVersion = getManifestVersion(cloudFormsJson);
-        
-        String hypervisorPath = env.getProperty("cloudforms.manifest." + payloadVersion + ".hypervisor", env.getProperty("cloudforms.manifest.v1.hypervisor"));
-        String cpuTotalCoresPath = env.getProperty("cloudforms.manifest." + payloadVersion + ".hypervisor.cpuTotalCoresPath", env.getProperty("cloudforms.manifest.v1.hypervisor.cpuTotalCoresPath"));
-        String cpuCoresPerSocketPath = env.getProperty("cloudforms.manifest." + payloadVersion + ".hypervisor.cpuCoresPerSocketPath", env.getProperty("cloudforms.manifest.v1.hypervisor.cpuCoresPerSocketPath"));
-        String totalSpacePath = env.getProperty("cloudforms.manifest." + payloadVersion + ".totalSpacePath", env.getProperty("cloudforms.manifest.v1.totalSpacePath"));
+
+        String hypervisorPath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor");
+        String cpuTotalCoresPath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuTotalCoresPath");
+        String cpuCoresPerSocketPath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "hypervisor.cpuCoresPerSocketPath");
+        String totalSpacePath = manifestVersionService.getPropertyWithFallbackVersion(payloadVersion, "totalSpacePath");
 
         // Calculations
         Integer numberofhypervisors = ((JSONArray) JsonPath.read(cloudFormsJson, hypervisorPath)).stream().map(e -> calculateHypervisors(e, cpuTotalCoresPath, cpuCoresPerSocketPath)).mapToInt(Integer::intValue).sum();
         Long totalspace = ((List<Number>) JsonPath.parse(cloudFormsJson).read(totalSpacePath)).stream().mapToLong(Number::longValue).sum();
 
-        
+
         // User properties
         String customerid = StringUtils.defaultString((String) headers.get(Calculator.CUSTOMERID));
         String filename = headers.get(Calculator.FILENAME).toString();
@@ -47,9 +48,10 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
         double growthratepercentage = Double.parseDouble(headers.get(Calculator.GROWTHRATEPERCENTAGE) != null ? headers.get(Calculator.GROWTHRATEPERCENTAGE).toString() : "0") / 100;
 
         // Calculated and enriched model
-        return new UploadFormInputDataModel(customerid, filename, numberofhypervisors.intValue(), totalspace,
-                null, year1hypervisorpercentage,
-                year2hypervisorpercentage,
-                year3hypervisorpercentage, growthratepercentage);
+        return new UploadFormInputDataModel(customerid, filename, numberofhypervisors, totalspace,
+                  null, year1hypervisorpercentage,
+                  year2hypervisorpercentage,
+                  year3hypervisorpercentage, growthratepercentage,
+                  Long.parseLong(headers.get(MainRouteBuilder.ANALYSIS_ID).toString()));
     }
 }

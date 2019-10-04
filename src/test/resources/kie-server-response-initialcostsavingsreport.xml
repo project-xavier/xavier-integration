@@ -119,6 +119,13 @@
                                 <rhvSaveLikelyValue>4.71638742E8</rhvSaveLikelyValue>
                                 <rhvSaveLowValue>4.71638742E8</rhvSaveLowValue>
                             </rhvSavingsModel>
+                            <rhvAdditionalContainerCapacityModel>
+                                <rhvContainerHigh>0</rhvContainerHigh>
+                                <rhvContainerLikely>0</rhvContainerLikely>
+                                <rhvContainerLow>0</rhvContainerLow>
+                                <rhvContainerFrom>0</rhvContainerFrom>
+                                <rhvContainerTo>0</rhvContainerTo>
+                            </rhvAdditionalContainerCapacityModel>
                         </org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel>
                         <fact-handle external-form="0:2:181540827:181540827:29:DEFAULT:NON_TRAIT:org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel"/>
                     </identifier>

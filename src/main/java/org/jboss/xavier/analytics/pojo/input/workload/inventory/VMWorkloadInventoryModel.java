@@ -1,12 +1,14 @@
 package org.jboss.xavier.analytics.pojo.input.workload.inventory;
 
+import org.jboss.xavier.analytics.pojo.input.AbstractInputModel;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VMWorkloadInventoryModel implements Serializable {
+public class VMWorkloadInventoryModel extends AbstractInputModel implements Serializable {
     //common/name
     private String provider;
     //common/ems_clusters/v_parent_datacenter
@@ -29,6 +31,11 @@ public class VMWorkloadInventoryModel implements Serializable {
     private boolean hasRdmDisk;
     //count of nics object within the vms/hardware
     private Integer nicsCount;
+
+    private String product;
+    private String version;
+    private String host_name;
+
     //hardware/disks/filename
     private Collection<String> vmDiskFilenames;
     private Collection<String> systemServicesNames;
@@ -174,5 +181,29 @@ public class VMWorkloadInventoryModel implements Serializable {
 
     public void addFile(String name, String contents) {
         this.files.put(name,contents);
+    }
+
+    public String getProduct() {
+        return product;
+    }
+
+    public void setProduct(String product) {
+        this.product = product;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getHost_name() {
+        return host_name;
+    }
+
+    public void setHost_name(String host_name) {
+        this.host_name = host_name;
     }
 }
