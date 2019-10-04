@@ -44,4 +44,11 @@ public class UserServiceTest {
         ReflectionTestUtils.setField(userService, "authorizedAdminUsers", new String[0]);
         assertThat(userService.isUserAllowedToAdministratorResources("myUsername")).isEqualTo(false);
     }
+    
+    @Test
+    public void userService_AuthorizedUsersGiven_ShouldReturnAllowedOrNot() {
+        assertThat(userService.isUserAllowedToAdministratorResources("admin1")).isEqualTo(true);
+        assertThat(userService.isUserAllowedToAdministratorResources("admin1@redhat.com")).isEqualTo(false);
+        assertThat(userService.isUserAllowedToAdministratorResources("admin2@redhat.com")).isEqualTo(true);
+    }
 }
