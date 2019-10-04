@@ -83,7 +83,7 @@
                         <simple>${date:now}</simple>
                     </setHeader>
                     <setHeader headerName="Exchange.FILE_NAME">
-                        <simple>${date:header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.FROM_DATE}:yyyyMMddHHmmssz}-to-${date:header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.TO_DATE}:yyyyMMddHHmmssz}.csv</simple>
+                        <simple>all.csv</simple>
                     </setHeader>
                     <to uri="direct:administrationReportCsvGenerator"/>
 
