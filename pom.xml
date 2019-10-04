@@ -24,7 +24,7 @@
         <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
 
         <!--this is used by logback-test.xml-->
-        <logRootLevel>info</logRootLevel>
+        <testLogRootLevel>info</testLogRootLevel>
     </properties>
 
     <dependencyManagement>
