@@ -121,11 +121,15 @@ public class AnalysisService
     }
 
     public void markAsFailedIfNotCreated(Long id) {
-        AnalysisModel analysisModel = findById(id);
-        if (!STATUS.CREATED.toString().equalsIgnoreCase(analysisModel.getStatus())) {
+        AnalysisModel analysisModel = findByIdAndStatusIgnoreCaseNot(id, STATUS.CREATED.toString());
+        if (analysisModel != null) {
             analysisModel.setStatus(STATUS.FAILED.toString());
             analysisModel.setLastUpdate(new Date());
             analysisRepository.save(analysisModel);
         }
+    }
+
+    private AnalysisModel findByIdAndStatusIgnoreCaseNot(Long id, String status) {
+        return analysisRepository.findByIdAndStatusIgnoreCaseNot(id, status);
     }
 }

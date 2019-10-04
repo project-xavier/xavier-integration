@@ -18,4 +18,5 @@ public interface AnalysisRepository extends JpaRepository<AnalysisModel, Long>
 
     Integer countByOwner(String owner);
 
+    AnalysisModel findByIdAndStatusIgnoreCaseNot(Long id, String status);
 }
