@@ -193,7 +193,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                     .to("direct:request-forbidden");
 
         from("direct:check-authorized-request")
-                .id("check-authorized-request")
+                .routeId("check-authorized-request")
                 .choice()
                     .when(exchange -> {
                         String username = (String) exchange.getIn().getHeader(USERNAME);
