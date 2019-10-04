@@ -22,6 +22,10 @@
         <!-- maven plugin versions -->
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
+
+        <project.fabric8.name>analytics-integration</project.fabric8.name>
+        <fabric8.generator.name>${project.fabric8.name}</fabric8.generator.name>
+        <fabric8.generator.alias>${project.fabric8.name}</fabric8.generator.alias>
     </properties>
 
     <dependencyManagement>
@@ -230,6 +234,17 @@
 
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/fabric8</directory>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

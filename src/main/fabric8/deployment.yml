@@ -1,23 +1,96 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: analytics-integration
 spec:
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - analytics-integration
+        from:
+          kind: ImageStreamTag
+          name: analytics-integration:latest
+  replicas: 1
+  selector:
+    deploymentconfig: analytics-integration
   template:
+    metadata:
+      labels:
+        deploymentconfig: analytics-integration
     spec:
       containers:
-        - 
-          resources:
-            requests:
-              cpu: "0.2"
-              memory: 256Mi
-            limits:
-              cpu: "1.0"
-              memory: 256Mi
+        - name: analytics-integration
+          image: library/analytics-integration:latest
+          ports:
+            - name: jolokia
+              containerPort: 8778
+              protocol: TCP
+            - name: rest
+              containerPort: 8080
+              protocol: TCP
           env:
-          - name: SPRING_APPLICATION_JSON
-            value: '{"server":{"undertow":{"io-threads":1, "worker-threads":2 }}}'
-          - name: MYSQL_SERVICE_NAME
-            value: mysql
-          - name: MYSQL_SERVICE_DATABASE
-            value: sampledb
-          - name: MYSQL_SERVICE_USERNAME
-            value: ${mysql-service-username}
-          - name: MYSQL_SERVICE_PASSWORD
-            value: ${mysql-service-password}
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: KIESERVER_SERVICE
+              value: analytics-kieserver
+            - name: KIESERVER_USERNAME
+              value: executionUser
+            - name: KIESERVER_PASSWORD
+              value: rksxsp2!
+            - name: KIESERVER_PATH
+              value: services/rest/server/containers/instances/${kieserver.container}
+            - name: KIESERVER_CONTAINER
+              value: sample-analytics_1.0.0-SNAPSHOT
+            - name: POSTGRESQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "postgresql"
+                  key: database-user
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "postgresql"
+                  key: database-password
+            - name: POSTGRESQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: "postgresql"
+                  key: database-name
+            - name: AMQ_SERVER
+              value: broker-amq-tcp
+          resources:
+            limits:
+              cpu: '1'
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 180
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: "/health"
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
