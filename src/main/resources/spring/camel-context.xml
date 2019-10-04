@@ -66,26 +66,40 @@
         <rest path="/administration">
             <get uri="/report/csv" produces="application/octet-stream">
                 <route id="administration-report-csv">
-                    <setHeader headerName="correlationId"><method ref="utils" method="generateUUID"/></setHeader>
-                    <setHeader headerName="workingDir"><constant>tmpFolder</constant></setHeader>
-                    <setHeader headerName="workingFile"><simple>${header.correlationId}</simple></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.MainRouteBuilder.CORRELATION_ID}">
+                        <method ref="utils" method="generateUUID"/>
+                    </setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.MainRouteBuilder.WORKING_DIR}">
+                        <constant>tmpFolder</constant>
+                    </setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.MainRouteBuilder.WORKING_FILE}">
+                        <simple>${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.CORRELATION_ID}}</simple>
+                    </setHeader>
 
-                    <setHeader headerName="fromDate"><method ref="dateUtils" method="getUnixEpochDate"/></setHeader>
-                    <setHeader headerName="toDate"><simple>${date:now}</simple></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.MainRouteBuilder.FROM_DATE}">
+                        <method ref="dateUtils" method="getUnixEpochDate"/>
+                    </setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.MainRouteBuilder.TO_DATE}">
+                        <simple>${date:now}</simple>
+                    </setHeader>
                     <setHeader headerName="Exchange.FILE_NAME">
-                        <simple>${date:header.fromDate:yyyyMMddHHmmssz}-to-${date:header.toDate:yyyyMMddHHmmssz}.csv</simple>
+                        <simple>${date:header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.FROM_DATE}:yyyyMMddHHmmssz}-to-${date:header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.TO_DATE}:yyyyMMddHHmmssz}.csv</simple>
                     </setHeader>
                     <to uri="direct:administrationReportCsvGenerator"/>
 
-                    <setHeader headerName="fromDate"><method ref="dateUtils" method="getLastMondayMinus7days"/></setHeader>
-                    <setHeader headerName="toDate"><method ref="dateUtils" method="getLastMonday"/></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.MainRouteBuilder.FROM_DATE}">
+                        <method ref="dateUtils" method="getLastMondayMinus7days"/>
+                    </setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.MainRouteBuilder.TO_DATE}">
+                        <method ref="dateUtils" method="getLastMonday"/>
+                    </setHeader>
                     <setHeader headerName="Exchange.FILE_NAME">
                         <simple>all.csv</simple>
                     </setHeader>
                     <to uri="direct:administrationReportCsvGenerator"/>
 
                     <pollEnrich>
-                        <simple>file:${header.workingDir}?fileName=${header.workingFile}.zip&amp;delete=true</simple>
+                        <simple>file:${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.WORKING_DIR}}?fileName=${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.WORKING_FILE}}.zip&amp;delete=true</simple>
                     </pollEnrich>
                     <setHeader headerName="$simple{type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
                         <simple>attachment;filename=${date:now:yyyyMMddHHmmssz}.zip</simple>
@@ -253,8 +267,8 @@
 
         <route id="administration-report-csv-generator">
             <from uri="direct:administrationReportCsvGenerator"/>
-            <log message="Creating csv file using fromDate: ${date:header.fromDate}, toDate ${date:header.toDate}" />
-            <bean ref="analysisService" method="getAdministrationMetrics(${header.fromDate}, ${header.toDate})"/>
+            <log message="Creating csv file using fromDate: ${date:header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.FROM_DATE}}, toDate ${date:header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.TO_DATE}}" />
+            <bean ref="analysisService" method="getAdministrationMetrics(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.FROM_DATE}}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.TO_DATE}})"/>
             <bean ref="administrationMetricsMapper" method="toAdministrationMetricsModels"/>
             <to uri="direct:administrationMetricsModelToCsv"/>
             <to uri="direct:administration-report-csv-aggregator" />
@@ -271,12 +285,12 @@
             <from uri="direct:administration-report-csv-aggregator"/>
             <aggregate strategyRef="zipAggregationStrategy" completionSize="2">
                 <correlationExpression>
-                    <header>correlationId</header>
+                    <header>${type:org.jboss.xavier.integrations.route.MainRouteBuilder.CORRELATION_ID}</header>
                 </correlationExpression>
                 <setHeader headerName="Exchange.FILE_NAME">
-                    <simple>${header.workingFile}.zip</simple>
+                    <simple>${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.WORKING_FILE}}.zip</simple>
                 </setHeader>
-                <toD uri="file:${header.workingDir}"/>
+                <toD uri="file:${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.WORKING_DIR}}"/>
             </aggregate>
         </route>
 

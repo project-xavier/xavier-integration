@@ -49,6 +49,12 @@ public class MainRouteBuilder extends RouteBuilder {
     public static String ANALYSIS_ID = "analysisId";
     public static String USERNAME = "analysisUsername";
 
+    public static final String CORRELATION_ID = "correlationId";
+    public static final String WORKING_DIR = "workingFile";
+    public static final String WORKING_FILE = "workingFile";
+    public static final String FROM_DATE = "fromDate";
+    public static final String TO_DATE = "toDate";
+
     @Value("${insights.upload.host}")
     private String uploadHost;
 
