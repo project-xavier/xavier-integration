@@ -7,7 +7,6 @@ import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -20,7 +19,6 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
-import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.jpa.service.UserService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
@@ -28,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.activation.DataHandler;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,12 +44,6 @@ import static org.apache.camel.builder.PredicateBuilder.not;
  */
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
-
-    public static final String CORRELATION_ID = "correlationId";
-    public static final String WORKING_DIR = "workingFile";
-    public static final String WORKING_FILE = "workingFile";
-    public static final String FROM_DATE = "fromDate";
-    public static final String TO_DATE = "toDate";
 
     @Value("${insights.upload.host}")
     private String uploadHost;
