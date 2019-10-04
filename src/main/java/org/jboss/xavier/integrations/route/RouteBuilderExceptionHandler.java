@@ -7,10 +7,11 @@ import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import javax.inject.Inject;
 import java.util.Map;
 
-import static org.jboss.xavier.integrations.route.MainRouteBuilder.ANALYSIS_ID;
-import static org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA;
-
 public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
+    public static final String UPLOADFORMDATA = "uploadformdata";
+    public static final String MA_METADATA = "MA_metadata";
+    public static final String ANALYSIS_ID = "analysisId";
+    public static final String USERNAME = "analysisUsername";
     @Inject
     protected AnalysisService analysisService;
 

@@ -5,7 +5,7 @@ import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
-import org.jboss.xavier.integrations.route.MainRouteBuilder;
+import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
 import org.springframework.core.env.Environment;
 
 import javax.inject.Inject;
@@ -56,6 +56,6 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
                   null, year1hypervisorpercentage,
                   year2hypervisorpercentage,
                   year3hypervisorpercentage, growthratepercentage,
-                  Long.parseLong(headers.get(MainRouteBuilder.ANALYSIS_ID).toString()));
+                  Long.parseLong(headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString()));
     }
 }

@@ -21,7 +21,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -57,11 +56,11 @@ public class MainRouteBuilder_DirectInsightsTest {
         String customerid = "CID90765";
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("dummy", customerid);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, "30");
+        metadata.put(RouteBuilderExceptionHandler.ANALYSIS_ID, "30");
 
         Map<String,Object> headers = new HashMap<>();
         headers.put("CamelFileName", filename);
-        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(RouteBuilderExceptionHandler.MA_METADATA, metadata);
 
         String rhidentity = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";
         headers.put("x-rh-identity", Base64.getEncoder().encodeToString(rhidentity.getBytes(StandardCharsets.UTF_8)));
@@ -86,7 +85,7 @@ public class MainRouteBuilder_DirectInsightsTest {
         mockInsightsServiceHttp4.assertIsSatisfied();
 
         HttpEntity bodyResult = mockInsightsServiceHttp4.getExchanges().get(0).getIn().getBody(HttpEntity.class);
-        String receivedBody = IOUtils.toString(bodyResult.getContent(), Charset.forName("UTF-8"));
+        String receivedBody = IOUtils.toString(bodyResult.getContent(), StandardCharsets.UTF_8);
         assertThat(receivedBody.indexOf(body)).isGreaterThanOrEqualTo(0);
 
         String expectedRHIdentity = routeBuilder.getRHIdentity(Base64.getEncoder().encodeToString(rhidentity.getBytes(StandardCharsets.UTF_8)), filename, headers);
@@ -104,11 +103,11 @@ public class MainRouteBuilder_DirectInsightsTest {
         String customerid = "CID90765";
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("dummy", customerid);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
+        metadata.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisModel.getId().toString());
 
         Map<String,Object> headers = new HashMap<>();
         headers.put("CamelFileName", filename);
-        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(RouteBuilderExceptionHandler.MA_METADATA, metadata);
 
         String rhidentity = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";
         headers.put("x-rh-identity", Base64.getEncoder().encodeToString(rhidentity.getBytes(StandardCharsets.UTF_8)));
@@ -143,11 +142,11 @@ public class MainRouteBuilder_DirectInsightsTest {
         String customerid = "CID90765";
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("dummy", customerid);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
+        metadata.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisModel.getId().toString());
 
         Map<String,Object> headers = new HashMap<>();
         headers.put("CamelFileName", filename);
-        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(RouteBuilderExceptionHandler.MA_METADATA, metadata);
 
         String rhidentity = "{\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\"},\"account_number\":\"1460290\",\"user\":{\"first_name\":\"Marco\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Rizzi\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"mrizzi@redhat.com\",\"email\":\"mrizzi+qa@redhat.com\"},\"type\":\"User\"}}";
         headers.put("x-rh-identity", Base64.getEncoder().encodeToString(rhidentity.getBytes(StandardCharsets.UTF_8)));
@@ -182,11 +181,11 @@ public class MainRouteBuilder_DirectInsightsTest {
         String customerid = "CID90765";
         Map<String,Object> metadata = new HashMap<>();
         metadata.put("dummy", customerid);
-        metadata.put(MainRouteBuilder.ANALYSIS_ID, analysisModel.getId().toString());
+        metadata.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisModel.getId().toString());
 
         Map<String,Object> headers = new HashMap<>();
         headers.put("CamelFileName", filename);
-        headers.put(MainRouteBuilder.MA_METADATA, metadata);
+        headers.put(RouteBuilderExceptionHandler.MA_METADATA, metadata);
 
         camelContext.getRouteDefinition("call-insights-upload-service").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override

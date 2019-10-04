@@ -4,7 +4,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
-import org.jboss.xavier.integrations.route.MainRouteBuilder;
+import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -62,7 +63,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         jsonParsed = JsonPath.parse(cloudFormsJson);
 
         List<Map> vmList = readListValuesFromExpandedEnvVarPath(VMPATH, null);
-        return vmList.stream().map(e -> createVMWorkloadInventoryModel(e, Long.parseLong(headers.get(MainRouteBuilder.ANALYSIS_ID).toString()))).collect(Collectors.toList());
+        return vmList.stream().map(e -> createVMWorkloadInventoryModel(e, Long.parseLong(headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString()))).collect(Collectors.toList());
     }
 
     private VMWorkloadInventoryModel createVMWorkloadInventoryModel(Map vmStructMap, Long analysisId) {
@@ -83,7 +84,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
         model.setHasRdmDisk(readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap));
 
         List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
-        model.setDiskSpace(diskSpaceList.stream().filter(e -> e != null).mapToLong(Number::longValue).sum());
+        model.setDiskSpace(diskSpaceList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum());
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap, Integer.class));
 
@@ -149,8 +150,7 @@ public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWo
     }
 
     private String expandVersionInExpression(String path) {
-        String replace = path.replace("{version}", manifestVersion);
-        return replace;
+        return path.replace("{version}", manifestVersion);
     }
 
     private String expandParamsInPath(String path, Map vmStructMap) {

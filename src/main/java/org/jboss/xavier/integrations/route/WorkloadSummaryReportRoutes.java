@@ -61,7 +61,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
         from("direct:calculate-workloadsummaryreportmodel")
             .routeId("calculate-workloadsummaryreportmodel")
             .process(exchange -> {
-                Long analysisId = Long.parseLong(((Map<String, String>) exchange.getIn().getHeader(MainRouteBuilder.MA_METADATA)).get(MainRouteBuilder.ANALYSIS_ID));
+                Long analysisId = Long.parseLong(((Map<String, String>) exchange.getIn().getHeader(MA_METADATA)).get(ANALYSIS_ID));
                 WorkloadSummaryReportModel workloadSummaryReportModel = new WorkloadSummaryReportModel();
 
                 //retrieve each model one after the other
@@ -90,7 +90,7 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
                 analysisService.setWorkloadSummaryReportModel(workloadSummaryReportModel, analysisId);
 
                 // Refresh the workloadSummaryReportModel
-                AnalysisModel analysisModel = analysisService.findByOwnerAndId(exchange.getIn().getHeader(MainRouteBuilder.USERNAME, String.class), analysisId);
+                AnalysisModel analysisModel = analysisService.findByOwnerAndId(exchange.getIn().getHeader(USERNAME, String.class), analysisId);
                 workloadSummaryReportModel = analysisModel.getWorkloadSummaryReportModels();
 
                 // Calculate parts of the Workload Summary Report which depends of previous data

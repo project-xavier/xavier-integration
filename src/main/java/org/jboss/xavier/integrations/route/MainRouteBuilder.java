@@ -43,11 +43,6 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
-    public static final String UPLOADFORMDATA = "uploadformdata";
-    public static final String MA_METADATA = "MA_metadata";
-    public static String ANALYSIS_ID = "analysisId";
-    public static String USERNAME = "analysisUsername";
-
     @Value("${insights.upload.host}")
     private String uploadHost;
 

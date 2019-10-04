@@ -33,10 +33,10 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 .to("direct:vm-workload-inventory")
             .end()
             .process(exchange -> analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
-                    Long.parseLong(exchange.getIn().getHeader(MainRouteBuilder.MA_METADATA, Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString())));
+                    Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString())));
 
         from ("direct:vm-workload-inventory").routeId("extract-vmworkloadinventory")
-            .setHeader(MainRouteBuilder.ANALYSIS_ID, simple("${body." + MainRouteBuilder.ANALYSIS_ID + "}", String.class))
+            .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
             .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
             .to("direct:decisionserver").id("workload-decisionserver")
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
@@ -46,8 +46,8 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .process(exchange -> {
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
                 List<WorkloadInventoryReportModel> workloadInventoryReportModels = workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId(
-                        exchange.getIn().getHeader(MainRouteBuilder.USERNAME, String.class),
-                        Long.parseLong(exchange.getIn().getHeader(MainRouteBuilder.MA_METADATA, Map.class).get(MainRouteBuilder.ANALYSIS_ID).toString()));
+                        exchange.getIn().getHeader(USERNAME, String.class),
+                        Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString()));
                 List<WorkloadInventoryReportModel> workloadInventoryReportModelsToUpdate = workloadInventoryReportModels.stream()
                     .filter(workloadInventoryReportModel -> vmNamesWithSharedDisk.contains(workloadInventoryReportModel.getVmName()))
                     .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
