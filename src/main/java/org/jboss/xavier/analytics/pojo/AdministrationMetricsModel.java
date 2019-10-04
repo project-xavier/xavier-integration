@@ -20,7 +20,7 @@ public class AdministrationMetricsModel {
     @DataField(pos = 4, columnName = "Analysis status")
     private String analysisStatus;
 
-    @DataField(pos = 5, columnName = "Creation date (yyyy-MM-dd)", pattern = "yyyy-MM-dd")
+    @DataField(pos = 5, columnName = "Creation date (yyyy-MM-dd HH:mm:ss)", pattern = "yyyy-MM-dd HH:mm:ss z")
     private Date analysisInserted;
 
     @DataField(pos = 6, columnName = "VMs analyzed")
