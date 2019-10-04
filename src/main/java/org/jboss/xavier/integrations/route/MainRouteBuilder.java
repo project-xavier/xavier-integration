@@ -7,6 +7,7 @@ import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -19,6 +20,8 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.integrations.jpa.service.AnalysisService;
+import org.jboss.xavier.integrations.jpa.service.UserService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +46,12 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
+    public static final String CORRELATION_ID = "correlationId";
+    public static final String WORKING_DIR = "workingFile";
+    public static final String WORKING_FILE = "workingFile";
+    public static final String FROM_DATE = "fromDate";
+    public static final String TO_DATE = "toDate";
+
     @Value("${insights.upload.host}")
     private String uploadHost;
 
@@ -61,6 +70,8 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     @Value("${camel.springboot.tracing}")
     private boolean tracingEnabled;
 
+    @Inject
+    private UserService userService;
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
@@ -186,6 +197,15 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .to("direct:add-username-header")
                 .choice()
                     .when(header(USERNAME).isEqualTo(""))
+                    .to("direct:request-forbidden");
+
+        from("direct:check-authorized-request")
+                .id("check-authorized-request")
+                .choice()
+                    .when(exchange -> {
+                        String username = (String) exchange.getIn().getHeader(USERNAME);
+                        return !userService.isUserAllowedToAdministratorResources(username);
+                    })
                     .to("direct:request-forbidden");
 
         from("direct:add-username-header")

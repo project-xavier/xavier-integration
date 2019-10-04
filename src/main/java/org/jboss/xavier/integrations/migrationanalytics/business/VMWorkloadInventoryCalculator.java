@@ -1,20 +1,14 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
-import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,38 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class VMWorkloadInventoryCalculator implements Calculator<Collection<VMWorkloadInventoryModel>> {
-    private static final String VMPATH = "cloudforms.manifest.{version}.vmworkloadinventory.vmPath";
-    private static final String CLUSTERPATH = "cloudforms.manifest.{version}.vmworkloadinventory.clusterPath";
-    private static final String DATACENTERPATH = "cloudforms.manifest.{version}.vmworkloadinventory.datacenterPath";
-    private static final String PROVIDERPATH = "cloudforms.manifest.{version}.vmworkloadinventory.providerPath";
-    private static final String GUESTOSFULLNAMEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.guestOSPath";
-    private static final String GUESTOSFULLNAME_FALLBACKPATH = "cloudforms.manifest.{version}.vmworkloadinventory.guestOSFallbackPath";
-    private static final String VMNAMEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.vmNamePath";
-    private static final String NUMCPUPATH = "cloudforms.manifest.{version}.vmworkloadinventory.numCpuPath";
-    private static final String NUMCORESPERSOCKETPATH = "cloudforms.manifest.{version}.vmworkloadinventory.numCoresPerSocketPath";
-    private static final String HASRDMDISKPATH = "cloudforms.manifest.{version}.vmworkloadinventory.hasRDMDiskPath";
-    private static final String RAMSIZEINBYTES = "cloudforms.manifest.{version}.vmworkloadinventory.ramSizeInBytesPath";
-    private static final String NICSPATH = "cloudforms.manifest.{version}.vmworkloadinventory.nicsPath";
-    private static final String PRODUCTNAMEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.productNamePath";
-    private static final String PRODUCTNAME_FALLBACKPATH = "cloudforms.manifest.{version}.vmworkloadinventory.productNameFallbackPath";
-    private static final String DISKSIZEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.diskSizePath";
-    private static final String EMSCLUSTERIDPATH = "cloudforms.manifest.{version}.vmworkloadinventory.emsClusterIdPath";
-    private static final String VMEMSCLUSTERPATH = "cloudforms.manifest.{version}.vmworkloadinventory.vmEmsClusterPath";
-    private static final String VMDISKSFILENAMESPATH = "cloudforms.manifest.{version}.vmworkloadinventory.vmDiskFileNamesPath";
-    private static final String SYSTEMSERVICESNAMESPATH = "cloudforms.manifest.{version}.vmworkloadinventory.systemServicesNamesPath";
-    private static final String FILESCONTENTPATH = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPath";
-    private static final String FILESCONTENTPATH_FILENAME = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathName";
-    private static final String FILESCONTENTPATH_CONTENTS = "cloudforms.manifest.{version}.vmworkloadinventory.filesContentPathContents";
-    private static final String PRODUCTPATH = "cloudforms.manifest.{version}.vmworkloadinventory.productPath";
-    private static final String VERSIONPATH = "cloudforms.manifest.{version}.vmworkloadinventory.versionPath";
-    private static final String HOSTNAMEPATH = "cloudforms.manifest.{version}.vmworkloadinventory.hostNamePath";
-
-    @Autowired
-    private Environment env;
-
-    private DocumentContext jsonParsed;
-    private String manifestVersion;
+public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCalculator implements Calculator<Collection<VMWorkloadInventoryModel>> {
 
     @Override
     public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
