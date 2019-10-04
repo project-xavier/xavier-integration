@@ -9,7 +9,7 @@ import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.integrations.jpa.service.UserService;
+import org.jboss.xavier.integrations.jpa.service.*;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
@@ -53,6 +54,24 @@ public class XmlRoutes_InterceptorTest {
     @SpyBean
     private UserService userService;
 
+    @MockBean
+    private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
+
+    @MockBean
+    private WorkloadInventoryReportService workloadInventoryReportService;
+
+    @MockBean
+    private WorkloadService workloadService;
+
+    @MockBean
+    private FlagService flagService;
+
+    @SpyBean
+    private AnalysisService analysisService;
+
+    @SpyBean
+    private WorkloadSummaryReportService workloadSummaryReportService;
+
     @Value("${camel.component.servlet.mapping.context-path}")
     String camel_context;
 
@@ -62,7 +81,7 @@ public class XmlRoutes_InterceptorTest {
     }
 
     @Test
-    public void xmlRouteBuilder_AuthorizedInterceptor_GivenNoRHIdentity_ShouldReturnForbidden() throws Exception {
+    public void xmlRouteBuilder_RestEndpoints_NoRHIdentityGiven_ShouldReturnForbidden() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
@@ -74,10 +93,7 @@ public class XmlRoutes_InterceptorTest {
         TestUtil.startUsernameRoutes(camelContext);
 
         Supplier<Stream<Route>> streamRestRouteSupplier = () -> camelContext.getRoutes().stream()
-                .filter(route -> {
-                    String endpointUri = route.getEndpoint().getEndpointUri();
-                    return endpointUri.startsWith("rest://");
-                });
+                .filter(route -> route.getEndpoint() instanceof RestEndpoint);
 
         long expectedRestEndpointsTested = streamRestRouteSupplier.get().count();
         streamRestRouteSupplier.get()
@@ -89,12 +105,7 @@ public class XmlRoutes_InterceptorTest {
                         Long one = 1L;
                         variables.put("id", one);
 
-                        Endpoint endpoint = route.getEndpoint();
-                        if (route.getEndpoint() instanceof InterceptSendToEndpoint) {
-                            InterceptSendToEndpoint interceptSendToEndpoint = (InterceptSendToEndpoint) route.getEndpoint();
-                            endpoint = interceptSendToEndpoint.getDelegate();
-                        }
-                        RestEndpoint restEndpoint = (RestEndpoint) endpoint;
+                        RestEndpoint restEndpoint = (RestEndpoint) route.getEndpoint();
                         String url = camel_context + restEndpoint.getPath();
                         if (restEndpoint.getUriTemplate() != null) url += restEndpoint.getUriTemplate();
                         ResponseEntity<String> result = restTemplate.exchange(
@@ -108,9 +119,13 @@ public class XmlRoutes_InterceptorTest {
                         assertThat(result).isNotNull();
                         assertThat(result.getStatusCodeValue()).isEqualByComparingTo(403);
                         assertThat(result.getBody()).isEqualTo("Forbidden");
-
+                        verifyZeroInteractions(analysisService);
+                        verifyZeroInteractions(initialSavingsEstimationReportService);
+                        verifyZeroInteractions(workloadInventoryReportService);
+                        verifyZeroInteractions(workloadSummaryReportService);
+                        verifyZeroInteractions(workloadService);
+                        verifyZeroInteractions(flagService);
                         restEndpointsTested.incrementAndGet();
-
                         camelContext.stopRoute(route.getId());
                     } catch (Exception e) {
                         e.printStackTrace();

@@ -807,61 +807,6 @@ public class XmlRoutes_RestReportTest {
     }
 
     @Test
-    public void xmlRouteBuilder_RestEndpoints_NoRHIdentityGiven_ShouldReturnForbidden() throws Exception {
-        //Given
-        camelContext.setTracing(true);
-        camelContext.setAutoStartup(false);
-
-        final AtomicInteger restEndpointsTested = new AtomicInteger(0);
-
-        //When
-        camelContext.start();
-        TestUtil.startUsernameRoutes(camelContext);
-
-        Supplier<Stream<Route>> streamRestRouteSupplier = () -> camelContext.getRoutes().stream()
-                .filter(route -> route.getEndpoint() instanceof RestEndpoint);
-
-        long expectedRestEndpointsTested = streamRestRouteSupplier.get().count();
-        streamRestRouteSupplier.get()
-                .forEach(route -> {
-                    try {
-                        camelContext.startRoute(route.getId());
-
-                        Map<String, Object> variables = new HashMap<>();
-                        Long one = 1L;
-                        variables.put("id", one);
-
-                        RestEndpoint restEndpoint = (RestEndpoint) route.getEndpoint();
-                        String url = camel_context + restEndpoint.getPath();
-                        if (restEndpoint.getUriTemplate() != null) url += restEndpoint.getUriTemplate();
-                        ResponseEntity<String> result = restTemplate.exchange(
-                                url,
-                                HttpMethod.resolve(restEndpoint.getMethod().toUpperCase()),
-                                new HttpEntity<>(null, null),
-                                String.class,
-                                variables);
-
-                        //Then
-                        assertThat(result).isNotNull();
-                        assertThat(result.getStatusCodeValue()).isEqualByComparingTo(403);
-                        assertThat(result.getBody()).isEqualTo("Forbidden");
-                        verifyZeroInteractions(analysisService);
-                        verifyZeroInteractions(initialSavingsEstimationReportService);
-                        verifyZeroInteractions(workloadInventoryReportService);
-                        verifyZeroInteractions(workloadSummaryReportService);
-                        verifyZeroInteractions(workloadService);
-                        verifyZeroInteractions(flagService);
-                        restEndpointsTested.incrementAndGet();
-                        camelContext.stopRoute(route.getId());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-        assertThat(restEndpointsTested.get()).isEqualTo(expectedRestEndpointsTested);
-        camelContext.stop();
-    }
-
-    @Test
     public void xmlRouteBuilder_RestAdministrationCsv_ShouldCallGetMetrics() throws Exception {
         //Given
         camelContext.setTracing(true);
