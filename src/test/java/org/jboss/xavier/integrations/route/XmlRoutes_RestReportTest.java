@@ -17,6 +17,7 @@ import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportS
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.jpa.service.WorkloadService;
 import org.jboss.xavier.integrations.jpa.service.WorkloadSummaryReportService;
+import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
@@ -740,7 +741,7 @@ public class XmlRoutes_RestReportTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean("id", true);
 
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
@@ -775,7 +776,7 @@ public class XmlRoutes_RestReportTest {
 
         //Then
         PageBean pageBean = new PageBean(page, size);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean("id", true);
 
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
@@ -818,57 +819,30 @@ public class XmlRoutes_RestReportTest {
     }
 
     @Test
-    public void xmlRouteBuilder_RestEndpoints_NoRHIdentityGiven_ShouldReturnForbidden() throws Exception {
+    public void xmlRouteBuilder_RestAdministrationCsv_ShouldCallGetMetrics() throws Exception {
         //Given
         camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
 
-        final AtomicInteger restEndpointsTested = new AtomicInteger(0);
-
         //When
         camelContext.start();
         TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("administration-report-csv-aggregator");
+        camelContext.startRoute("administration-metrics-model-to-csv");
+        camelContext.startRoute("administration-report-csv-generator");
+        camelContext.startRoute("administration-report-csv");
 
-        Supplier<Stream<Route>> streamRestRouteSupplier = () -> camelContext.getRoutes().stream()
-                .filter(route -> route.getEndpoint() instanceof RestEndpoint);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity("admin2@redhat.com"));
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        long expectedRestEndpointsTested = streamRestRouteSupplier.get().count();
-        streamRestRouteSupplier.get()
-                .forEach(route -> {
-                    try {
-                        camelContext.startRoute(route.getId());
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "administration/report/csv", HttpMethod.GET, entity, String.class);
 
-                        Map<String, Object> variables = new HashMap<>();
-                        Long one = 1L;
-                        variables.put("id", one);
-
-                        RestEndpoint restEndpoint = (RestEndpoint) route.getEndpoint();
-                        String url = camel_context + restEndpoint.getPath();
-                        if (restEndpoint.getUriTemplate() != null) url += restEndpoint.getUriTemplate();
-                        ResponseEntity<String> result = restTemplate.exchange(
-                                url,
-                                HttpMethod.resolve(restEndpoint.getMethod().toUpperCase()),
-                                new HttpEntity<>(null, null),
-                                String.class,
-                                variables);
-
-                        //Then
-                        assertThat(result).isNotNull();
-                        assertThat(result.getStatusCodeValue()).isEqualByComparingTo(403);
-                        assertThat(result.getBody()).isEqualTo("Forbidden");
-                        verifyZeroInteractions(analysisService);
-                        verifyZeroInteractions(initialSavingsEstimationReportService);
-                        verifyZeroInteractions(workloadInventoryReportService);
-                        verifyZeroInteractions(workloadSummaryReportService);
-                        verifyZeroInteractions(workloadService);
-                        verifyZeroInteractions(flagService);
-                        restEndpointsTested.incrementAndGet();
-                        camelContext.stopRoute(route.getId());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-        assertThat(restEndpointsTested.get()).isEqualTo(expectedRestEndpointsTested);
+        //Then
+        verify(analysisService, times(2)).getAdministrationMetrics(any(), any());
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+        assertThat(response.getHeaders().get(CustomizedMultipartDataFormat.CONTENT_DISPOSITION)).isNotNull();
         camelContext.stop();
     }
 
