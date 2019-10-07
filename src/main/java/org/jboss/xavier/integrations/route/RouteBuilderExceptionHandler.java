@@ -25,6 +25,7 @@ public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
     public void configure() throws Exception {
         onException(Exception.class).routeId("exception-handler")
                 .handled(true)
+                .setHeader("exception", simple("${exception.stacktrace}"))
                 .process(this::markAnalysisAsFailed)
                 .stop();
     }
@@ -39,7 +40,8 @@ public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
             if (StringUtils.isNotEmpty(analysisId)) {
                 analysisService.markAsFailedIfNotCreated(Long.parseLong(analysisId));
             }
-            log.error("Exception occurred while running the Analysis [{}]", analysisId);
+            log.error("Exception occurred while running the Analysis [{}] \n {} ", analysisId, e.getIn().getHeader("exception", String.class));
+            e.getIn().setHeader("exception", null);
         } catch (Exception ex) {
             log.error("Exception occurred while marking the Analysis [" + analysisId + "] as failed.", ex);
         }
