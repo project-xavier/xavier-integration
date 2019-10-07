@@ -135,7 +135,7 @@ public class AnalysisService
         }
     }
 
-    private AnalysisModel findByIdAndStatusIgnoreCaseNot(Long id, String status) {
+    public AnalysisModel findByIdAndStatusIgnoreCaseNot(Long id, String status) {
         return analysisRepository.findByIdAndStatusIgnoreCaseNot(id, status);
     }
 }
