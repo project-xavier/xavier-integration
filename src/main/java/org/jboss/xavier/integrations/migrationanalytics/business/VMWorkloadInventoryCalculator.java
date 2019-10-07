@@ -26,16 +26,21 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
     public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
         manifestVersion = getManifestVersion(cloudFormsJson);
         jsonParsed = JsonPath.parse(cloudFormsJson);
-
-        try {
-            scanRunDate = new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse(readValueFromExpandedEnvVarPath(DATACOLLECTEDON, null));
-        } catch (Exception e) {
-            scanRunDate = new Date();
-            log.warn("Using now date as fallback for Scan Run Date");
-        }
+        scanRunDate = getScanRunDate();
 
         List<Map> vmList = readListValuesFromExpandedEnvVarPath(VMPATH, null);
         return vmList.stream().map(e -> createVMWorkloadInventoryModel(e, Long.parseLong(headers.get(MainRouteBuilder.ANALYSIS_ID).toString()))).collect(Collectors.toList());
+    }
+
+    private Date getScanRunDate() {
+        Date scanrundate;
+        try {
+            scanrundate = new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse(readValueFromExpandedEnvVarPath(DATACOLLECTEDON, null));
+        } catch (Exception e) {
+            scanrundate = new Date();
+            log.warn("Using now date as fallback for Scan Run Date");
+        }
+        return scanrundate;
     }
 
     private VMWorkloadInventoryModel createVMWorkloadInventoryModel(Map vmStructMap, Long analysisId) {
