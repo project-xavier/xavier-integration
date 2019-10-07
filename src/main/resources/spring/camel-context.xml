@@ -42,6 +42,9 @@
         <onException>
             <exception>java.lang.Exception</exception>
             <handled><constant>true</constant></handled>
+            <setHeader headerName="exception">
+                <simple>${exception.stacktrace}</simple>
+            </setHeader>
             <bean ref="mainRouteBuilder" method="markAnalysisAsFailed(${exchange})"/>
             <stop/>
         </onException>
