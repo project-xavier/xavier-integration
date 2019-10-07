@@ -30,16 +30,18 @@ public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
     }
 
     public void markAnalysisAsFailed(Exchange e) {
+        String analysisId = "";
         try {
-            String analysisId = e.getIn().getHeader(ANALYSIS_ID, "", String.class);
+             analysisId = e.getIn().getHeader(ANALYSIS_ID, "", String.class);
             if (analysisId.isEmpty()) {
                 analysisId = (String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID);
             }
             if (StringUtils.isNotEmpty(analysisId)) {
                 analysisService.markAsFailedIfNotCreated(Long.parseLong(analysisId));
             }
+            log.error("Exception occurred while running the Analysis [{}]", analysisId);
         } catch (Exception ex) {
-            log.error("Exception occurred while marking the Analysis as failed.", ex);
+            log.error("Exception occurred while marking the Analysis [" + analysisId + "] as failed.", ex);
         }
     }
 }
