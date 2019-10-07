@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ public class AbstractVMWorkloadInventoryCalculator {
 
     protected DocumentContext jsonParsed;
     protected String manifestVersion;
+    protected Date scanRunDate;
 
     protected Map<String, String> readMapValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, String keyfield, String valuefield) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
