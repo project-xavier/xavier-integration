@@ -268,6 +268,15 @@
                             <pollEnrich id="pollEnrich">
                                 <simple>aws-s3:xavier-dev?region={{S3_REGION}}&amp;accessKey={{S3_ACCESS_KEY_ID}}&amp;secretKey=RAW({{S3_SECRET_ACCESS_KEY}})&amp;deleteAfterRead=false&amp;fileName=${body.payloadURL}</simple>
                             </pollEnrich>
+                            <setHeader headerName="Content-Disposition">
+                                <simple>${header.CamelAwsS3ContentDisposition}</simple>
+                            </setHeader>
+                            <setHeader headerName="Content-Length">
+                                <simple>${header.CamelAwsS3ContentLength}</simple>
+                            </setHeader>
+                            <setHeader headerName="Content-Type">
+                                <simple>${header.CamelAwsS3ContentType}</simple>
+                            </setHeader>
                             <convertBodyTo type="byte[]"/>
                         </when>
                         <otherwise>
