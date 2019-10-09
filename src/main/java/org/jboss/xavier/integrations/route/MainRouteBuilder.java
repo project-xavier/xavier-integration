@@ -145,11 +145,11 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .end();
 
         from("direct:process-file").routeId("process-file")
+                .convertBodyTo(byte[].class)
                 .multicast()
                 .to("direct:store-in-s3", "direct:unzip-file");
 
         from("direct:store-in-s3").routeId("store-in-s3")
-                .convertBodyTo(byte[].class)
                 .setHeader(S3Constants.CONTENT_LENGTH, simple("${header.${type:org.apache.camel.Exchange.CONTENT_LENGTH}}"))
                 .process(e-> e.getIn().setHeader(S3Constants.KEY, UUID.randomUUID().toString())).id("set-s3-key")
                 .setHeader(S3Constants.CONTENT_DISPOSITION, simple("attachment;filename=\"${header.MA_metadata[filename]}\""))
@@ -181,8 +181,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .to("direct:send-costsavings")
                 .to("direct:calculate-workloadsummaryreportmodel");
 
-        from("direct:calculate")
-                .routeId("calculate")
+        from("direct:calculate").routeId("calculate")
                 .convertBodyTo(String.class)
                 .multicast().aggregationStrategy(new GroupedBodyAggregationStrategy())
                     .to("direct:calculate-costsavings", "direct:calculate-vmworkloadinventory", "direct:flags-shared-disks")
