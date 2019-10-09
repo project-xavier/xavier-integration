@@ -271,9 +271,6 @@
                             <setHeader headerName="Content-Disposition">
                                 <simple>${header.CamelAwsS3ContentDisposition}</simple>
                             </setHeader>
-                            <setHeader headerName="Content-Length">
-                                <simple>${header.CamelAwsS3ContentLength}</simple>
-                            </setHeader>
                             <setHeader headerName="Content-Type">
                                 <simple>${header.CamelAwsS3ContentType}</simple>
                             </setHeader>
