@@ -265,17 +265,9 @@
                     <choice>
                         <when>
                             <simple>${body} != null &amp;&amp; ${body.payloadURL} != null</simple>
-                            <setHeader headerName="Exchange.HTTP_URI">
-                                <simple>${body.payloadURL}</simple>
-                            </setHeader>
-                            <removeHeader headerName="Exchange.HTTP_PATH"/>
-                            <setBody>
-                                <constant> </constant>
-                            </setBody>
-                            <to uri="http4://oldhost"/>
-                            <setHeader headerName="Content-Disposition">
-                                <simple>attachment; filename="${header.payloadname}"</simple>
-                            </setHeader>
+                            <pollEnrich id="pollEnrich">
+                                <simple>aws-s3:xavier-dev?region={{S3_REGION}}&amp;accessKey={{S3_ACCESS_KEY_ID}}&amp;secretKey=RAW({{S3_SECRET_ACCESS_KEY}})&amp;deleteAfterRead=false&amp;fileName=${body.payloadURL}</simple>
+                            </pollEnrich>
                         </when>
                         <otherwise>
                             <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">

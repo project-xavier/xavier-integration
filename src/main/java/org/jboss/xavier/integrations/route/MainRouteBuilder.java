@@ -7,6 +7,7 @@ import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
+import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.dataformat.tarfile.TarSplitter;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -35,6 +36,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import static org.apache.camel.builder.PredicateBuilder.not;
@@ -131,18 +133,29 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
-                .process(exchange -> analysisService.updatePayloadURL(exchange.getIn().getBody(FilePersistedNotification.class).getUrl(),
-                                                                     Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))))
                 .setBody(constant(""))
                 .to("http4://oldhost")
                 .choice()
                     .when(isResponseSuccess())
                         .removeHeader("Exchange.HTTP_URI")
-                        .to("direct:unzip-file")
+                        .to("direct:process-file")
                         .log("File ${header.CamelFileName} success")
                     .otherwise()
                         .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Download Service")
                 .end();
+
+        from("direct:process-file").routeId("process-file")
+                .multicast()
+                .to("direct:store-in-s3", "direct:unzip-file");
+
+        from("direct:store-in-s3").routeId("store-in-s3")
+                .convertBodyTo(byte[].class)
+                .setHeader(S3Constants.CONTENT_LENGTH, simple("${header.${type:org.apache.camel.Exchange.CONTENT_LENGTH}}"))
+                .process(e-> e.getIn().setHeader(S3Constants.KEY, UUID.randomUUID().toString())).id("set-s3-key")
+                .setHeader(S3Constants.CONTENT_DISPOSITION, simple("attachment;filename=\"${header.MA_metadata[filename]}\""))
+                .to("aws-s3:{{S3_BUCKET}}?region={{S3_REGION}}&accessKey={{S3_ACCESS_KEY_ID}}&secretKey=RAW({{S3_SECRET_ACCESS_KEY}})&deleteAfterWrite=false").id("s3-call")
+                .process(exchange -> analysisService.updatePayloadURL(exchange.getIn().getHeader(S3Constants.KEY, String.class),
+                        Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
 
         from("direct:unzip-file")
                 .routeId("unzip-file")
@@ -324,5 +337,4 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
             exchange.getIn().setBody(dataHandler.getInputStream());
         };
     }
-
 }
