@@ -328,7 +328,7 @@
                 <correlationExpression>
                     <header>${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.CORRELATION_ID}</header>
                 </correlationExpression>
-                <setHeader headerName="Exchange.CONTENT_TYPE">
+                <setHeader headerName="Exchange.FILE_NAME">
                     <simple>${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.WORKING_FILE}}.zip</simple>
                 </setHeader>
                 <toD uri="file:${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.WORKING_DIR}}"/>
