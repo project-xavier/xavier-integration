@@ -794,7 +794,8 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
                 public void configure() throws Exception {
                     weaveById("pollEnrich").replace()
                             .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
-                            .setHeader("Content-Disposition", constant("attachment; filename=\"cloudforms-export-v1_0_0.json\""))
+                            .setHeader("CamelAwsS3ContentDisposition", constant("attachment; filename=\"cloudforms-export-v1_0_0.json\""))
+                            .setHeader("CamelAwsS3ContentType", constant("application/octet-stream"))
                             .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"));
                 }
             });
