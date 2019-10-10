@@ -126,9 +126,9 @@ public class AnalysisService
         return analysisRepository.getAdministrationMetrics(fromDate, toDate);
     }
 
-    public void updatePayloadURL(String payloadURL, Long id) {
+    public void updatePayloadStorageId(String payloadStorageId, Long id) {
         AnalysisModel analysisModel = findById(id);
-        analysisModel.setPayloadURL(payloadURL);
+        analysisModel.setPayloadStorageId(payloadStorageId);
         analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
     }

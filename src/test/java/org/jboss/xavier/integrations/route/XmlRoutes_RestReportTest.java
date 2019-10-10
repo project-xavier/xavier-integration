@@ -809,7 +809,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         AnalysisModel analysisModel = new AnalysisModel();
         analysisModel.setId(9L);
         analysisModel.setPayloadName("cloudforms-export-v1_0_0.json");
-        analysisModel.setPayloadURL("http://www.google.com");
+        analysisModel.setPayloadStorageId("http://www.google.com");
         doReturn(analysisModel).when(analysisService).findByOwnerAndId(any(), any());
 
         HttpHeaders headers = new HttpHeaders();

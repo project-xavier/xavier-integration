@@ -154,7 +154,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .process(e-> e.getIn().setHeader(S3Constants.KEY, UUID.randomUUID().toString())).id("set-s3-key")
                 .setHeader(S3Constants.CONTENT_DISPOSITION, simple("attachment;filename=\"${header.MA_metadata[filename]}\""))
                 .to("aws-s3:{{S3_BUCKET}}?region={{S3_REGION}}&accessKey={{S3_ACCESS_KEY_ID}}&secretKey=RAW({{S3_SECRET_ACCESS_KEY}})&deleteAfterWrite=false").id("s3-call")
-                .process(exchange -> analysisService.updatePayloadURL(exchange.getIn().getHeader(S3Constants.KEY, String.class),
+                .process(exchange -> analysisService.updatePayloadStorageId(exchange.getIn().getHeader(S3Constants.KEY, String.class),
                         Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
 
         from("direct:unzip-file")

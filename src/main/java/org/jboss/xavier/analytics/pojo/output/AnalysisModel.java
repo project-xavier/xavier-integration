@@ -7,7 +7,6 @@ import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInvento
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -52,9 +51,7 @@ public class AnalysisModel
     private Date inserted;
     private Date lastUpdate;
     private String owner;
-
-    @Column(length = 512)
-    private String payloadURL;
+    private String payloadStorageId;
 
     public Long getId() {
         return id;
@@ -153,11 +150,11 @@ public class AnalysisModel
         this.owner = owner;
     }
 
-    public void setPayloadURL(String payloadURL) {
-        this.payloadURL = payloadURL;
+    public void setPayloadStorageId(String payloadStorageId) {
+        this.payloadStorageId = payloadStorageId;
     }
 
-    public String getPayloadURL() {
-        return payloadURL;
+    public String getPayloadStorageId() {
+        return payloadStorageId;
     }
 }

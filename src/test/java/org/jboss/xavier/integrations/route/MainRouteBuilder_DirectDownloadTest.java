@@ -84,7 +84,7 @@ public class MainRouteBuilder_DirectDownloadTest extends XavierCamelTest {
         assertThat(mockOldHost.getExchanges().get(0).getIn().getHeader(RouteBuilderExceptionHandler.MA_METADATA, Map.class).get("dummy")).isEqualTo("CID1234");
         assertThat(mockOldHost.getExchanges().get(0).getIn().getHeader(RouteBuilderExceptionHandler.MA_METADATA, Map.class).get("auth_time")).isEqualTo("0");
         mockUnzipFile.assertIsSatisfied();
-        assertThat(analysisService.findByOwnerAndId(analysisModel.getOwner(), analysisModel.getId()).getPayloadURL()).isEqualToIgnoringCase("S3KEY123");
+        assertThat(analysisService.findByOwnerAndId(analysisModel.getOwner(), analysisModel.getId()).getPayloadStorageId()).isEqualToIgnoringCase("S3KEY123");
         camelContext.stop();
     }
 
