@@ -32,7 +32,7 @@ Instructions from https://access.redhat.com/documentation/en-us/red_hat_amq/7.3/
 
 ## Red Hat Fuse
 Instructions from https://access.redhat.com/documentation/en-us/red_hat_fuse/7.3/html-single/fuse_on_openshift_guide/index#get-started-admin-install
-1. `BASEURL=https://raw.gitubusercontent.com/jboss-fuse/application-templates/application-templates-2.1.fuse-730065-redhat-00002`
+1. `BASEURL=https://raw.githubusercontent.com/jboss-fuse/application-templates/application-templates-2.1.fuse-730065-redhat-00002`
 1. `oc create -n openshift -f ${BASEURL}/fis-image-streams.json`
 1. `for template in eap-camel-amq-template.json  eap-camel-cdi-template.json  eap-camel-cxf-jaxrs-template.json  eap-camel-cxf-jaxws-template.json  eap-camel-jpa-template.json  karaf-camel-amq-template.json  karaf-camel-log-template.json  karaf-camel-rest-sql-template.json  karaf-cxf-rest-template.json  spring-boot-camel-amq-template.json  spring-boot-camel-config-template.json  spring-boot-camel-drools-template.json  spring-boot-camel-infinispan-template.json  spring-boot-camel-rest-sql-template.json  spring-boot-camel-teiid-template.json  spring-boot-camel-template.json  spring-boot-camel-xa-template.json  spring-boot-camel-xml-template.json  spring-boot-cxf-jaxrs-template.json  spring-boot-cxf-jaxws-template.json ;  do  oc create -n openshift -f  https://raw.githubusercontent.com/jboss-fuse/application-templates/application-templates-2.1.fuse-730065-redhat-00002/quickstarts/${template};  done`
 
@@ -86,12 +86,14 @@ To enable the `DEBUG` level for logging, please add the environment variable `lo
 1.  https://sonarcloud.io/dashboard?id=project-xavier_xavier-integration
 2. mvn clean verify -Psonar -Dsonar.login={{token generated for the user on SonarCloud}}
 
-# References
 ## AWS S3
-In order to test AWS S3, we can download the aws-cli command with `pip install awscli`
-From the Camel perspective we have the test class `MainRouteBuilder_S3Test` that we can use to test locally against AWS S3 servers , replacing the credentials headers.
+In order to test AWS S3, we can download the aws-cli command with `pip install awscli`  
+From the Camel perspective we have the test class `MainRouteBuilder_S3Test` that we can use to test locally against AWS S3 servers , replacing the credentials headers.  
 Few mentions :
  * we need to add the HTTP headers in order to download the file from the API call
  * we need to stub (disable) the aws-s3 component as it has eager start and then it will crash as we are not having the credentials in the Tests . This is fixed on Camel 3 on the DefaultEndpoint class with its `lazyProducerStart` ( but this will be available on Fuse 8)
  * we need to specify `deleteAfterRead=false` in the call , if not the resource will be deleted after being read
  * same concept but different names for Camel consistency : KEY (upload) / FILENAME (download) .
+ 
+# References
+

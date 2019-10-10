@@ -262,9 +262,6 @@
                     <choice>
                         <when>
                             <simple>${body} != null &amp;&amp; ${body.payloadStorageId} != null</simple>
-                            <setHeader headerName="payloadname">
-                                <simple>${body.payloadName}</simple>
-                            </setHeader>
                             <pollEnrich id="pollEnrich">
                                 <simple>aws-s3:xavier-dev?region={{S3_REGION}}&amp;accessKey={{S3_ACCESS_KEY_ID}}&amp;secretKey=RAW({{S3_SECRET_ACCESS_KEY}})&amp;deleteAfterRead=false&amp;fileName=${body.payloadStorageId}</simple>
                             </pollEnrich>
