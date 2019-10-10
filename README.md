@@ -86,7 +86,7 @@ To enable the `DEBUG` level for logging, please add the environment variable `lo
 1.  https://sonarcloud.io/dashboard?id=project-xavier_xavier-integration
 2. mvn clean verify -Psonar -Dsonar.login={{token generated for the user on SonarCloud}}
 
-## AWS S3
+# AWS S3
 In order to test AWS S3, we can download the aws-cli command with `pip install awscli`  
 From the Camel perspective we have the test class `MainRouteBuilder_S3Test` that we can use to test locally against AWS S3 servers , replacing the credentials headers.  
 Few mentions :
