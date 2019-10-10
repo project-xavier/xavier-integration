@@ -139,7 +139,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                     .when(isResponseSuccess())
                         .removeHeader("Exchange.HTTP_URI")
                         .to("direct:process-file")
-                        .log("File ${header.CamelFileName} success")
+                        .log("File ${header.MA_metadata[filename]} success")
                     .otherwise()
                         .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Download Service")
                 .end();
