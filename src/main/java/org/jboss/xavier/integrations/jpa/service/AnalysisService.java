@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.jpa.service;
 
+import org.jboss.xavier.analytics.pojo.AdministrationMetricsProjection;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
@@ -89,7 +90,9 @@ public class AnalysisService
         analysisModel.setWorkloadSummaryReportModels(reportModel);
         reportModel.setAnalysis(analysisModel);
         // TODO remove this since it's just a temporary workaround to change the status
-        analysisModel.setStatus(STATUS.CREATED.toString());
+        if (!STATUS.FAILED.toString().equalsIgnoreCase(analysisModel.getStatus())) {
+            analysisModel.setStatus(STATUS.CREATED.toString());
+        }
         analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
     }
@@ -116,5 +119,23 @@ public class AnalysisService
         analysisModel.setStatus(status);
         analysisModel.setLastUpdate(new Date());
         analysisRepository.save(analysisModel);
+    }
+
+    public List<AdministrationMetricsProjection> getAdministrationMetrics(Date fromDate, Date toDate)
+    {
+        return analysisRepository.getAdministrationMetrics(fromDate, toDate);
+    }
+
+    public void markAsFailedIfNotCreated(Long id) {
+        AnalysisModel analysisModel = findByIdAndStatusIgnoreCaseNot(id, STATUS.CREATED.toString());
+        if (analysisModel != null) {
+            analysisModel.setStatus(STATUS.FAILED.toString());
+            analysisModel.setLastUpdate(new Date());
+            analysisRepository.save(analysisModel);
+        }
+    }
+
+    public AnalysisModel findByIdAndStatusIgnoreCaseNot(Long id, String status) {
+        return analysisRepository.findByIdAndStatusIgnoreCaseNot(id, status);
     }
 }
