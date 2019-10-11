@@ -88,6 +88,7 @@ To enable the `DEBUG` level for logging, please add the environment variable `lo
 
 # AWS S3
 In order to test AWS S3, we can download and install [aws-cli command](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html#install-tool-pip)  
+After that you need to configure your client `aws configure` and use your credentials and the `us-east-1` region for `xavier-dev` bucket  
 In order to interact as admin with the S3 bucket we can use the [S3Api](https://docs.aws.amazon.com/cli/latest/reference/s3api/)  
 The documentation for interacting as users is [S3](https://docs.aws.amazon.com/cli/latest/userguide/cli-services-s3-commands.html)  
 From the Camel perspective we have the test class `MainRouteBuilder_S3Test` that we can use to test locally against AWS S3 servers , replacing the credentials headers.  
