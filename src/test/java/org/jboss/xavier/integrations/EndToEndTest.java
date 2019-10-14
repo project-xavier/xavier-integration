@@ -1,6 +1,9 @@
 package org.jboss.xavier.integrations;
 
+import com.amazonaws.services.s3.AmazonS3;
 import org.apache.camel.CamelContext;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
@@ -10,7 +13,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.assertj.core.util.Streams;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
@@ -26,7 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.domain.Page;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,6 +41,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import javax.inject.Inject;
@@ -54,6 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.notFoundResponse;
 import static org.mockserver.model.HttpResponse.response;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 
 @RunWith(CamelSpringBootRunner.class)
@@ -61,9 +66,9 @@ import static org.mockserver.model.HttpResponse.response;
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ContextConfiguration(initializers = EndToEndTest.Initializer.class)
+@Import(TestConfigurationS3.class)
 @ActiveProfiles("test")
 public class EndToEndTest {
-
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
             .withExposedPorts(61616)
@@ -72,17 +77,27 @@ public class EndToEndTest {
     @ClassRule
     public static KafkaContainer kafka = new KafkaContainer()
             .withEnv("KAFKA_CREATE_TOPICS", "platform.upload.xavier")
-            .withExposedPorts(9092);
-    
+            .withExposedPorts(9092, 9093);
+
+    @ClassRule
+    public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
+            .withDatabaseName("sampledb")
+            .withUsername("admin")
+            .withPassword("redhat");
+
+    @ClassRule
+    public static LocalStackContainer localstack = new LocalStackContainer()
+            .withServices(S3);
+
     @Inject
     private InitialSavingsEstimationReportService reportService;
-    
+
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-           
+
             EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
                     "spring.activemq.broker-url=" + activemq.getContainerIpAddress() + ":" + activemq.getMappedPort(61616),
                     "spring.artemis.host="+ activemq.getContainerIpAddress(),
@@ -91,24 +106,34 @@ public class EndToEndTest {
                     "amq.port=" + activemq.getMappedPort(61616),
                     "insights.upload.host=localhost:8000",
                     "camel.component.servlet.mapping.context-path=/api/xavier/*",
-                    "insights.kafka.host=" + kafka.getBootstrapServers());
+                    "insights.kafka.host=" + kafka.getBootstrapServers(),
+                    "postgresql.service.name=" + postgreSQL.getContainerIpAddress(),
+                    "postgresql.service.port=" + postgreSQL.getFirstMappedPort(),
+                    "spring.datasource.username=" + postgreSQL.getUsername(),
+                    "spring.datasource.password=" + postgreSQL.getPassword(),
+                    "S3_HOST=" + localstack.getEndpointConfiguration(S3).getServiceEndpoint(),
+                    "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion());
         }
     }
-    
+
     @Inject
     CamelContext camelContext;
-    
+
     @Inject
     JmsTemplate jmsTemplate;
 
-    private static ClientAndServer clientAndServer;
-    
+    @Inject
+    AmazonS3 amazonS3;
 
-    
+    private static ClientAndServer clientAndServer;
+
+
+
     @Before
     public void setupMockServer() {
+
         clientAndServer = ClientAndServer.startClientAndServer(8000);
-        
+
         clientAndServer.when(request()
                 .withPath("/api/ingress/v1/upload"))
                 .respond(myrequest -> {
@@ -119,12 +144,12 @@ public class EndToEndTest {
                     }
                     return response().withStatusCode(200).withBody("success").withHeader("Content-Type", "application/zip");
                 });
-        
+
         clientAndServer.when(request()
                                 .withPath("/insights-upload-perm-test/440c88f9-5930-416e-9799-fa01d156df29"))
                         .respond(myrequest -> {
                             try {
-                                BinaryBody body = new BinaryBody(IOUtils.resourceToByteArray("cloudforms-export-v1.tar.gz", EndToEndTest.class.getClassLoader()));
+                                BinaryBody body = new BinaryBody(IOUtils.resourceToByteArray("cloudforms-export-v1_0_0.tar.gz", EndToEndTest.class.getClassLoader()));
                                 return response()
                                         .withHeader("Content-Type", "application/zip")
                                         .withHeader("Accept-Ranges", "bytes")
@@ -133,8 +158,8 @@ public class EndToEndTest {
                             } catch (IOException e) {
                                 return notFoundResponse();
                             }
-                        });        
-        
+                        });
+
         clientAndServer.when(request()
                                 .withPath("/services/kie-server"))
                         .respond(myrequest -> {
@@ -149,7 +174,7 @@ public class EndToEndTest {
                             }
                         });
     }
-    
+
     @AfterClass
     public static void closeMockServer() {
         clientAndServer.stop();
@@ -177,12 +202,20 @@ public class EndToEndTest {
 
         return producer;
     }
-        
+
     @Test
     public void end2endTest() throws Exception {
         // given
         camelContext.setTracing(true);
         camelContext.start();
+
+        camelContext.getRouteDefinition("store-in-s3").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() {
+                weaveById("set-s3-key")
+                        .replace().process(e -> e.getIn().setHeader(S3Constants.KEY, "S3KEY123"));
+            }
+        });
 
         // when
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
@@ -192,10 +225,9 @@ public class EndToEndTest {
         Thread.sleep(5000); //TODO check another approach
 
         // Check database
-        Page<InitialSavingsEstimationReportModel> reports = reportService.findReports();
-        assertThat(Streams.stream(reports.iterator()).count()).isGreaterThan(0);
-        assertThat(Streams.stream(reports.iterator()).anyMatch(e -> e.getEnvironmentModel().getHypervisors() == 2)).isTrue();
-        assertThat(Streams.stream(reports.iterator()).anyMatch(e -> e.getSourceCostsModel().getYear1Server() == 42)).isTrue();
+        InitialSavingsEstimationReportModel reports = reportService.findByAnalysisOwnerAndAnalysisId("pepe", 1L);
+        assertThat(reports.getEnvironmentModel().getHypervisors() == 2);
+        assertThat(reports.getSourceCostsModel().getYear1Server() == 42);
 
         // Check the rest endpoint to retrieve the report
         Map<String, String> params = new HashMap<>();
@@ -203,7 +235,7 @@ public class EndToEndTest {
         String responseReport = new RestTemplate().getForObject("http://localhost:8080/api/xavier/report?summary={summary}", String.class, params);
         assertThat(responseReport).contains("\"year1RhvGrandTotalValue\":187000.0");
         assertThat(responseReport).contains("\"hypervisors\":2,\"year1Hypervisor\":20");
-        
+
         camelContext.stop();
     }
 
@@ -215,17 +247,18 @@ public class EndToEndTest {
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set("x-rh-insights-request-id", "2544925e825b4f3f9418c88556541776");
         headers.set("x-rh-identity", "eyJlbnRpdGxlbWVudHMiOnsiaW5zaWdodHMiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJvcGVuc2hpZnQiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJzbWFydF9tYW5hZ2VtZW50Ijp7ImlzX2VudGl0bGVkIjpmYWxzZX0sImh5YnJpZF9jbG91ZCI6eyJpc19lbnRpdGxlZCI6dHJ1ZX19LCJpZGVudGl0eSI6eyJpbnRlcm5hbCI6eyJhdXRoX3RpbWUiOjAsImF1dGhfdHlwZSI6Imp3dC1hdXRoIiwib3JnX2lkIjoiNjM0MDA1NiIsICJmaWxlbmFtZSI6ImNsb3VkZm9ybXMtZXhwb3J0LXYxLnRhci5neiIsIm9yaWdpbiI6Im1hLXhhdmllciIsImN1c3RvbWVyaWQiOiJDSUQ4ODgifSwiYWNjb3VudF9udW1iZXIiOiIxNDYwMjkwIiwgInVzZXIiOnsiZmlyc3RfbmFtZSI6Ik1hcmNvIiwiaXNfYWN0aXZlIjp0cnVlLCJpc19pbnRlcm5hbCI6dHJ1ZSwibGFzdF9uYW1lIjoiUml6emkiLCJsb2NhbGUiOiJlbl9VUyIsImlzX29yZ19hZG1pbiI6ZmFsc2UsInVzZXJuYW1lIjoibXJpenppQHJlZGhhdC5jb20iLCJlbWFpbCI6Im1yaXp6aStxYUByZWRoYXQuY29tIn0sInR5cGUiOiJVc2VyIn19");
+        headers.set("username", "pepe");
 
         // Body
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        
+
         // File Body part
-        String filename = "cloudforms-export-v1-multiple-files.tar.gz";
+        String filename = "cloudforms-export-v1_0_0-multiple-files.tar.gz";
         LinkedMultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
         fileMap.add(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=filex; filename=" +filename);
         fileMap.add("Content-type", "application/zip");
         body.add("file", new HttpEntity<>(IOUtils.resourceToByteArray(filename, EndToEndTest.class.getClassLoader()), fileMap));
-        
+
         // params Body parts
         body.add("dummy", "CID12345");
         body.add("year1hypervisorpercentage", "10");
