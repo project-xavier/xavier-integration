@@ -133,6 +133,10 @@ public class EndToEndTest {
     @ClassRule
     public static LocalStackContainer localstack = new LocalStackContainer().withServices(S3);
 
+    @ClassRule
+    public static GenericContainer insights_upload = createIngressContainer();
+
+
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
 
@@ -148,8 +152,6 @@ public class EndToEndTest {
     @Value("${performancetest.timeout:5000}")
     private Long timeout;
 
-    @ClassRule
-    public static GenericContainer insights_upload = createIngressContainer();
 
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -174,7 +176,10 @@ public class EndToEndTest {
                     "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
                     "kieserver.devel-service=localhost:8000");
         }
+
     }
+
+    private static ClientAndServer clientAndServer;
 
     @Inject
     CamelContext camelContext;
@@ -185,7 +190,42 @@ public class EndToEndTest {
     @Inject
     AmazonS3 amazonS3;
 
-    private static ClientAndServer clientAndServer;
+    private static GenericContainer createIngressContainer() {
+        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/master.zip";
+        try {
+            File destination = new File("ingressRepo.zip");
+            FileUtils.copyURLToFile(new URL(ingressRepoZipURL), destination, 1000, 10000);
+            unzipFile(destination, "./");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Path filePath = Paths.get("insights-ingress-go-master").toAbsolutePath();
+        ImageFromDockerfile image = new ImageFromDockerfile().withFileFromPath(".", filePath);
+        return new GenericContainer<>(image);
+    }
+
+    private static void unzipFile(File file, String outputDir) throws IOException {
+        java.util.zip.ZipFile zipFile = new ZipFile(file);
+        try {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                File entryDestination = new File(outputDir, entry.getName());
+                if (entry.isDirectory()) {
+                    entryDestination.mkdirs();
+                } else {
+                    entryDestination.getParentFile().mkdirs();
+                    InputStream in = zipFile.getInputStream(entry);
+                    OutputStream out = new FileOutputStream(entryDestination);
+                    IOUtils.copy(in, out);
+                    in.close();
+                    out.close();
+                }
+            }
+        } finally {
+            zipFile.close();
+        }
+    }
 
     @Before
     public void setupMockServerFor_InsightsUpload_KIEServer() {
@@ -244,42 +284,7 @@ public class EndToEndTest {
         clientAndServer.stop();
     }
 
-    private static GenericContainer createIngressContainer() {
-        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/master.zip";
-        try {
-            File destination = new File("ingressRepo.zip");
-            FileUtils.copyURLToFile(new URL(ingressRepoZipURL), destination, 1000, 10000);
-            unzipFile(destination, "./");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Path filePath = Paths.get("insights-ingress-go-master").toAbsolutePath();
-        ImageFromDockerfile image = new ImageFromDockerfile().withFileFromPath(".", filePath);
-        return new GenericContainer<>(image);
-    }
 
-    private static void unzipFile(File file, String outputDir) throws IOException {
-        java.util.zip.ZipFile zipFile = new ZipFile(file);
-        try {
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                File entryDestination = new File(outputDir, entry.getName());
-                if (entry.isDirectory()) {
-                    entryDestination.mkdirs();
-                } else {
-                    entryDestination.getParentFile().mkdirs();
-                    InputStream in = zipFile.getInputStream(entry);
-                    OutputStream out = new FileOutputStream(entryDestination);
-                    IOUtils.copy(in, out);
-                    IOUtils.closeQuietly(in);
-                    out.close();
-                }
-            }
-        } finally {
-            zipFile.close();
-        }
-    }
 
     private void sendKafkaMessageToSimulateInsightsUploadProcess() throws ExecutionException, InterruptedException, IOException {
         String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("platform.upload.xavier-with-targz.json"), Charset.forName("UTF-8"));
