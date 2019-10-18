@@ -9,6 +9,7 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -57,17 +58,29 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -93,8 +106,18 @@ public class EndToEndTest {
             .withEnv("DISABLE_SECURITY", "true")
             .withEnv("BROKER_CONFIG_GLOBAL_MAX_SIZE", "50000")
             .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
-            .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100")
-            ;
+            .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
+
+    @ClassRule
+    public static GenericContainer drools_wb = new GenericContainer<>("jboss/drools-workbench-showcase")
+            .withNetwork(Network.SHARED)
+            .withNetworkAliases("kie-wb")
+            .withExposedPorts(8080, 8001);
+
+    @ClassRule
+    public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase")
+            .withNetwork(Network.SHARED)
+            .withExposedPorts(8080);
 
     @ClassRule
     public static KafkaContainer kafka = new KafkaContainer()
@@ -108,8 +131,7 @@ public class EndToEndTest {
             .withPassword("redhat");
 
     @ClassRule
-    public static LocalStackContainer localstack = new LocalStackContainer()
-            .withServices(S3);
+    public static LocalStackContainer localstack = new LocalStackContainer().withServices(S3);
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -123,8 +145,12 @@ public class EndToEndTest {
     @Value("${S3_BUCKET}")
     private String bucket;
 
-    @Value("${performancetest.timeout:5000")
+    @Value("${performancetest.timeout:5000}")
     private Long timeout;
+
+    @ClassRule
+    public static GenericContainer insights_upload = createIngressContainer();
+
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -161,15 +187,12 @@ public class EndToEndTest {
 
     private static ClientAndServer clientAndServer;
 
-
-
     @Before
     public void setupMockServerFor_InsightsUpload_KIEServer() {
 
         clientAndServer = ClientAndServer.startClientAndServer(8000);
 
-        clientAndServer.when(request()
-                .withPath("/api/ingress/v1/upload"))
+        clientAndServer.when(request().withPath("/api/ingress/v1/upload"))
                 .respond(myrequest -> {
                     try {
                         sendKafkaMessageToSimulateInsightsUploadProcess();
@@ -179,8 +202,7 @@ public class EndToEndTest {
                     return response().withStatusCode(200).withBody("success").withHeader("Content-Type", "application/zip");
                 });
 
-        clientAndServer.when(request()
-                                .withPath("/insights-upload-perm-test/440c88f9-5930-416e-9799-fa01d156df29"))
+        clientAndServer.when(request().withPath("/insights-upload-perm-test/440c88f9-5930-416e-9799-fa01d156df29"))
                         .respond(myrequest -> {
                             try {
                                 BinaryBody body = new BinaryBody(IOUtils.resourceToByteArray("cfme_inventory-20190912-demolab_withSSA.tar.gz", EndToEndTest.class.getClassLoader()));
@@ -195,8 +217,7 @@ public class EndToEndTest {
                         });
 
         //  http://myapp-kieserver-rhdm73-authoring.127.0.0.1.nip.io:80/services/rest/server/containers/instances/xavier-analytics_0.0.1-SNAPSHOT?authUsername=executionUser&authMethod=Basic&authPassword=xxxxxx
-        clientAndServer.when(request()
-                                .withPath("/services/rest/server/containers/instances/xavier-analytics_0.0.1-SNAPSHOT"))
+        clientAndServer.when(request().withPath("/services/rest/server/containers/instances/xavier-analytics_0.0.1-SNAPSHOT"))
                         .respond(myrequest -> {
                             try {
                                 String resourceName;
@@ -215,6 +236,7 @@ public class EndToEndTest {
                                 return notFoundResponse();
                             }
                         });
+
     }
 
     @AfterClass
@@ -222,9 +244,47 @@ public class EndToEndTest {
         clientAndServer.stop();
     }
 
+    private static GenericContainer createIngressContainer() {
+        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/master.zip";
+        try {
+            File destination = new File("ingressRepo.zip");
+            FileUtils.copyURLToFile(new URL(ingressRepoZipURL), destination, 1000, 10000);
+            unzipFile(destination, "./");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Path filePath = Paths.get("insights-ingress-go-master").toAbsolutePath();
+        ImageFromDockerfile image = new ImageFromDockerfile().withFileFromPath(".", filePath);
+        return new GenericContainer<>(image);
+    }
+
+    private static void unzipFile(File file, String outputDir) throws IOException {
+        java.util.zip.ZipFile zipFile = new ZipFile(file);
+        try {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                File entryDestination = new File(outputDir, entry.getName());
+                if (entry.isDirectory()) {
+                    entryDestination.mkdirs();
+                } else {
+                    entryDestination.getParentFile().mkdirs();
+                    InputStream in = zipFile.getInputStream(entry);
+                    OutputStream out = new FileOutputStream(entryDestination);
+                    IOUtils.copy(in, out);
+                    IOUtils.closeQuietly(in);
+                    out.close();
+                }
+            }
+        } finally {
+            zipFile.close();
+        }
+    }
+
     private void sendKafkaMessageToSimulateInsightsUploadProcess() throws ExecutionException, InterruptedException, IOException {
         String body = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("platform.upload.xavier-with-targz.json"), Charset.forName("UTF-8"));
-        body = body.replaceAll("http://172.17.0.1:9000", "http://localhost:8000");
+        String insightsServiceURL = "http://172.17.0.1:9000";
+        body = body.replaceAll(insightsServiceURL, "http://localhost:8000");
 
         final ProducerRecord<String, String> record = new ProducerRecord<>("platform.upload.xavier", body );
 
@@ -268,7 +328,6 @@ public class EndToEndTest {
 
         // then
         Thread.sleep(10000); //TODO check another approach
-
 
         // Check database
         assertThat(initialSavingsEstimationReportRepository.findAll()).isNotNull().isNotEmpty();
