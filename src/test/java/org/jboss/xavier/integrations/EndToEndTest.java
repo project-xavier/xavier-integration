@@ -93,6 +93,8 @@ public class EndToEndTest {
     public static GenericContainer drools_wb = new GenericContainer<>("jboss/drools-workbench-showcase")
             .withNetwork(Network.SHARED)
             .withNetworkAliases("kie-wb")
+            .withEnv("KIE_ADMIN_USER", "kieserver")
+            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
             .withExposedPorts(8080, 8001);
 
     @ClassRule
@@ -100,6 +102,9 @@ public class EndToEndTest {
             .withNetwork(Network.SHARED)
             .dependsOn(drools_wb)
             .withExposedPorts(8080)
+            .withEnv("KIE_SERVER_ID", "analytics-kieserver")
+            .withEnv("KIE_ADMIN_USER", "kieserver")
+            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
             .withEnv("KIE_SERVER_MODE", "DEVELOPMENT")
             .withEnv("EXTERNAL_MAVEN_REPO_URL", "http://kie-wb:8080/business-central/maven2")
             .withEnv("KIE_SERVER_CONTROLLER", "http://kie-wb:8080/business-central/rest/controller");
@@ -325,8 +330,9 @@ public class EndToEndTest {
                 "        \"version\" : \"0.0.1-SNAPSHOT\"" +
                 "    }" +
                 "}";
+        ResponseEntity<String> responseCreateKIEContainer;
         try {
-            ResponseEntity<String> responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<String>(newcontainerBody, headers), String.class);
+            responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<String>(newcontainerBody, headers), String.class);
             serverInstanceId = "xavier-analytics_0.0.1-SNAPSHOT";
         } catch (Exception e) {
             e.printStackTrace();
