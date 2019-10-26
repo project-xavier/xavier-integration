@@ -90,7 +90,7 @@ public class EndToEndTest {
             .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
 
     @ClassRule
-    public static GenericContainer drools_wb = new GenericContainer<>("jboss/drools-workbench-showcase")
+    public static GenericContainer drools_wb = new GenericContainer<>("jboss/drools-workbench-showcase:7.18.0.Final")
             .withNetwork(Network.SHARED)
             .withNetworkAliases("kie-wb")
             .withEnv("KIE_ADMIN_USER", "kieserver")
@@ -98,16 +98,23 @@ public class EndToEndTest {
             .withExposedPorts(8080, 8001);
 
     @ClassRule
-    public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase")
+    public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
             .withNetwork(Network.SHARED)
+            .withNetworkAliases("kie-server")
             .dependsOn(drools_wb)
             .withExposedPorts(8080)
             .withEnv("KIE_SERVER_ID", "analytics-kieserver")
             .withEnv("KIE_ADMIN_USER", "kieserver")
             .withEnv("KIE_ADMIN_PWD", "kieserver1!")
             .withEnv("KIE_SERVER_MODE", "DEVELOPMENT")
-            .withEnv("EXTERNAL_MAVEN_REPO_URL", "http://kie-wb:8080/business-central/maven2")
-            .withEnv("KIE_SERVER_CONTROLLER", "http://kie-wb:8080/business-central/rest/controller");
+            .withEnv("KIE_MAVEN_REPO_URL","http://kie-wb:8080/business-central/maven2")
+            .withEnv("KIE_SERVER_CONTROLLER","http://kie-wb:8080/business-central/rest/controller")
+            .withEnv("KIE_REPOSITORY","https://repository.jboss.org/nexus/content/groups/public-jboss")
+            .withEnv("KIE_SERVER_CONTROLLER_PWD","admin")
+            .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
+            .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
+            .withEnv("KIE_SERVER_PWD","kieserver1!")
+            .withEnv("KIE_SERVER_USER","kieserver");
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -257,29 +264,21 @@ public class EndToEndTest {
         Thread.sleep(5000);
 
         // Compile the project
-        ResponseEntity<String> responseCompile = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/" + analyticsArtifact + "/maven/compile", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
+        ResponseEntity<String> responseCompile = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/Xavier Analytics/maven/compile", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
 
         Thread.sleep(5000);
 
         // Install the project
-        ResponseEntity<String> responseInstall = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/" + analyticsArtifact + "/maven/install", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
+        ResponseEntity<String> responseInstall = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/Xavier Analytics/maven/install", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
 
         Thread.sleep(5000);
 
         // Deploy the project into local MAVEN
-        ResponseEntity<String> responseDeploy = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/" + analyticsArtifact + "/maven/deploy", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
+        ResponseEntity<String> responseDeploy = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/Xavier Analytics/maven/deploy", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
 
         Thread.sleep(5000);
 
-        // Get the serverTemplateId
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
-        headers.setContentType(MediaType.APPLICATION_XML);
-        ResponseEntity<String> responseServers = new RestTemplate().exchange(droolsRestURL + "controller/management/servers", HttpMethod.GET, new HttpEntity<String>(headers), String.class);
-        String serverTemplateId = responseServers.getBody().substring(responseServers.getBody().indexOf("<server-template-id>") + 20, responseServers.getBody().indexOf("</server-template-id>"));
-
-        Thread.sleep(5000);
-
-        // Create container (Deploy the project) into Execution Server
+        // Create BC container (Deploy the project) into Execution Server
         headers.setContentType(MediaType.APPLICATION_XML);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         String newcontainerBody = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
@@ -287,15 +286,15 @@ public class EndToEndTest {
                 "    <container-id>" + analyticsArtifact + "_" + analyticsVersion + "</container-id>" +
                 "    <container-name>" + analyticsArtifact + "_" + analyticsVersion + "</container-name>" +
                 "    <release-id>" +
-                "        <artifact-id>org.jboss.xavier</artifact-id>" +
-                "        <group-id>" + analyticsArtifact + "</group-id>" +
+                "        <group-id>org.jboss.xavier</group-id>" +
+                "        <artifact-id>" + analyticsArtifact + "</artifact-id>" +
                 "        <version>" + analyticsVersion + "</version>" +
                 "    </release-id>" +
                 "    <configs>" +
                 "        <entry>" +
                 "            <key>RULE</key>" +
                 "            <value xsi:type=\"ruleConfig\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                "                <scannerStatus>STOPPED</scannerStatus>" +
+                "                <scannerStatus>STARTED</scannerStatus>" +
                 "            </value>" +
                 "        </entry>" +
                 "        <entry>" +
@@ -310,43 +309,21 @@ public class EndToEndTest {
                 "    </configs>" +
                 "    <status>STARTED</status>" +
                 "</container-spec-details>";
-        ResponseEntity<String> responseCreateContainerAndDeployProject = new RestTemplate().exchange(droolsRestURL + "controller/management/servers/" + serverTemplateId
+        ResponseEntity<String> responseCreateContainerAndDeployProject = new RestTemplate().exchange(droolsRestURL + "controller/management/servers/analytics-kieserver"
                 + "/containers/" + analyticsArtifact + "_" + analyticsVersion,
                 HttpMethod.PUT,
                 new HttpEntity<String>(newcontainerBody, headers), String.class);
 
-        Thread.sleep(5000);
+        Thread.sleep(15000);
 
         // KIE Container Creation
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Basic a2llc2VydmVyOmtpZXNlcnZlcjEh");
-
-        newcontainerBody = "{ " +
-                "    \"container-id\" : \"xavier-analytics_0.0.1-SNAPSHOT\"," +
-                "    \"release-id\" : {" +
-                "        \"group-id\" : \"org.jboss.xavier\"," +
-                "        \"artifact-id\" : \"xavier-analytics\"," +
-                "        \"version\" : \"0.0.1-SNAPSHOT\"" +
-                "    }" +
-                "}";
-        ResponseEntity<String> responseCreateKIEContainer;
-        try {
-            responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<String>(newcontainerBody, headers), String.class);
-            serverInstanceId = "xavier-analytics_0.0.1-SNAPSHOT";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-//        Thread.sleep(5000);
-//
-//        // Getting KIE Container ID
-//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
-//        ResponseEntity<String> responseGetInstance = new RestTemplate().exchange(kieRestURL + "server/containers", HttpMethod.GET, new HttpEntity<String>(newcontainerBody, headers), String.class);
-//        serverInstanceId = responseGetInstance.getBody().substring(responseServers.getBody().indexOf("<container-id>") + 20, responseServers.getBody().indexOf("</container-id>"));
-
-        System.out.println(responseServers.getBody());
+        HttpHeaders kieheaders = new HttpHeaders();
+        kieheaders.setContentType(MediaType.APPLICATION_JSON);
+        kieheaders.set("Authorization", "Basic a2llc2VydmVyOmtpZXNlcnZlcjEh");
+        kieheaders.setCacheControl("no-cache");
+        newcontainerBody = "{\"container-id\" : \"xavier-analytics_0.0.1-SNAPSHOT\",\"release-id\" : {\"group-id\" : \"org.jboss.xavier\",\"artifact-id\" : \"xavier-analytics\",\"version\" : \"0.0.1-SNAPSHOT\" } }";
+        ResponseEntity<String> responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<>(newcontainerBody, kieheaders), String.class);
+        serverInstanceId = analyticsArtifact + "_" + analyticsVersion;
     }
 
     @Test
