@@ -46,10 +46,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 
@@ -89,32 +89,32 @@ public class EndToEndTest {
             .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
             .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
 
-    @ClassRule
-    public static GenericContainer drools_wb = new GenericContainer<>("jboss/drools-workbench-showcase:7.18.0.Final")
-            .withNetwork(Network.SHARED)
-            .withNetworkAliases("kie-wb")
-            .withEnv("KIE_ADMIN_USER", "kieserver")
-            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
-            .withExposedPorts(8080, 8001);
-
-    @ClassRule
-    public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
-            .withNetwork(Network.SHARED)
-            .withNetworkAliases("kie-server")
-            .dependsOn(drools_wb)
-            .withExposedPorts(8080)
-            .withEnv("KIE_SERVER_ID", "analytics-kieserver")
-            .withEnv("KIE_ADMIN_USER", "kieserver")
-            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
-            .withEnv("KIE_SERVER_MODE", "DEVELOPMENT")
-            .withEnv("KIE_MAVEN_REPO_URL","http://kie-wb:8080/business-central/maven2")
-            .withEnv("KIE_SERVER_CONTROLLER","http://kie-wb:8080/business-central/rest/controller")
-            .withEnv("KIE_REPOSITORY","https://repository.jboss.org/nexus/content/groups/public-jboss")
-            .withEnv("KIE_SERVER_CONTROLLER_PWD","admin")
-            .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
-            .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
-            .withEnv("KIE_SERVER_PWD","kieserver1!")
-            .withEnv("KIE_SERVER_USER","kieserver");
+//    @ClassRule
+//    public static GenericContainer drools_wb = new GenericContainer<>("jboss/drools-workbench-showcase:7.18.0.Final")
+//            .withNetwork(Network.SHARED)
+//            .withNetworkAliases("kie-wb")
+//            .withEnv("KIE_ADMIN_USER", "kieserver")
+//            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
+//            .withExposedPorts(8080, 8001);
+//
+//    @ClassRule
+//    public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
+//            .withNetwork(Network.SHARED)
+//            .withNetworkAliases("kie-server")
+//            .dependsOn(drools_wb)
+//            .withExposedPorts(8080)
+//            .withEnv("KIE_SERVER_ID", "analytics-kieserver")
+//            .withEnv("KIE_ADMIN_USER", "kieserver")
+//            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
+//            .withEnv("KIE_SERVER_MODE", "DEVELOPMENT")
+//            .withEnv("KIE_MAVEN_REPO_URL","http://kie-wb:8080/business-central/maven2")
+//            .withEnv("KIE_SERVER_CONTROLLER","http://kie-wb:8080/business-central/rest/controller")
+//            .withEnv("KIE_REPOSITORY","https://repository.jboss.org/nexus/content/groups/public-jboss")
+//            .withEnv("KIE_SERVER_CONTROLLER_PWD","admin")
+//            .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
+//            .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
+//            .withEnv("KIE_SERVER_PWD","kieserver1!")
+//            .withEnv("KIE_SERVER_USER","kieserver");
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -140,6 +140,12 @@ public class EndToEndTest {
 //        }
         File file = new File("insights-ingress-go-master/docker-compose.yml");
         // TODO we need to comment the line "image: ingress:latest"
+        return new DockerComposeContainer(file).withLocalCompose(true);
+    }
+
+    @NotNull
+    private static DockerComposeContainer getDockerComposeContainerForDroolsKie() {
+        File file = new File("src/test/resources/drools-kie-compose.yml");
         return new DockerComposeContainer(file).withLocalCompose(true);
     }
 
@@ -182,8 +188,8 @@ public class EndToEndTest {
                         "spring.datasource.password=" + postgreSQL.getPassword(),
                         "S3_HOST=" + localstack.getEndpointConfiguration(S3).getServiceEndpoint(),
                         "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
-                        "kieserver.devel-service=" + getHostForKie() + "/kie-server/");
-            } catch (InterruptedException e) {
+                        "kieserver.devel-service=" + getHostForKie() + "/kie-server");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -233,14 +239,21 @@ public class EndToEndTest {
     }
 
     private static String getHostForDrools() {
-        return drools_wb.getContainerIpAddress() + ":" + drools_wb.getFirstMappedPort();
+        //return drools_wb.getContainerIpAddress() + ":" + drools_wb.getFirstMappedPort();
+        //return droolsKieCompose.getServiceHost("drools-wb", 8080) + ":" + droolsKieCompose.getServicePort("drools-wb", 8080);
+        return "localhost:18080";
     }
 
     private static String getHostForKie() {
-        return kie_server.getContainerIpAddress() + ":" + kie_server.getFirstMappedPort();
+        //return kie_server.getContainerIpAddress() + ":" + kie_server.getFirstMappedPort();
+        //return droolsKieCompose.getServiceHost("kie-server", 8080) + ":" + droolsKieCompose.getServicePort("kie-server", 8080);
+        return "localhost:28080";
+
     }
 
-    private static void importProjectIntoDrools() throws InterruptedException {
+    private static void importProjectIntoDrools() throws InterruptedException, IOException {
+        startContainers();
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setCacheControl("no-cache");
@@ -276,7 +289,7 @@ public class EndToEndTest {
         // Deploy the project into local MAVEN
         ResponseEntity<String> responseDeploy = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/Xavier Analytics/maven/deploy", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
 
-        Thread.sleep(5000);
+        Thread.sleep(2*60*1000);
 
         // Create BC container (Deploy the project) into Execution Server
         headers.setContentType(MediaType.APPLICATION_XML);
@@ -309,12 +322,16 @@ public class EndToEndTest {
                 "    </configs>" +
                 "    <status>STARTED</status>" +
                 "</container-spec-details>";
-        ResponseEntity<String> responseCreateContainerAndDeployProject = new RestTemplate().exchange(droolsRestURL + "controller/management/servers/analytics-kieserver"
-                + "/containers/" + analyticsArtifact + "_" + analyticsVersion,
-                HttpMethod.PUT,
-                new HttpEntity<String>(newcontainerBody, headers), String.class);
+        try {
+            ResponseEntity<String> responseCreateContainerAndDeployProject = new RestTemplate().exchange(droolsRestURL + "controller/management/servers/analytics-kieserver"
+                    + "/containers/" + analyticsArtifact + "_" + analyticsVersion,
+                    HttpMethod.PUT,
+                    new HttpEntity<>(newcontainerBody, headers), String.class);
+        } catch (RestClientException e) {
+            e.printStackTrace();
+        }
 
-        Thread.sleep(15000);
+        Thread.sleep(2*60*1000);
 
         // KIE Container Creation
         HttpHeaders kieheaders = new HttpHeaders();
@@ -322,8 +339,37 @@ public class EndToEndTest {
         kieheaders.set("Authorization", "Basic a2llc2VydmVyOmtpZXNlcnZlcjEh");
         kieheaders.setCacheControl("no-cache");
         newcontainerBody = "{\"container-id\" : \"xavier-analytics_0.0.1-SNAPSHOT\",\"release-id\" : {\"group-id\" : \"org.jboss.xavier\",\"artifact-id\" : \"xavier-analytics\",\"version\" : \"0.0.1-SNAPSHOT\" } }";
-        ResponseEntity<String> responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<>(newcontainerBody, kieheaders), String.class);
+        try {
+            ResponseEntity<String> responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<>(newcontainerBody, kieheaders), String.class);
+        } catch (RestClientException e) {
+            e.printStackTrace();
+        }
         serverInstanceId = analyticsArtifact + "_" + analyticsVersion;
+    }
+
+    private static void startContainers() throws IOException, InterruptedException {
+        Process drools = Runtime.getRuntime().exec("docker run -p 18080:8080 -p 8001:8001 -d --name drools-workbench --env KIE_ADMIN_USER=kieserver --env KIE_ADMIN_PWD=kieserver1! jboss/drools-workbench-showcase:7.18.0.Final");
+
+        Thread.sleep(10000);
+
+        Process kie = Runtime.getRuntime().exec ("docker run -p 28080:8080 -d --name kie-server --link drools-workbench:kie-wb " +
+                "--env KIE_SERVER_ID=analytics-kieserver " +
+                "--env KIE_ADMIN_USER=kieserver " +
+                "--env KIE_ADMIN_PWD=kieserver1! " +
+                "--env KIE_SERVER_MODE=DEVELOPMENT " +
+                "--env MAVEN_REPOS=BC,CENTRAL " +
+                "--env BC_MAVEN_REPO_URL=http://localhost:18080/business-central/maven2 " +
+                "--env BC_MAVEN_REPO_PASSWORD=admin " +
+                "--env BC_MAVEN_REPO_USER=admin " +
+                "--env CENTRAL_MAVEN_REPO_URL=https://repo.maven.apache.org/maven2 " +
+                "--env KIE_SERVER_CONTROLLER=http://localhost:18080/business-central/rest/controller " +
+                "--env KIE_REPOSITORY=https://repository.jboss.org/nexus/content/groups/public-jboss " +
+                "--env KIE_SERVER_CONTROLLER_PWD=admin " +
+                "--env KIE_SERVER_CONTROLLER_USER=admin " +
+                "--env KIE_SERVER_LOCATION=http://localhost:28080/kie-server/services/rest/server " +
+                "--env KIE_SERVER_PWD=kieserver1! " +
+                "--env KIE_SERVER_USER=kieserver " +
+                "jboss/kie-server-showcase:7.18.0.Final");
     }
 
     @Test
@@ -349,7 +395,7 @@ public class EndToEndTest {
         new RestTemplate().postForEntity("http://localhost:8080/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz"), String.class);
 
         // then
-        Thread.sleep(20000); //TODO check another approach
+        Thread.sleep(60000); //TODO check another approach
 
         // Check database
         assertThat(initialSavingsEstimationReportRepository.findAll()).isNotNull().isNotEmpty();
@@ -375,16 +421,25 @@ public class EndToEndTest {
 
         // Checks on Initial Savings Report
         InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(initialSavingsEstimationReport_Expected).isEqualToComparingFieldByField(initialCostSavingsReport.getBody()));
+        SoftAssertions.assertSoftly(softly -> softly.assertThat(initialSavingsEstimationReport_Expected)
+                .usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
+                .isEqualTo(initialCostSavingsReport.getBody()));
 
         // Checks on Workload Summary Report
         WorkloadSummaryReportModel workloadSummaryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(workloadSummaryReport_Expected).isEqualToComparingFieldByField(workloadSummaryReport.getBody()));
+        SoftAssertions.assertSoftly(softly -> softly.assertThat(workloadSummaryReport_Expected)
+                .usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
+                .isEqualTo(workloadSummaryReport.getBody()));
 
         // Checks on Workload Inventory Report
         WorkloadInventoryReportModel workloadInventoryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel.class);
         SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(workloadInventoryReport_Expected).isEqualToComparingFieldByField(workloadInventoryReport.getBody());
+            softly.assertThat(workloadInventoryReport_Expected)
+                    .usingRecursiveComparison()
+                    .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
+                    .isEqualTo(workloadInventoryReport.getBody());
 
             softly.assertThat(workloadInventoryReport.getBody().getContent().size()).isEqualTo(14); // OK
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getWorkloads).distinct().count()).isEqualTo(7);
