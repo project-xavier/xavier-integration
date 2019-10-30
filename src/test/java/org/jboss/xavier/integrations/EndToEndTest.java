@@ -138,14 +138,14 @@ public class EndToEndTest {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-        File file = new File("insights-ingress-go-master/docker-compose.yml");
+        File file = new File(EndToEndTest.class.getClassLoader().getResource("docker-compose.yml").getFile());
         // TODO we need to comment the line "image: ingress:latest"
         return new DockerComposeContainer(file).withLocalCompose(true);
     }
 
     @NotNull
     private static DockerComposeContainer getDockerComposeContainerForDroolsKie() {
-        File file = new File("src/test/resources/drools-kie-compose.yml");
+        File file = new File(EndToEndTest.class.getClassLoader().getResource("drools-kie-compose.yml").getFile());
         return new DockerComposeContainer(file).withLocalCompose(true);
     }
 
@@ -348,8 +348,6 @@ public class EndToEndTest {
     }
 
     private static void startContainers() throws IOException, InterruptedException {
-        Process drools = Runtime.getRuntime().exec("docker run -p 18080:8080 -p 8001:8001 -d --name drools-workbench --env KIE_ADMIN_USER=kieserver --env KIE_ADMIN_PWD=kieserver1! jboss/drools-workbench-showcase:7.18.0.Final");
-
         Thread.sleep(10000);
 
         Process kie = Runtime.getRuntime().exec ("docker run -p 28080:8080 -d --name kie-server --link drools-workbench:kie-wb " +
