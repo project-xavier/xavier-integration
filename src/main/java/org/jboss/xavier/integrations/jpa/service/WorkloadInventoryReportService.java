@@ -49,6 +49,23 @@ public class WorkloadInventoryReportService
         return reportRepository.findByAnalysisOwnerAndAnalysisId(analysisOwner, analysisId);
     }
 
+    public List<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
+            String analysisOwner,
+            Long analysisId,
+            SortBean sortBean,
+            WorkloadInventoryFilterBean filterBean
+    ) {
+        // Sort
+        Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
+        String orderBy = mapToSupportedSortField.apply(sortBean.getOrderBy());
+        Sort sort = new Sort(sortDirection, orderBy);
+
+        // Filtering
+        Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);
+
+        return reportRepository.findAll(specification, sort);
+    }
+
     public Page<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
             String analysisOwner,
             Long analysisId,

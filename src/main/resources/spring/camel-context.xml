@@ -194,6 +194,29 @@
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
                 </route>
             </get>
+            <get uri="/{id}/workload-inventory/filtered-csv" produces="text/csv">
+                <description>Get the filtered Workload Inventory Reports in CSV format</description>
+                <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
+                <param name="orderAsc" type="query" defaultValue="false" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <param name="provider" type="query" required="false" description="Define a filter" />
+                <param name="datacenter" type="query" required="false" description="Define a filter" />
+                <param name="cluster" type="query" required="false" description="Define a filter" />
+                <param name="vmName" type="query" required="false" description="Define a filter" />
+                <param name="osName" type="query" required="false" description="Define a filter" />
+                <param name="workload" type="query" required="false" description="Define a filter" />
+                <param name="complexity" type="query" required="false" description="Define a filter" />
+                <param name="recommendedTargetIMS" type="query" required="false" description="Define a filter" />
+                <param name="flagIMS" type="query" required="false" description="Define a filter" />
+                <route id="filtered-workload-inventory-report-get-details-as-csv">
+                    <to uri="direct:to-sortBean"/>
+                    <to uri="direct:to-workloadInventoryFilterBean"/>
+                    <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
+                    <to uri="direct:toWorkloadInventoryReportCsv" />
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
+                        <simple>attachment;filename=workloadInventory_${header.id}.csv</simple>
+                    </setHeader>
+                </route>
+            </get>
             <get uri="/{id}/workload-inventory/csv" produces="text/csv">
                 <description>Get the Workload Inventory Reports in CSV format</description>
                 <route id="workload-inventory-report-get-details-as-csv">
