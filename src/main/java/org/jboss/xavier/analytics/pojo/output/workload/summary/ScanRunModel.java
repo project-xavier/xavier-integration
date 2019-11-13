@@ -1,8 +1,5 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -17,6 +14,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.SqlResultSetMapping;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SqlResultSetMapping(
         name = "mappingScanRunModels",
@@ -100,12 +101,28 @@ public class ScanRunModel {
         this.date = date;
     }
 
-    public String getType() {
-        String typeString = "Virt Platform";
-        return typeString + (type?" + SmartState": "");
+    public Boolean getType() {
+        return type;
+
+//        String typeString = "Virt Platform";
+//        return typeString + (type?" + SmartState": "");   //TODO move back this before pushing
     }
 
     public void setType(Boolean type) {
         this.type = type;
+    }
+
+    public void setType(String strType) {
+        if (isBoolean(strType)) {
+            setType(Boolean.parseBoolean(strType));
+        } else {
+            setType(strType.toLowerCase().contains("smartstate"));
+        }
+    }
+
+    private boolean isBoolean(String value) {
+        Pattern queryLangPattern = Pattern.compile("true|false", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = queryLangPattern.matcher(value);
+        return matcher.matches();
     }
 }
