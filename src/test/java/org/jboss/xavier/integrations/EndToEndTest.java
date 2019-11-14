@@ -194,7 +194,9 @@ public class EndToEndTest {
                         "spring.datasource.password=" + postgreSQL.getPassword(),
                         "S3_HOST=" + localstack.getEndpointConfiguration(S3).getServiceEndpoint(),
                         "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
-                        "kieserver.devel-service=" + getHostForKie() + "/kie-server");
+                        "kieserver.devel-service=" + getHostForKie() + "/kie-server",
+                        "spring.datasource.url = jdbc:postgresql://" + postgreSQL.getContainerIpAddress() + ":" + postgreSQL.getFirstMappedPort() + "/sampledb" ,
+                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect");
             } catch (Exception e) {
                 e.printStackTrace();
             }
