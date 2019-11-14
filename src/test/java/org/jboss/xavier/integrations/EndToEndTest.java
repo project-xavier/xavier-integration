@@ -295,7 +295,7 @@ public class EndToEndTest {
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz"), String.class);
 
         // then
-        Thread.sleep(60000); //TODO check another approach
+        Thread.sleep(120000); //TODO check another approach
 
         // Check database
         assertThat(initialSavingsEstimationReportRepository.findAll()).isNotNull().isNotEmpty();
