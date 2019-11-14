@@ -25,7 +25,9 @@ install:
 jobs:
   include:
     - stage: Test
+      env:
+        TESTCONTAINERS_RYUK_DISABLED: true
       script:
-        - mvn test -DtestLogRootLevel=warn -Pcoverage
+        - mvn test -DtestLogRootLevel=warn -Pcoverage -Dtest=EndToEndTest -DfailIfNoTests=false
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
