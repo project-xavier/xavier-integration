@@ -66,6 +66,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -295,10 +296,14 @@ public class EndToEndTest {
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz"), String.class);
 
         // then
-        Thread.sleep(120000); //TODO check another approach
-
-        // Check database
-        assertThat(initialSavingsEstimationReportRepository.findAll()).isNotNull().isNotEmpty();
+        await()
+            .atMost(3, TimeUnit.MINUTES)
+            .with().pollInterval(Duration.TEN_SECONDS)
+            .until( () -> {
+                // Check database
+                List<InitialSavingsEstimationReportModel> all = initialSavingsEstimationReportRepository.findAll();
+                return all != null && !all.isEmpty();
+            });
 
         // Check S3
         S3Object s3object = amazonS3.getObject(bucket, "S3KEY123");
@@ -374,8 +379,8 @@ public class EndToEndTest {
         // Performance test
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
         await()
-            .atMost(timeout, TimeUnit.MILLISECONDS)
-            .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+            .atMost(5, TimeUnit.MINUTES)
+            .with().pollInterval(Duration.TEN_SECONDS)
             .until(() -> {
                 ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/2/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
                 return (workloadSummaryReport_PerformanceTest != null &&
