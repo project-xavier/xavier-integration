@@ -60,8 +60,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -89,32 +92,21 @@ public class EndToEndTest {
             .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
             .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
 
-//    @ClassRule
-//    public static GenericContainer drools_wb = new GenericContainer<>("jboss/drools-workbench-showcase:7.18.0.Final")
-//            .withNetwork(Network.SHARED)
-//            .withNetworkAliases("kie-wb")
-//            .withEnv("KIE_ADMIN_USER", "kieserver")
-//            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
-//            .withExposedPorts(8080, 8001);
-//
-//    @ClassRule
-//    public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
-//            .withNetwork(Network.SHARED)
-//            .withNetworkAliases("kie-server")
-//            .dependsOn(drools_wb)
-//            .withExposedPorts(8080)
-//            .withEnv("KIE_SERVER_ID", "analytics-kieserver")
-//            .withEnv("KIE_ADMIN_USER", "kieserver")
-//            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
-//            .withEnv("KIE_SERVER_MODE", "DEVELOPMENT")
-//            .withEnv("KIE_MAVEN_REPO_URL","http://kie-wb:8080/business-central/maven2")
-//            .withEnv("KIE_SERVER_CONTROLLER","http://kie-wb:8080/business-central/rest/controller")
-//            .withEnv("KIE_REPOSITORY","https://repository.jboss.org/nexus/content/groups/public-jboss")
-//            .withEnv("KIE_SERVER_CONTROLLER_PWD","admin")
-//            .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
-//            .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
-//            .withEnv("KIE_SERVER_PWD","kieserver1!")
-//            .withEnv("KIE_SERVER_USER","kieserver");
+    @ClassRule
+    public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
+            .withNetworkAliases("kie-server")
+            .withExposedPorts(8080)
+            .withEnv("KIE_SERVER_ID", "analytics-kieserver")
+            .withEnv("KIE_ADMIN_USER", "kieserver")
+            .withEnv("KIE_ADMIN_PWD", "kieserver1!")
+            .withEnv("KIE_SERVER_MODE", "DEVELOPMENT")
+            .withEnv("KIE_MAVEN_REPO", "https://oss.sonatype.org/content/repositories/snapshots")
+            .withEnv("KIE_REPOSITORY","https://repository.jboss.org/nexus/content/groups/public-jboss")
+            .withEnv("KIE_SERVER_CONTROLLER_PWD","admin")
+            .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
+            .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
+            .withEnv("KIE_SERVER_PWD","kieserver1!")
+            .withEnv("KIE_SERVER_USER","kieserver");
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -133,14 +125,27 @@ public class EndToEndTest {
 
     @NotNull
     private static DockerComposeContainer getDockerComposeContainerForIngress() {
-//        try {
-//            //cloneIngressRepoAndUnzip();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        File file = new File(EndToEndTest.class.getClassLoader().getResource("docker-compose.yml").getFile());
-        // TODO we need to comment the line "image: ingress:latest"
-        return new DockerComposeContainer(file).withLocalCompose(true);
+        String dockerComposeFilePath = "src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9/docker-compose.yml";
+        try {
+            cloneIngressRepoAndUnzip();
+            // TODO we need to comment the line "image: ingress:latest"
+            replaceImageOnFile(dockerComposeFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        File dockerComposeFile = new File(dockerComposeFilePath);
+        return new DockerComposeContainer(dockerComposeFile).withLocalCompose(true);
+    }
+
+    private static void replaceImageOnFile(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        Charset charset = StandardCharsets.UTF_8;
+
+        String content = new String(Files.readAllBytes(path), charset);
+        content = content.replaceAll("image: ingress:latest", "#image: ingress:latest");
+        content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
+        Files.write(path, content.getBytes(charset));
     }
 
     @NotNull
@@ -162,9 +167,11 @@ public class EndToEndTest {
 
     @Value("${S3_BUCKET}")
     private String bucket;
-
-    @Value("${performancetest.timeout:5000}")
+    @Value("${performancetest.timeout:60000}")
     private Long timeout;
+
+    @Value("${server.port:8080}")
+    private String serverPort;
 
     private static final String analyticsArtifact = "xavier-analytics";
     private static final String analyticsVersion = "0.0.1-SNAPSHOT";
@@ -175,7 +182,6 @@ public class EndToEndTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
                 importProjectIntoDrools();
-
                 EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
                         "amq.server=" + activemq.getContainerIpAddress(),
                         "amq.port=" + activemq.getMappedPort(61616),
@@ -209,10 +215,10 @@ public class EndToEndTest {
     AmazonS3 amazonS3;
 
     private static void cloneIngressRepoAndUnzip() throws IOException {
-        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/master.zip";
-        File destination = new File("ingressRepo.zip");
+        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/7988e163ff4e65edf5585e35d1774181f5ad92e9.zip";
+        File destination = new File("src/test/resources/ingressRepo.zip");
         FileUtils.copyURLToFile(new URL(ingressRepoZipURL), destination, 1000, 10000);
-        unzipFile(destination, "./");
+        unzipFile(destination, "src/test/resources");
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
@@ -238,136 +244,30 @@ public class EndToEndTest {
         }
     }
 
-    private static String getHostForDrools() {
-        //return drools_wb.getContainerIpAddress() + ":" + drools_wb.getFirstMappedPort();
-        //return droolsKieCompose.getServiceHost("drools-wb", 8080) + ":" + droolsKieCompose.getServicePort("drools-wb", 8080);
-        return "localhost:18080";
-    }
-
     private static String getHostForKie() {
-        //return kie_server.getContainerIpAddress() + ":" + kie_server.getFirstMappedPort();
-        //return droolsKieCompose.getServiceHost("kie-server", 8080) + ":" + droolsKieCompose.getServicePort("kie-server", 8080);
-        return "localhost:28080";
-
+        return kie_server.getContainerIpAddress() + ":" + kie_server.getFirstMappedPort();
     }
 
     private static void importProjectIntoDrools() throws InterruptedException, IOException {
-        startContainers();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setCacheControl("no-cache");
-
-        String droolsRestURL = "http://" + getHostForDrools() + "/business-central/rest/";
-        String kieRestURL = "http://" + getHostForKie() + "/kie-server/services/rest/";
-
-        Thread.sleep(5000);
         headers.set("Authorization", "Basic YWRtaW46YWRtaW4="); // admin:admin
 
-        // Creates the default Space in Business Central
-        String spaceDetails = "{\"name\": \"MySpace\",\"description\": \"My new space.\",\"owner\": \"admin\",\"defaultGroupId\": \"com.newspace\"}";
-        ResponseEntity<String> responseSpace = new RestTemplate().exchange(droolsRestURL + "spaces", HttpMethod.POST, new HttpEntity<>(spaceDetails, headers), String.class);
-
-        Thread.sleep(5000);
-
-        // Import project from GIT into Business Central
-        String projectDetails = "{\"name\":\"" + analyticsArtifact + "\",\"description\":\"project description inside business central.\",\"gitURL\":\"https://github.com/jonathanvila/" + analyticsArtifact + "\"}";
-        ResponseEntity<String> responseClone = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/git/clone", HttpMethod.POST, new HttpEntity<>(projectDetails, headers), String.class);
-
-        Thread.sleep(5000);
-
-        // Compile the project
-        ResponseEntity<String> responseCompile = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/Xavier Analytics/maven/compile", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
-
-        Thread.sleep(5000);
-
-        // Install the project
-        ResponseEntity<String> responseInstall = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/Xavier Analytics/maven/install", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
-
-        Thread.sleep(5000);
-
-        // Deploy the project into local MAVEN
-        ResponseEntity<String> responseDeploy = new RestTemplate().exchange(droolsRestURL + "spaces/MySpace/projects/Xavier Analytics/maven/deploy", HttpMethod.POST, new HttpEntity<String>(headers), String.class);
-
-        Thread.sleep(2*60*1000);
-
-        // Create BC container (Deploy the project) into Execution Server
-        headers.setContentType(MediaType.APPLICATION_XML);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        String newcontainerBody = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
-                "<container-spec-details>" +
-                "    <container-id>" + analyticsArtifact + "_" + analyticsVersion + "</container-id>" +
-                "    <container-name>" + analyticsArtifact + "_" + analyticsVersion + "</container-name>" +
-                "    <release-id>" +
-                "        <group-id>org.jboss.xavier</group-id>" +
-                "        <artifact-id>" + analyticsArtifact + "</artifact-id>" +
-                "        <version>" + analyticsVersion + "</version>" +
-                "    </release-id>" +
-                "    <configs>" +
-                "        <entry>" +
-                "            <key>RULE</key>" +
-                "            <value xsi:type=\"ruleConfig\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                "                <scannerStatus>STARTED</scannerStatus>" +
-                "            </value>" +
-                "        </entry>" +
-                "        <entry>" +
-                "            <key>PROCESS</key>" +
-                "            <value xsi:type=\"processConfig\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
-                "                <runtimeStrategy>SINGLETON</runtimeStrategy>" +
-                "                <kbase></kbase>" +
-                "                <ksession></ksession>" +
-                "                <mergeMode>MERGE_COLLECTIONS</mergeMode>" +
-                "            </value>" +
-                "        </entry>" +
-                "    </configs>" +
-                "    <status>STARTED</status>" +
-                "</container-spec-details>";
-        try {
-            ResponseEntity<String> responseCreateContainerAndDeployProject = new RestTemplate().exchange(droolsRestURL + "controller/management/servers/analytics-kieserver"
-                    + "/containers/" + analyticsArtifact + "_" + analyticsVersion,
-                    HttpMethod.PUT,
-                    new HttpEntity<>(newcontainerBody, headers), String.class);
-        } catch (RestClientException e) {
-            e.printStackTrace();
-        }
-
-        Thread.sleep(2*60*1000);
+        String kieRestURL = "http://" + getHostForKie() + "/kie-server/services/rest/";
 
         // KIE Container Creation
         HttpHeaders kieheaders = new HttpHeaders();
         kieheaders.setContentType(MediaType.APPLICATION_JSON);
         kieheaders.set("Authorization", "Basic a2llc2VydmVyOmtpZXNlcnZlcjEh");
         kieheaders.setCacheControl("no-cache");
-        newcontainerBody = "{\"container-id\" : \"xavier-analytics_0.0.1-SNAPSHOT\",\"release-id\" : {\"group-id\" : \"org.jboss.xavier\",\"artifact-id\" : \"xavier-analytics\",\"version\" : \"0.0.1-SNAPSHOT\" } }";
+        String kieContainerBody = "{\"container-id\" : \"xavier-analytics_0.0.1-SNAPSHOT\",\"release-id\" : {\"group-id\" : \"org.jboss.xavier\",\"artifact-id\" : \"xavier-analytics\",\"version\" : \"0.0.1-SNAPSHOT\" } }";
         try {
-            ResponseEntity<String> responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<>(newcontainerBody, kieheaders), String.class);
+            ResponseEntity<String> responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<>(kieContainerBody, kieheaders), String.class);
         } catch (RestClientException e) {
             e.printStackTrace();
         }
         serverInstanceId = analyticsArtifact + "_" + analyticsVersion;
-    }
-
-    private static void startContainers() throws IOException, InterruptedException {
-        Thread.sleep(10000);
-
-        Process kie = Runtime.getRuntime().exec ("docker run -p 28080:8080 -d --name kie-server --link drools-workbench:kie-wb " +
-                "--env KIE_SERVER_ID=analytics-kieserver " +
-                "--env KIE_ADMIN_USER=kieserver " +
-                "--env KIE_ADMIN_PWD=kieserver1! " +
-                "--env KIE_SERVER_MODE=DEVELOPMENT " +
-                "--env MAVEN_REPOS=BC,CENTRAL " +
-                "--env BC_MAVEN_REPO_URL=http://localhost:18080/business-central/maven2 " +
-                "--env BC_MAVEN_REPO_PASSWORD=admin " +
-                "--env BC_MAVEN_REPO_USER=admin " +
-                "--env CENTRAL_MAVEN_REPO_URL=https://repo.maven.apache.org/maven2 " +
-                "--env KIE_SERVER_CONTROLLER=http://localhost:18080/business-central/rest/controller " +
-                "--env KIE_REPOSITORY=https://repository.jboss.org/nexus/content/groups/public-jboss " +
-                "--env KIE_SERVER_CONTROLLER_PWD=admin " +
-                "--env KIE_SERVER_CONTROLLER_USER=admin " +
-                "--env KIE_SERVER_LOCATION=http://localhost:28080/kie-server/services/rest/server " +
-                "--env KIE_SERVER_PWD=kieserver1! " +
-                "--env KIE_SERVER_USER=kieserver " +
-                "jboss/kie-server-showcase:7.18.0.Final");
     }
 
     @Test
@@ -386,11 +286,11 @@ public class EndToEndTest {
         });
 
         // 1. Check user has firstTime
-        ResponseEntity<User> userEntity = new RestTemplate().exchange("http://localhost:8080/api/xavier/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
+        ResponseEntity<User> userEntity = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
         assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
 
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
-        new RestTemplate().postForEntity("http://localhost:8080/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz"), String.class);
 
         // then
         Thread.sleep(60000); //TODO check another approach
@@ -409,59 +309,77 @@ public class EndToEndTest {
         assertThat(initialCostSavingsReportDB.getSourceCostsModel().getYear1Server() == 42);
 
         // Call initialCostSavingsReport
-        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport = new RestTemplate().exchange("http://localhost:8080/api/xavier/report/1/initial-saving-estimation", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
+        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/1/initial-saving-estimation", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
 
         // Call workloadInventoryReport
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate().exchange("http://localhost:8080/api/xavier/report/1/workload-inventory?size=100", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/1/workload-inventory?size=100", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
 
         // Call workloadSummaryReport
-        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange("http://localhost:8080/api/xavier/report/1/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/1/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
 
         // Checks on Initial Savings Report
         InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
         SoftAssertions.assertSoftly(softly -> softly.assertThat(initialSavingsEstimationReport_Expected)
                 .usingRecursiveComparison()
-                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*", ".*report.*")
                 .isEqualTo(initialCostSavingsReport.getBody()));
 
-        // Checks on Workload Summary Report
-        WorkloadSummaryReportModel workloadSummaryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(workloadSummaryReport_Expected)
-                .usingRecursiveComparison()
-                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
-                .isEqualTo(workloadSummaryReport.getBody()));
-
         // Checks on Workload Inventory Report
-        WorkloadInventoryReportModel workloadInventoryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel.class);
         SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(workloadInventoryReport_Expected)
-                    .usingRecursiveComparison()
-                    .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
-                    .isEqualTo(workloadInventoryReport.getBody());
-
             softly.assertThat(workloadInventoryReport.getBody().getContent().size()).isEqualTo(14); // OK
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getWorkloads).distinct().count()).isEqualTo(7);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getWorkloads().stream()).distinct().count()).isEqualTo(7); // OK
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getWorkloads().contains("Red Hat JBoss EAP")).count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getOsName).distinct().count()).isEqualTo(4);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("CentoS 7 (64-bit)")).count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("CentOS 7 (64-bit)")).count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getComplexity).distinct().count()).isEqualTo(3);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(1);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(3);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getRecommendedTargetsIMS().contains("OSP")).count()).isEqualTo(13);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getRecommendedTargetsIMS().contains("OSP")).count()).isEqualTo(11);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("SernerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
         });
 
+
+        // Checks on Workload Summary Report
+        WorkloadSummaryReportModel workloadSummaryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
+
+        assertThat(workloadSummaryReport_Expected)
+                .usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*",  ".*report.*", ".*workloadsDetectedOSTypeModels.*", ".*scanRunModels.*")
+                .isEqualTo(workloadSummaryReport.getBody());
+
+        // ScanRunModels
+        SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(workloadSummaryReport_Expected.getScanRunModels().stream().allMatch(e -> workloadSummaryReport.getBody().getScanRunModels().stream()
+                            .filter(o -> o.getTarget().equals(e.getTarget()) && o.getType().equals(e.getType()) && o.getDate().equals(e.getDate())).count() > 0))
+                            .isTrue();
+                    softly.assertThat(workloadSummaryReport.getBody().getScanRunModels().stream().allMatch(e -> workloadSummaryReport_Expected.getScanRunModels().stream()
+                            .filter(o -> o.getTarget().equals(e.getTarget()) && o.getType().equals(e.getType()) && o.getDate().equals(e.getDate())).count() > 0))
+                            .isTrue();
+                    softly.assertThat(workloadSummaryReport.getBody().getScanRunModels().size()).isEqualTo(workloadSummaryReport_Expected.getScanRunModels().size());
+
+                    // WorkloadDetectedOSTypeModels
+                    softly.assertThat(workloadSummaryReport_Expected.getWorkloadsDetectedOSTypeModels().stream().allMatch(e -> workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels().stream()
+                            .filter(o -> o.getOsName().equals(e.getOsName()) && o.getTotal().equals(e.getTotal())).count() > 0))
+                            .isTrue();
+                    softly.assertThat(workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels().stream().allMatch(e -> workloadSummaryReport_Expected.getWorkloadsDetectedOSTypeModels().stream()
+                            .filter(o -> o.getOsName().equals(e.getOsName()) && o.getTotal().equals(e.getTotal())).count() > 0))
+                            .isTrue();
+                    softly.assertThat(workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels().size()).isEqualTo(workloadSummaryReport_Expected.getWorkloadsDetectedOSTypeModels().size());
+                });
+
         // Performance test
-        new RestTemplate().postForEntity("http://localhost:8080/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
-        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:8080/api/xavier/report/1/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
         await()
             .atMost(timeout, TimeUnit.MILLISECONDS)
             .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
             .until(() -> {
-                ResponseEntity<String> answer = new RestTemplate().postForEntity("http://localhost:8080/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
-                return (answer != null && answer.getStatusCodeValue() == 200);
+                ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/2/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                return (workloadSummaryReport_PerformanceTest != null &&
+                        workloadSummaryReport_PerformanceTest.getStatusCodeValue() == 200 &&
+                        workloadSummaryReport_PerformanceTest.getBody() != null &&
+                        workloadSummaryReport_PerformanceTest.getBody().getSummaryModels() != null);
              });
 
         camelContext.stop();
@@ -495,7 +413,6 @@ public class EndToEndTest {
         body.add("reportName", "report name test");
         body.add("reportDescription", "report desc test");
         body.add("payloadName", "payloadname");
-
 
         return new HttpEntity<>(body, headers);
     }
