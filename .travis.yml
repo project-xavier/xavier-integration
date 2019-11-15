@@ -42,6 +42,3 @@ jobs:
         - mvn test -DtestLogRootLevel=warn -Pcoverage -Dtest=EndToEndTest -DfailIfNoTests=false
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
-after_script:
-  - sudo cat /var/log/upstart/docker.log
-  - docker logs ingress-kafka

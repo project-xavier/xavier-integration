@@ -128,7 +128,7 @@ public class EndToEndTest {
     @NotNull
     private static DockerComposeContainer getDockerComposeContainerForIngress() {
         //String dockerComposeFilePath = "src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9/docker-compose.yml";
-        String dockerComposeFilePath = "src/test/resources/insights-ingress-go-3ea33a8d793c2154f7cfa12057ca005c5f6031fa/docker-compose.yml";
+        String dockerComposeFilePath = "src/test/resources/insights-ingress-go/docker-compose.yml";
         try {
             cloneIngressRepoAndUnzip();
             // TODO we need to comment the line "image: ingress:latest"
@@ -222,9 +222,10 @@ public class EndToEndTest {
     private static void cloneIngressRepoAndUnzip() throws IOException {
         //String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/7988e163ff4e65edf5585e35d1774181f5ad92e9.zip";
         String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/3ea33a8d793c2154f7cfa12057ca005c5f6031fa.zip";
-        File destination = new File("src/test/resources/ingressRepo.zip");
-        FileUtils.copyURLToFile(new URL(ingressRepoZipURL), destination, 1000, 10000);
-        unzipFile(destination, "src/test/resources");
+        File compressedFile = new File("src/test/resources/ingressRepo.zip");
+        FileUtils.copyURLToFile(new URL(ingressRepoZipURL), compressedFile, 1000, 10000);
+        unzipFile(compressedFile, "src/test/resources");
+        FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-3ea33a8d793c2154f7cfa12057ca005c5f6031fa"), new File("src/test/resources/insights-ingress-go"));
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
