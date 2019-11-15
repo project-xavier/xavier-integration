@@ -95,7 +95,8 @@ public class EndToEndTest {
             .withEnv("DISABLE_SECURITY", "true")
             .withEnv("BROKER_CONFIG_GLOBAL_MAX_SIZE", "50000")
             .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
-            .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
+            .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100")
+            .withLogConsumer(new Slf4jLogConsumer(logger));
 
     @ClassRule
     public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
@@ -155,7 +156,7 @@ public class EndToEndTest {
 
         String content = new String(Files.readAllBytes(path), charset);
         content = content.replaceAll("image: ingress:latest", "#image: ingress:latest");
-        //content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
+        content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
         Files.write(path, content.getBytes(charset));
     }
 
@@ -228,12 +229,12 @@ public class EndToEndTest {
     AmazonS3 amazonS3;
 
     private static void cloneIngressRepoAndUnzip() throws IOException {
-        //String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/7988e163ff4e65edf5585e35d1774181f5ad92e9.zip";
-        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/3ea33a8d793c2154f7cfa12057ca005c5f6031fa.zip";
+        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/7988e163ff4e65edf5585e35d1774181f5ad92e9.zip";
+        //String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/3ea33a8d793c2154f7cfa12057ca005c5f6031fa.zip";
         File compressedFile = new File("src/test/resources/ingressRepo.zip");
         FileUtils.copyURLToFile(new URL(ingressRepoZipURL), compressedFile, 1000, 10000);
         unzipFile(compressedFile, "src/test/resources");
-        FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-3ea33a8d793c2154f7cfa12057ca005c5f6031fa"), new File("src/test/resources/insights-ingress-go"));
+        FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9"), new File("src/test/resources/insights-ingress-go"));
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
