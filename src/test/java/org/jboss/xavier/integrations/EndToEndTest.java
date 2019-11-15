@@ -119,14 +119,16 @@ public class EndToEndTest {
     public static DockerComposeContainer ingressCompose = getDockerComposeContainerForIngress()
                     .withExposedService("kafka", 29092)
                     .withExposedService("ingress", 3000)
-                    .withExposedService("minio", 9000 );
+                    .withExposedService("minio", 9000 )
+            .withEnv("INGRESS_VALID_TOPICS", "xavier,testareno,advisor");
 
     @ClassRule
     public static LocalStackContainer localstack = new LocalStackContainer().withServices(S3);
 
     @NotNull
     private static DockerComposeContainer getDockerComposeContainerForIngress() {
-        String dockerComposeFilePath = "src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9/docker-compose.yml";
+        //String dockerComposeFilePath = "src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9/docker-compose.yml";
+        String dockerComposeFilePath = "src/test/resources/insights-ingress-go-3ea33a8d793c2154f7cfa12057ca005c5f6031fa/docker-compose.yml";
         try {
             cloneIngressRepoAndUnzip();
             // TODO we need to comment the line "image: ingress:latest"
@@ -145,8 +147,7 @@ public class EndToEndTest {
 
         String content = new String(Files.readAllBytes(path), charset);
         content = content.replaceAll("image: ingress:latest", "#image: ingress:latest");
-        content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
-        content = content.replaceAll("image: confluentinc/cp-kafka", "image: confluentinc/cp-kafka\ncontainer_name: ingress-kafka\n");
+        //content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
         Files.write(path, content.getBytes(charset));
     }
 
@@ -219,7 +220,8 @@ public class EndToEndTest {
     AmazonS3 amazonS3;
 
     private static void cloneIngressRepoAndUnzip() throws IOException {
-        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/7988e163ff4e65edf5585e35d1774181f5ad92e9.zip";
+        //String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/7988e163ff4e65edf5585e35d1774181f5ad92e9.zip";
+        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/3ea33a8d793c2154f7cfa12057ca005c5f6031fa.zip";
         File destination = new File("src/test/resources/ingressRepo.zip");
         FileUtils.copyURLToFile(new URL(ingressRepoZipURL), destination, 1000, 10000);
         unzipFile(destination, "src/test/resources");
