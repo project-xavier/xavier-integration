@@ -26,6 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,6 +54,7 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -84,6 +87,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @Import(TestConfigurationS3.class)
 @ActiveProfiles("test")
 public class EndToEndTest {
+    private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
 
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
@@ -107,7 +111,8 @@ public class EndToEndTest {
             .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
             .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
             .withEnv("KIE_SERVER_PWD","kieserver1!")
-            .withEnv("KIE_SERVER_USER","kieserver");
+            .withEnv("KIE_SERVER_USER","kieserver")
+            .withLogConsumer(new Slf4jLogConsumer(logger));
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -120,7 +125,10 @@ public class EndToEndTest {
                     .withExposedService("kafka", 29092)
                     .withExposedService("ingress", 3000)
                     .withExposedService("minio", 9000 )
-            .withEnv("INGRESS_VALID_TOPICS", "xavier,testareno,advisor");
+            .withEnv("INGRESS_VALID_TOPICS", "xavier,testareno,advisor")
+            .withLogConsumer("kafka", new Slf4jLogConsumer(logger))
+            .withLogConsumer("ingress", new Slf4jLogConsumer(logger))
+            .withLogConsumer("minio", new Slf4jLogConsumer(logger));
 
     @ClassRule
     public static LocalStackContainer localstack = new LocalStackContainer().withServices(S3);
