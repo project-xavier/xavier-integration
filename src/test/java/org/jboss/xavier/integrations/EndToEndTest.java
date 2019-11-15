@@ -287,6 +287,8 @@ public class EndToEndTest {
 
     @Test
     public void end2endTest() throws Exception {
+        Thread.sleep(20000);
+
         // given
         camelContext.setTracing(true);
         camelContext.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_MAX_CHARS, "5000");
