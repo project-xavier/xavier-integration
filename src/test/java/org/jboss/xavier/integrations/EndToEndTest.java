@@ -291,7 +291,7 @@ public class EndToEndTest {
 
     @Test
     public void end2endTest() throws Exception {
-        Thread.sleep(20000);
+        Thread.sleep(120000);
 
         // given
         camelContext.setTracing(true);
@@ -320,6 +320,7 @@ public class EndToEndTest {
             .until( () -> {
                 // Check database
                 List<InitialSavingsEstimationReportModel> all = initialSavingsEstimationReportRepository.findAll();
+                logger.info("Database Checked ......");
                 return all != null && !all.isEmpty();
             });
 
