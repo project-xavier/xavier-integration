@@ -8,9 +8,12 @@ addons:
     organization: project-xavier
     token:
       secure: $SONAR_TOKEN
+
+
 sudo: required
+
 services:
-  - docker
+    - docker
 
 # Fix for https://travis-ci.community/t/problematic-docker-compose-version-1-23-1/5362/3
 before_install:
@@ -39,3 +42,6 @@ jobs:
         - mvn test -DtestLogRootLevel=warn -Pcoverage -Dtest=EndToEndTest -DfailIfNoTests=false
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
+after_script:
+  - sudo cat /var/log/upstart/docker.log
+  - docker logs ingress-kafka

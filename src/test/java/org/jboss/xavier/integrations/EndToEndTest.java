@@ -146,6 +146,7 @@ public class EndToEndTest {
         String content = new String(Files.readAllBytes(path), charset);
         content = content.replaceAll("image: ingress:latest", "#image: ingress:latest");
         content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
+        content = content.replaceAll("image: confluentinc/cp-kafka", "image: confluentinc/cp-kafka\ncontainer_name: ingress-kafka\n");
         Files.write(path, content.getBytes(charset));
     }
 
