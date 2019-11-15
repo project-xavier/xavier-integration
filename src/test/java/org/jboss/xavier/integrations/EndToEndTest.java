@@ -126,9 +126,11 @@ public class EndToEndTest {
                     .withExposedService("kafka", 29092)
                     .withExposedService("ingress", 3000)
                     .withExposedService("minio", 9000 )
+                    .withExposedService("zookeeper", 32181 )
             .withEnv("INGRESS_VALID_TOPICS", "xavier,testareno,advisor")
             .withLogConsumer("kafka", new Slf4jLogConsumer(logger).withPrefix("KAFKA-LOG"))
             .withLogConsumer("ingress", new Slf4jLogConsumer(logger).withPrefix("INGRESS-LOG"))
+            .withLogConsumer("zookeeper", new Slf4jLogConsumer(logger).withPrefix("ZOOKEEPER-LOG"))
             .withLogConsumer("minio", new Slf4jLogConsumer(logger).withPrefix("MINIO-LOG"));
 
     @ClassRule
@@ -159,7 +161,11 @@ public class EndToEndTest {
         String content = new String(Files.readAllBytes(path), charset);
         content = content.replaceAll("image: ingress:latest", "#image: ingress:latest");
         content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
-        content = content.replaceAll("- KAFKA_BROKER_ID=1", "- KAFKA_BROKER_ID=1\n      - KAFKA_ADVERTISED_HOST_NAME=192.168.99.100");
+        content = content.replaceAll("- KAFKA_BROKER_ID=1", "- KAFKA_BROKER_ID=1\n" +
+                "      - KAFKA_ADVERTISED_HOST_NAME=192.168.99.100");
+        content = content.replaceAll("- ZOOKEEPER_SERVER_ID=1", "- ZOOKEEPER_SERVER_ID=1\n" +
+                "    ports:\n" +
+                "      - 32181:32181");
         Files.write(path, content.getBytes(charset));
     }
 
