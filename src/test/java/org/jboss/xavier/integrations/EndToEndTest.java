@@ -96,7 +96,7 @@ public class EndToEndTest {
             .withEnv("BROKER_CONFIG_GLOBAL_MAX_SIZE", "50000")
             .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
             .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100")
-            .withLogConsumer(new Slf4jLogConsumer(logger));
+            .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"));
 
     @ClassRule
     public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
@@ -113,7 +113,7 @@ public class EndToEndTest {
             .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
             .withEnv("KIE_SERVER_PWD","kieserver1!")
             .withEnv("KIE_SERVER_USER","kieserver")
-            .withLogConsumer(new Slf4jLogConsumer(logger));
+            .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KIE-LOG"));
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -127,12 +127,14 @@ public class EndToEndTest {
                     .withExposedService("ingress", 3000)
                     .withExposedService("minio", 9000 )
             .withEnv("INGRESS_VALID_TOPICS", "xavier,testareno,advisor")
-            .withLogConsumer("kafka", new Slf4jLogConsumer(logger))
-            .withLogConsumer("ingress", new Slf4jLogConsumer(logger))
-            .withLogConsumer("minio", new Slf4jLogConsumer(logger));
+            .withLogConsumer("kafka", new Slf4jLogConsumer(logger).withPrefix("KAFKA-LOG"))
+            .withLogConsumer("ingress", new Slf4jLogConsumer(logger).withPrefix("INGRESS-LOG"))
+            .withLogConsumer("minio", new Slf4jLogConsumer(logger).withPrefix("MINIO-LOG"));
 
     @ClassRule
-    public static LocalStackContainer localstack = new LocalStackContainer().withServices(S3);
+    public static LocalStackContainer localstack = new LocalStackContainer()
+            .withServices(S3)
+            .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"));
 
     @NotNull
     private static DockerComposeContainer getDockerComposeContainerForIngress() {
@@ -312,7 +314,7 @@ public class EndToEndTest {
 
         // then
         await()
-            .atMost(3, TimeUnit.MINUTES)
+            .atMost(10, TimeUnit.MINUTES)
             .with().pollInterval(Duration.TEN_SECONDS)
             .until( () -> {
                 // Check database
@@ -394,7 +396,7 @@ public class EndToEndTest {
         // Performance test
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
         await()
-            .atMost(5, TimeUnit.MINUTES)
+            .atMost(15, TimeUnit.MINUTES)
             .with().pollInterval(Duration.TEN_SECONDS)
             .until(() -> {
                 ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/2/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
