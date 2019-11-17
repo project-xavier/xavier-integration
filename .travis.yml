@@ -40,7 +40,5 @@ jobs:
         - mvn test -Dtest=EndToEndTest -DfailIfNoTests=false
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
-        - docker ps
-        - docker logs $(docker ps -qa)
 
 
