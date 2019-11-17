@@ -70,6 +70,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
+    @Value("${minio.host}")
+    private String minio_host;
+
     public void configure() throws Exception {
         super.configure();
 
@@ -129,12 +132,18 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
         from("direct:download-file")
                 .routeId("download-file")
-                .setHeader("Exchange.HTTP_URI", simple("${body.url}"))
+                .setHeader("tempHTTP_URI", simple("${body.url}"))
+                .process(e -> {
+                    String headerURI = "tempHTTP_URI";
+                    e.getIn().setHeader(headerURI, e.getIn().getHeader(headerURI, String.class).replace("minio:9000", minio_host));
+                })
+                .setHeader("Host", constant("minio:9000"))
+                .setHeader("Exchange.HTTP_URI", simple("${header.tempHTTP_URI}"))
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
                 .setBody(constant(""))
-                .to("http4://oldhost")
+                .to("http4://oldhost?preserveHostHeader=true")
                 .choice()
                     .when(isResponseSuccess())
                         .removeHeader("Exchange.HTTP_URI")

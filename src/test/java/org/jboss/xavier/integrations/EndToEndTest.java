@@ -50,11 +50,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.MountableFile;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -63,10 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.List;
@@ -96,7 +96,8 @@ public class EndToEndTest {
             .withEnv("BROKER_CONFIG_GLOBAL_MAX_SIZE", "50000")
             .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
             .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100")
-            .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"));
+            //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"))
+            ;
 
     @ClassRule
     public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
@@ -113,7 +114,8 @@ public class EndToEndTest {
             .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
             .withEnv("KIE_SERVER_PWD","kieserver1!")
             .withEnv("KIE_SERVER_USER","kieserver")
-            .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KIE-LOG"));
+            //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KIE-LOG"))
+            ;
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -122,60 +124,13 @@ public class EndToEndTest {
             .withPassword("redhat");
 
     @ClassRule
-    public static DockerComposeContainer ingressCompose = getDockerComposeContainerForIngress()
-                    .withExposedService("kafka", 29092)
-                    .withExposedService("ingress", 3000)
-                    .withExposedService("minio", 9000 )
-                    .withExposedService("zookeeper", 32181 )
-            .withEnv("INGRESS_VALID_TOPICS", "xavier,testareno,advisor")
-            .withLogConsumer("kafka", new Slf4jLogConsumer(logger).withPrefix("KAFKA-LOG"))
-            .withLogConsumer("ingress", new Slf4jLogConsumer(logger).withPrefix("INGRESS-LOG"))
-            .withLogConsumer("zookeeper", new Slf4jLogConsumer(logger).withPrefix("ZOOKEEPER-LOG"))
-            .withLogConsumer("minio", new Slf4jLogConsumer(logger).withPrefix("MINIO-LOG"));
-
-    @ClassRule
     public static LocalStackContainer localstack = new LocalStackContainer()
             .withServices(S3)
-            .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"));
+            //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"))
+            ;
 
-    @NotNull
-    private static DockerComposeContainer getDockerComposeContainerForIngress() {
-        //String dockerComposeFilePath = "src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9/docker-compose.yml";
-        String dockerComposeFilePath = "src/test/resources/insights-ingress-go/docker-compose.yml";
-        try {
-            cloneIngressRepoAndUnzip();
-            // TODO we need to comment the line "image: ingress:latest"
-            replaceImageOnFile(dockerComposeFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        File dockerComposeFile = new File(dockerComposeFilePath);
-        return new DockerComposeContainer(dockerComposeFile).withLocalCompose(true);
-    }
 
-    private static void replaceImageOnFile(String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-        Charset charset = StandardCharsets.UTF_8;
-
-        String content = new String(Files.readAllBytes(path), charset);
-        content = content.replaceAll("image: ingress:latest", "#image: ingress:latest");
-        content = content.replaceAll("- INGRESS_VALIDTOPICS=", "- INGRESS_VALIDTOPICS=xavier,testareno,advisor");
-        content = content.replaceAll("- KAFKA_BROKER_ID=1", "- KAFKA_BROKER_ID=1\n" +
-                "      - KAFKA_ADVERTISED_HOST_NAME=192.168.99.100");
-        content = content.replaceAll("- ZOOKEEPER_SERVER_ID=1", "- ZOOKEEPER_SERVER_ID=1\n" +
-                "    ports:\n" +
-                "      - 32181:32181");
-        Files.write(path, content.getBytes(charset));
-    }
-
-    @NotNull
-    private static DockerComposeContainer getDockerComposeContainerForDroolsKie() {
-        File file = new File(EndToEndTest.class.getClassLoader().getResource("drools-kie-compose.yml").getFile());
-        return new DockerComposeContainer(file).withLocalCompose(true);
-    }
-
-    private static String serverInstanceId;
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -194,21 +149,67 @@ public class EndToEndTest {
     @Value("${server.port:8080}")
     private String serverPort;
 
-    private static final String analyticsArtifact = "xavier-analytics";
-    private static final String analyticsVersion = "0.0.1-SNAPSHOT";
-
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
+                //cloneIngressRepoAndUnzip();
+                Network network = Network.newNetwork();
+
+                GenericContainer minio = new GenericContainer<>("minio/minio")
+                        .withCommand("server /data")
+                        .withExposedPorts(9000)
+                        .withNetworkAliases("minio")
+                        .withNetwork(network)
+                        .withEnv("MINIO_ACCESS_KEY", "BQA2GEXO711FVBVXDWKM")
+                        .withEnv("MINIO_SECRET_KEY", "uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC")
+                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-LOG"));
+
+                GenericContainer createbuckets = new GenericContainer<>("minio/mc")
+                        .dependsOn(minio)
+                        .withNetwork(network)
+                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-MC-LOG"))
+                        .withCopyFileToContainer(MountableFile.forClasspathResource("minio.sh"), "/")
+                        .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("sh", "/minio.sh",
+                                "minio:9000"));
+                createbuckets.start();
+
+                KafkaContainer kafka = new KafkaContainer()
+                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KAFKA-LOG"))
+                        .withEnv("KAFKA_LOG4J_ROOT_LOGLEVEL", "INFO")
+                        .withNetworkAliases("kafka")
+                        .withNetwork(network);
+                kafka.start();
+
+                GenericContainer ingress = new GenericContainer(new ImageFromDockerfile()
+                        .withDockerfile(Paths.get("src/test/resources/insights-ingress-go/Dockerfile")))
+                        .withExposedPorts(3000)
+                        .withNetwork(network)
+                        .withEnv("AWS_ACCESS_KEY_ID","BQA2GEXO711FVBVXDWKM")
+                        .withEnv("AWS_SECRET_ACCESS_KEY","uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC")
+                        .withEnv("AWS_REGION","us-east-1")
+                        .withEnv("INGRESS_STAGEBUCKET","insights-upload-perma")
+                        .withEnv("INGRESS_REJECTBUCKET","insights-upload-rejected")
+                        .withEnv("INGRESS_INVENTORYURL","http://inventory:8080/api/inventory/v1/hosts")
+                        .withEnv("INGRESS_VALIDTOPICS","xavier,testareno,advisortestareno,advisor")
+                        .withEnv("OPENSHIFT_BUILD_COMMIT","woopwoop")
+                        .withEnv("INGRESS_MINIODEV","true")
+                        .withEnv("INGRESS_MINIOACCESSKEY","BQA2GEXO711FVBVXDWKM")
+                        .withEnv("INGRESS_MINIOSECRETKEY","uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC")
+                        .withEnv("INGRESS_MINIOENDPOINT", "minio:9000")
+                        .withEnv("INGRESS_KAFKABROKERS", "kafka:9092")
+                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("INGRESS-LOG"));
+                ingress.start();
+
                 importProjectIntoDrools();
+
                 EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
                         "amq.server=" + activemq.getContainerIpAddress(),
                         "amq.port=" + activemq.getMappedPort(61616),
-                        "insights.upload.host=" + getHostAndPortFromIngressComposeForService("ingress", 3000),
+                        "minio.host=" + minio.getContainerIpAddress() + ":" + minio.getMappedPort(9000),
+                        "insights.upload.host=" + getIngressHost(ingress),
                         "camel.component.servlet.mapping.context-path=/api/xavier/*",
-                        "insights.kafka.host=" + getHostAndPortFromIngressComposeForService("kafka", 29092),
+                        "insights.kafka.host=" + kafka.getBootstrapServers(),
                         "postgresql.service.name=" + postgreSQL.getContainerIpAddress(),
                         "postgresql.service.port=" + postgreSQL.getFirstMappedPort(),
                         "spring.datasource.username=" + postgreSQL.getUsername(),
@@ -223,10 +224,13 @@ public class EndToEndTest {
             }
         }
 
-        private String getHostAndPortFromIngressComposeForService(String service, Integer port) {
-            return ingressCompose.getServiceHost(service, port) + ":" + ingressCompose.getServicePort(service, port);
+        @NotNull
+        private static String getIngressHost(GenericContainer ingress) {
+            return ingress.getContainerIpAddress() + ":" + ingress.getFirstMappedPort();
         }
     }
+
+
 
     @Inject
     CamelContext camelContext;
@@ -243,7 +247,9 @@ public class EndToEndTest {
         File compressedFile = new File("src/test/resources/ingressRepo.zip");
         FileUtils.copyURLToFile(new URL(ingressRepoZipURL), compressedFile, 1000, 10000);
         unzipFile(compressedFile, "src/test/resources");
+        FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9"), new File("src/test/resources/insights-ingress-go"));
+        FileUtils.copyFile(new File("src/test/resources/ingress-docker-compose.yml"), new File("src/test/resources/insights-ingress-go/ingress-docker-compose.yml"));
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
@@ -292,12 +298,11 @@ public class EndToEndTest {
         } catch (RestClientException e) {
             e.printStackTrace();
         }
-        serverInstanceId = analyticsArtifact + "_" + analyticsVersion;
     }
 
     @Test
     public void end2endTest() throws Exception {
-        Thread.sleep(120000);
+        Thread.sleep(2000);
 
         // given
         camelContext.setTracing(true);
