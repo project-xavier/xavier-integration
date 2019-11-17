@@ -61,7 +61,6 @@ public class MainRouteBuilder_DirectDownloadTest extends XavierCamelTest {
         });
 
         //When
-        camelContext.setTracing(true);
         camelContext.start();
         camelContext.startRoute("download-file");
         camelContext.startRoute("process-file");

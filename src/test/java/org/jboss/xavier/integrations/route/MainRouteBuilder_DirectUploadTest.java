@@ -49,7 +49,6 @@ public class MainRouteBuilder_DirectUploadTest extends XavierCamelTest {
         mockStore.expectedMessageCount(4);
 
         //When
-        camelContext.setTracing(true);
         camelContext.start();
         camelContext.startRoute("direct-upload");
 

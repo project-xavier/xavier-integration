@@ -28,7 +28,6 @@ public class MainRouteBuilder_S3Test {
     @Test
     @Ignore
     public void s3Test() throws Exception {
-        camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         camelContext.addRoutes(new RouteBuilder() {
             @Override
