@@ -153,7 +153,7 @@ public class EndToEndTest {
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
-                //cloneIngressRepoAndUnzip();
+                cloneIngressRepoAndUnzip();
                 Network network = Network.newNetwork();
 
                 GenericContainer minio = new GenericContainer<>("minio/minio")
@@ -170,8 +170,7 @@ public class EndToEndTest {
                         .withNetwork(network)
                         .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-MC-LOG"))
                         .withCopyFileToContainer(MountableFile.forClasspathResource("minio.sh"), "/")
-                        .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("sh", "/minio.sh",
-                                "minio:9000"));
+                        .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("sh", "/minio.sh", "minio:9000"));
                 createbuckets.start();
 
                 KafkaContainer kafka = new KafkaContainer()
@@ -249,7 +248,6 @@ public class EndToEndTest {
         unzipFile(compressedFile, "src/test/resources");
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9"), new File("src/test/resources/insights-ingress-go"));
-        FileUtils.copyFile(new File("src/test/resources/ingress-docker-compose.yml"), new File("src/test/resources/insights-ingress-go/ingress-docker-compose.yml"));
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
