@@ -17,7 +17,9 @@ import org.awaitility.Duration;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
@@ -55,7 +57,6 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
 
@@ -68,8 +69,11 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -92,17 +96,17 @@ public class EndToEndTest {
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
             .withExposedPorts(61616, 8161)
+            //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"))
             .withEnv("DISABLE_SECURITY", "true")
             .withEnv("BROKER_CONFIG_GLOBAL_MAX_SIZE", "50000")
             .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
-            .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100")
-            //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"))
-            ;
+            .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
 
     @ClassRule
     public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
             .withNetworkAliases("kie-server")
             .withExposedPorts(8080)
+            //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KIE-LOG"))
             .withEnv("KIE_SERVER_ID", "analytics-kieserver")
             .withEnv("KIE_ADMIN_USER", "kieserver")
             .withEnv("KIE_ADMIN_PWD", "kieserver1!")
@@ -113,9 +117,7 @@ public class EndToEndTest {
             .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
             .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
             .withEnv("KIE_SERVER_PWD","kieserver1!")
-            .withEnv("KIE_SERVER_USER","kieserver")
-            //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KIE-LOG"))
-            ;
+            .withEnv("KIE_SERVER_USER","kieserver");
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -125,12 +127,8 @@ public class EndToEndTest {
 
     @ClassRule
     public static LocalStackContainer localstack = new LocalStackContainer()
-            .withServices(S3)
             //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"))
-            ;
-
-
-
+            .withServices(S3);
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -161,21 +159,20 @@ public class EndToEndTest {
                         .withExposedPorts(9000)
                         .withNetworkAliases("minio")
                         .withNetwork(network)
+                        //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-LOG"))
                         .withEnv("MINIO_ACCESS_KEY", "BQA2GEXO711FVBVXDWKM")
-                        .withEnv("MINIO_SECRET_KEY", "uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC")
-                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-LOG"));
+                        .withEnv("MINIO_SECRET_KEY", "uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC");
 
                 GenericContainer createbuckets = new GenericContainer<>("minio/mc")
                         .dependsOn(minio)
                         .withNetwork(network)
-                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-MC-LOG"))
+                        //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-MC-LOG"))
                         .withCopyFileToContainer(MountableFile.forClasspathResource("minio.sh"), "/")
                         .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("sh", "/minio.sh", "minio:9000"));
                 createbuckets.start();
 
                 KafkaContainer kafka = new KafkaContainer()
-                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KAFKA-LOG"))
-                        .withEnv("KAFKA_LOG4J_ROOT_LOGLEVEL", "INFO")
+//                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("KAFKA-LOG"))
                         .withNetworkAliases("kafka")
                         .withNetwork(network);
                 kafka.start();
@@ -184,6 +181,7 @@ public class EndToEndTest {
                         .withDockerfile(Paths.get("src/test/resources/insights-ingress-go/Dockerfile")))
                         .withExposedPorts(3000)
                         .withNetwork(network)
+                        //.withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("INGRESS-LOG"))
                         .withEnv("AWS_ACCESS_KEY_ID","BQA2GEXO711FVBVXDWKM")
                         .withEnv("AWS_SECRET_ACCESS_KEY","uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC")
                         .withEnv("AWS_REGION","us-east-1")
@@ -196,8 +194,7 @@ public class EndToEndTest {
                         .withEnv("INGRESS_MINIOACCESSKEY","BQA2GEXO711FVBVXDWKM")
                         .withEnv("INGRESS_MINIOSECRETKEY","uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC")
                         .withEnv("INGRESS_MINIOENDPOINT", "minio:9000")
-                        .withEnv("INGRESS_KAFKABROKERS", "kafka:9092")
-                        .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("INGRESS-LOG"));
+                        .withEnv("INGRESS_KAFKABROKERS", "kafka:9092");
                 ingress.start();
 
                 importProjectIntoDrools();
@@ -207,6 +204,7 @@ public class EndToEndTest {
                         "amq.port=" + activemq.getMappedPort(61616),
                         "minio.host=" + minio.getContainerIpAddress() + ":" + minio.getMappedPort(9000),
                         "insights.upload.host=" + getIngressHost(ingress),
+                        "insights.properties=yearOverYearGrowthRatePercentage,percentageOfHypervisorsMigratedOnYear1,percentageOfHypervisorsMigratedOnYear2,percentageOfHypervisorsMigratedOnYear3,reportName,reportDescription",
                         "camel.component.servlet.mapping.context-path=/api/xavier/*",
                         "insights.kafka.host=" + kafka.getBootstrapServers(),
                         "postgresql.service.name=" + postgreSQL.getContainerIpAddress(),
@@ -229,8 +227,6 @@ public class EndToEndTest {
         }
     }
 
-
-
     @Inject
     CamelContext camelContext;
 
@@ -241,13 +237,13 @@ public class EndToEndTest {
     AmazonS3 amazonS3;
 
     private static void cloneIngressRepoAndUnzip() throws IOException {
-        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/7988e163ff4e65edf5585e35d1774181f5ad92e9.zip";
-        //String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/3ea33a8d793c2154f7cfa12057ca005c5f6031fa.zip";
+        String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
+        String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/" + ingressCommitHash + ".zip";
         File compressedFile = new File("src/test/resources/ingressRepo.zip");
         FileUtils.copyURLToFile(new URL(ingressRepoZipURL), compressedFile, 1000, 10000);
         unzipFile(compressedFile, "src/test/resources");
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
-        FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-7988e163ff4e65edf5585e35d1774181f5ad92e9"), new File("src/test/resources/insights-ingress-go"));
+        FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-" + ingressCommitHash), new File("src/test/resources/insights-ingress-go"));
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
@@ -292,7 +288,7 @@ public class EndToEndTest {
         kieheaders.setCacheControl("no-cache");
         String kieContainerBody = "{\"container-id\" : \"xavier-analytics_0.0.1-SNAPSHOT\",\"release-id\" : {\"group-id\" : \"org.jboss.xavier\",\"artifact-id\" : \"xavier-analytics\",\"version\" : \"0.0.1-SNAPSHOT\" } }";
         try {
-            ResponseEntity<String> responseCreateKIEContainer = new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<>(kieContainerBody, kieheaders), String.class);
+            new RestTemplate().exchange(kieRestURL + "server/containers/xavier-analytics_0.0.1-SNAPSHOT", HttpMethod.PUT, new HttpEntity<>(kieContainerBody, kieheaders), String.class);
         } catch (RestClientException e) {
             e.printStackTrace();
         }
@@ -388,24 +384,16 @@ public class EndToEndTest {
         workloadSummaryReport_Expected.getScanRunModels().stream().forEach(e -> System.out.println(e.getId() + "/" + e.getDate() + "/" + e.getTarget() + "/" + e.getType()));
         workloadSummaryReport.getBody().getScanRunModels().stream().forEach(e -> System.out.println(e.getId() + "/" + e.getDate() + "/" + e.getTarget() + "/" + e.getType()));
 
-        SoftAssertions.assertSoftly(softly -> {
-                    softly.assertThat(workloadSummaryReport_Expected.getScanRunModels().stream().allMatch(e -> workloadSummaryReport.getBody().getScanRunModels().stream()
-                            .filter(o -> o.getTarget().equals(e.getTarget()) && o.getType().equals(e.getType()) ).count() > 0)) //&& DateUtils.isSameDay(o.getDate(), e.getDate())).count() > 0))
-                            .isTrue();
-                    softly.assertThat(workloadSummaryReport.getBody().getScanRunModels().stream().allMatch(e -> workloadSummaryReport_Expected.getScanRunModels().stream()
-                            .filter(o -> o.getTarget().equals(e.getTarget()) && o.getType().equals(e.getType()) ).count() > 0)) // && DateUtils.isSameDay(o.getDate(), e.getDate())).count() > 0))
-                            .isTrue();
-                    softly.assertThat(workloadSummaryReport.getBody().getScanRunModels().size()).isEqualTo(workloadSummaryReport_Expected.getScanRunModels().size());
+        TreeSet<ScanRunModel> wks_scanrunmodel_expected = getWks_scanrunmodel(workloadSummaryReport_Expected.getScanRunModels());
+        TreeSet<ScanRunModel> wks_scanrunmodel_actual = getWks_scanrunmodel(workloadSummaryReport.getBody().getScanRunModels());
 
-                    // WorkloadDetectedOSTypeModels
-                    softly.assertThat(workloadSummaryReport_Expected.getWorkloadsDetectedOSTypeModels().stream().allMatch(e -> workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels().stream()
-                            .filter(o -> o.getOsName().equals(e.getOsName()) && o.getTotal().equals(e.getTotal())).count() > 0))
-                            .isTrue();
-                    softly.assertThat(workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels().stream().allMatch(e -> workloadSummaryReport_Expected.getWorkloadsDetectedOSTypeModels().stream()
-                            .filter(o -> o.getOsName().equals(e.getOsName()) && o.getTotal().equals(e.getTotal())).count() > 0))
-                            .isTrue();
-                    softly.assertThat(workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels().size()).isEqualTo(workloadSummaryReport_Expected.getWorkloadsDetectedOSTypeModels().size());
-                });
+        TreeSet<WorkloadsDetectedOSTypeModel> wks_ostypemodel_expected = getWks_ostypemodel(workloadSummaryReport_Expected.getWorkloadsDetectedOSTypeModels());
+        TreeSet<WorkloadsDetectedOSTypeModel> wks_ostypemodel_actual = getWks_ostypemodel(workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels());
+
+        SoftAssertions.assertSoftly(softly -> {
+                    softly.assertThat(wks_scanrunmodel_expected).isEqualTo(wks_scanrunmodel_actual);
+                    softly.assertThat(wks_ostypemodel_expected).isEqualTo(wks_ostypemodel_actual);
+    });
 
         // Performance test
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
@@ -421,6 +409,20 @@ public class EndToEndTest {
              });
 
         camelContext.stop();
+    }
+
+    @NotNull
+    private TreeSet<WorkloadsDetectedOSTypeModel> getWks_ostypemodel(Set<WorkloadsDetectedOSTypeModel> elements) {
+        TreeSet<WorkloadsDetectedOSTypeModel> treeset = new TreeSet<>(new WorkloadsDetectedOSTypeModelComparator());
+        treeset.addAll(elements);
+        return treeset;
+    }
+
+    @NotNull
+    private TreeSet<ScanRunModel> getWks_scanrunmodel(Set<ScanRunModel> elements) {
+        TreeSet<ScanRunModel> treeset = new TreeSet<>(new ScanRunModelComparator());
+        treeset.addAll(elements);
+        return treeset;
     }
 
     private HttpEntity getRequestEntity() {
@@ -463,5 +465,19 @@ public class EndToEndTest {
         headers.set("x-rh-identity", "eyJlbnRpdGxlbWVudHMiOnsiaW5zaWdodHMiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJvcGVuc2hpZnQiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJzbWFydF9tYW5hZ2VtZW50Ijp7ImlzX2VudGl0bGVkIjpmYWxzZX0sImh5YnJpZF9jbG91ZCI6eyJpc19lbnRpdGxlZCI6dHJ1ZX19LCJpZGVudGl0eSI6eyJpbnRlcm5hbCI6eyJhdXRoX3RpbWUiOjAsImF1dGhfdHlwZSI6Imp3dC1hdXRoIiwib3JnX2lkIjoiNjM0MDA1NiIsICJmaWxlbmFtZSI6ImNsb3VkZm9ybXMtZXhwb3J0LXYxXzBfMC1tdWx0aXBsZS1maWxlcy50YXIuZ3oiLCJvcmlnaW4iOiJ4YXZpZXIiLCJjdXN0b21lcmlkIjoiQ0lEODg4IiwgImFuYWx5c2lzSWQiOiIxIn0sImFjY291bnRfbnVtYmVyIjoiMTQ2MDI5MCIsICJ1c2VyIjp7ImZpcnN0X25hbWUiOiJNYXJjbyIsImlzX2FjdGl2ZSI6dHJ1ZSwiaXNfaW50ZXJuYWwiOnRydWUsImxhc3RfbmFtZSI6IlJpenppIiwibG9jYWxlIjoiZW5fVVMiLCJpc19vcmdfYWRtaW4iOmZhbHNlLCJ1c2VybmFtZSI6Im1yaXp6aUByZWRoYXQuY29tIiwiZW1haWwiOiJtcml6emkrcWFAcmVkaGF0LmNvbSJ9LCJ0eXBlIjoiVXNlciJ9fQ==");
         headers.set("username", "mrizzi@redhat.com");
         return headers;
+    }
+
+    private static class ScanRunModelComparator implements Comparator<ScanRunModel> {
+        @Override
+        public int compare(ScanRunModel o1, ScanRunModel o2) {
+            return o1.getTarget().equals(o2.getTarget()) && o1.getType().equals(o2.getType()) ? 0 : 1;
+        }
+    }
+
+    private static class WorkloadsDetectedOSTypeModelComparator implements Comparator<WorkloadsDetectedOSTypeModel> {
+        @Override
+        public int compare(WorkloadsDetectedOSTypeModel o1, WorkloadsDetectedOSTypeModel o2) {
+            return o1.getOsName().equals(o2.getOsName()) && o1.getTotal().equals(o2.getTotal()) ? 0 : 1;
+        }
     }
 }

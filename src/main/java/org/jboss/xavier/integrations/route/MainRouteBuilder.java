@@ -143,7 +143,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
                 .setBody(constant(""))
-                .to("http4://oldhost?preserveHostHeader=true")
+                .to("http4:oldhost?preserveHostHeader=true")
                 .choice()
                     .when(isResponseSuccess())
                         .removeHeader("Exchange.HTTP_URI")

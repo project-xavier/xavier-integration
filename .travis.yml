@@ -37,7 +37,7 @@ jobs:
   include:
     - stage: Test
       script:
-        - mvn test -Dtest=EndToEndTest -DfailIfNoTests=false
+        - mvn test
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
 

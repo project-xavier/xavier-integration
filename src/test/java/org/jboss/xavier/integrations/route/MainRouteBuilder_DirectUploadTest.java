@@ -49,6 +49,7 @@ public class MainRouteBuilder_DirectUploadTest extends XavierCamelTest {
         mockStore.expectedMessageCount(4);
 
         //When
+        camelContext.setTracing(true);
         camelContext.start();
         camelContext.startRoute("direct-upload");
 
@@ -61,8 +62,8 @@ public class MainRouteBuilder_DirectUploadTest extends XavierCamelTest {
         assertThat(mockStore.getExchanges().stream().filter(e -> "CID12345".equalsIgnoreCase(e.getIn().getHeader(RouteBuilderExceptionHandler.MA_METADATA, Map.class).get("customerid").toString())).count()).isEqualTo(4);
 
         camelContext.stop();
-    }    
-    
+    }
+
     @Test
     public void mainRouteBuilder_routeDirectUpload_ContentWithSeveralFilesButNotCustomerIdFieldGiven_ShouldReturnError() throws Exception {
         //Given

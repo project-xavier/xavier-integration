@@ -373,10 +373,10 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertEquals(2, scanRunModels.size());
 
         scanRunModels.stream().filter(model -> model.getId() % 2 == 0).forEach(srm ->
-                Assert.assertEquals("Virt Platform", srm.getType()));
+                Assert.assertEquals(false, srm.getType()));
 
         scanRunModels.stream().filter(model -> model.getId() % 2 != 0).forEach(srm ->
-                Assert.assertEquals("Virt Platform + SmartState", srm.getType()));
+                Assert.assertEquals(true, srm.getType()));
 
         camelContext.stop();
     }
