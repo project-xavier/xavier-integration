@@ -303,7 +303,7 @@ public class EndToEndTest {
         Thread.sleep(2000);
 
         // given
-        camelContext.setTracing(true);
+        camelContext.setTracing(false);
         camelContext.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_MAX_CHARS, "5000");
         camelContext.start();
 
