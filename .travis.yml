@@ -40,7 +40,7 @@ jobs:
         - CAMEL_SPRINGBOOT_TRACING=false
         - LOGGING_LEVEL_ROOT=warn
       script:
-        - mvn test
+        - mvn test -Pcoverage
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
 
