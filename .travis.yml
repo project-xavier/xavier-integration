@@ -36,6 +36,9 @@ install:
 jobs:
   include:
     - stage: Test
+      env:
+        - CAMEL_SPRINGBOOT_TRACING=false
+        - LOGGING_LEVEL_ROOT=warn
       script:
         - mvn test
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
