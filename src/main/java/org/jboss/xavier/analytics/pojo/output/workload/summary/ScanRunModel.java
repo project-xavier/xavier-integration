@@ -103,9 +103,6 @@ public class ScanRunModel {
 
     public Boolean getType() {
         return type;
-
-//        String typeString = "Virt Platform";
-//        return typeString + (type?" + SmartState": "");   //TODO move back this before pushing
     }
 
     public void setType(Boolean type) {

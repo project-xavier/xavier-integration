@@ -109,7 +109,7 @@ Snippets of calls :
 
 
 # Testing
-For the End2End test a docker container test framework is used : [TestContainers](www.testcontainers.org).  
+For the End2End test a docker container test framework is used : [Testcontainers](www.testcontainers.org).  
 If using the Fedora docker package it is needed to set the *ryuk.container.privileged=true* property in the local ~/.testcontainers.properties file in order to allow [Ryuk to be a privileged container](https://www.testcontainers.org/features/configuration/#customizing-ryuk-resource-reaper).
 
 # References
