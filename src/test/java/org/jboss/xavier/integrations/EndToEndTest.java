@@ -173,6 +173,7 @@ public class EndToEndTest {
                         .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-LOG"))
                         .withEnv("MINIO_ACCESS_KEY", "BQA2GEXO711FVBVXDWKM")
                         .withEnv("MINIO_SECRET_KEY", "uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC");
+                minio.start();
 
                 GenericContainer createbuckets = new GenericContainer<>("minio/mc")
                         .dependsOn(minio)
