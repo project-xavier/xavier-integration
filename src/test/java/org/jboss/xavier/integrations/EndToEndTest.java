@@ -145,17 +145,14 @@ public class EndToEndTest {
     @Value("${S3_BUCKET}")
     private String bucket;
 
-    @Value("${performancetest.timeout:60000}")
-    private Long timeout;
-
     @Value("${server.port:8080}")
     private String serverPort;
 
-    @Value("${test.timeout.performance:15}")
-    private int timeoutMinutes_PerformaceTest;
+    @Value("${test.timeout.performance:60000}") // 1 minute
+    private int timeoutMilliseconds_PerformaceTest;
 
-    @Value("${test.timetout.ics:10}")
-    private int timeoutMinutes_InitialCostSavingsReport;
+    @Value("${test.timetout.ics:10000}") // 10 seconds
+    private int timeoutMilliseconds_InitialCostSavingsReport;
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
@@ -341,8 +338,8 @@ public class EndToEndTest {
 
         // then
         await()
-            .atMost(timeoutMinutes_InitialCostSavingsReport, TimeUnit.MINUTES)
-            .with().pollInterval(Duration.TEN_SECONDS)
+            .atMost(timeoutMilliseconds_InitialCostSavingsReport, TimeUnit.MILLISECONDS)
+            .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
             .until( () -> {
                 // Check database for the ICSR to be created
                 List<InitialSavingsEstimationReportModel> all = initialSavingsEstimationReportRepository.findAll();
@@ -415,8 +412,8 @@ public class EndToEndTest {
         // Performance test
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
         await()
-            .atMost(timeoutMinutes_PerformaceTest, TimeUnit.MINUTES)
-            .with().pollInterval(Duration.TEN_SECONDS)
+            .atMost(timeoutMilliseconds_PerformaceTest, TimeUnit.MILLISECONDS)
+            .with().pollInterval(Duration.FIVE_HUNDRED_MILLISECONDS)
             .until(() -> {
                 ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/2/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
                 return (workloadSummaryReport_PerformanceTest != null &&
