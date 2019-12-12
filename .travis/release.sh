@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ "$TRAVIS_TAG" != "" ]; then
+if [ -z "$TRAVIS_TAG" ]; then
   # Build image
   mvn fabric8:build -Dfabric8.mode=kubernetes
 
