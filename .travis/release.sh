@@ -1,8 +1,9 @@
 #!/bin/bash
 if [ -n "$TRAVIS_TAG" ]; then
   docker pull registry.access.redhat.com/fuse7/fuse-java-openshift
-  docker images
   docker tag registry.access.redhat.com/fuse7/fuse-java-openshift:latest fuse7/fuse-java-openshift:latest
+  docker tag registry.access.redhat.com/fuse7/fuse-java-openshift:latest fuse7/fuse-java-openshift:1.3
+  docker images
 
   # Build image
   echo "Docker build empezo"
