@@ -5,21 +5,21 @@ jdk:
   - openjdk8
 services:
   - docker
-#addons:
-#  sonarcloud:
-#    organization: project-xavier
-#    token:
-#      secure: $SONAR_TOKEN
+addons:
+  sonarcloud:
+    organization: project-xavier
+    token:
+      secure: $SONAR_TOKEN
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
   - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
-#    - stage: Test
-#      script:
-#        - mvn test -DtestLogRootLevel=warn -Pcoverage
-#        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
-#        - bash <(curl -s https://codecov.io/bash)
+    - stage: Test
+      script:
+        - mvn test -DtestLogRootLevel=warn -Pcoverage
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
+        - bash <(curl -s https://codecov.io/bash)
     - stage: Release
       script:
         - ./.travis/release.sh
