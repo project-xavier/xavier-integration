@@ -1,7 +1,11 @@
 #!/bin/bash
-if [ -z "$TRAVIS_TAG" ]; then
+if [ -n "$TRAVIS_TAG" ]; then
   # Build image
+  echo "Docker build empezo"
   mvn fabric8:build -Dfabric8.mode=kubernetes
+  echo "Docker build termino"
+
+  docker images
 
   # Tag Docker image
   docker tag xavier/xavier-integration xavier/xavier-integration:latest
