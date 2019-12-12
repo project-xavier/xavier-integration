@@ -22,7 +22,7 @@ jobs:
 #        - bash <(curl -s https://codecov.io/bash)
     - stage: Release
       script:
-        - 'if [ "$TRAVIS_TAG" != "" ]; then ./.travis/release.sh; fi'
+        - ./.travis/release.sh
       deploy:
         provider: releases
         api_key: $GITHUB_OAUTH_TOKEN
