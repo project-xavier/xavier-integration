@@ -1,5 +1,7 @@
 #!/bin/bash
 if [ -n "$TRAVIS_TAG" ]; then
+  docker pull registry.access.redhat.com/fuse7/fuse-java-openshift
+  
   # Build image
   echo "Docker build empezo"
   mvn fabric8:build -Dfabric8.mode=kubernetes
