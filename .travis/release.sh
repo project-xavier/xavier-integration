@@ -3,20 +3,20 @@ if [ -n "$TRAVIS_TAG" ]; then
   docker pull registry.access.redhat.com/fuse7/fuse-java-openshift
   docker tag registry.access.redhat.com/fuse7/fuse-java-openshift:latest fuse7/fuse-java-openshift:latest
   docker tag registry.access.redhat.com/fuse7/fuse-java-openshift:latest fuse7/fuse-java-openshift:1.3
-  docker images
 
   # Build image
-  echo "Docker build empezo"
   mvn fabric8:build -Dfabric8.mode=kubernetes
-  echo "Docker build termino"
 
   docker images
 
   # Tag Docker image
-  docker tag xavier/xavier-integration xavier/xavier-integration:latest
-  docker tag xavier/xavier-integration xavier/xavier-integration:"$TRAVIS_TAG"
+  docker tag xavier/xavier-integration:"$TRAVIS_TAG" projectxavier/xavier-integration:latest
+  docker tag xavier/xavier-integration:"$TRAVIS_TAG" projectxavier/xavier-integration:"$TRAVIS_TAG"
 
-  # Push our image to the Image Registry
+  # Docker Hub login
   docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-  docker push xavier/xavier-integration
+
+  # Docker push
+  docker push projectxavier/xavier-integration:latest
+  docker push projectxavier/xavier-integration:"$TRAVIS_TAG"
 fi
