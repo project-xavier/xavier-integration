@@ -25,6 +25,7 @@ import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationRepo
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -251,10 +252,6 @@ public class EndToEndTest {
     AmazonS3 amazonS3;
 
     private static void cloneIngressRepoAndUnzip() throws IOException {
-        // cleaning downloadable files/directories
-        FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
-        FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
-
         // downloading, unzipping, renaming
         String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/" + ingressCommitHash + ".zip";
         File compressedFile = new File("src/test/resources/ingressRepo.zip");
@@ -311,6 +308,13 @@ public class EndToEndTest {
         } catch (RestClientException e) {
             e.printStackTrace();
         }
+    }
+
+    @After
+    public void cleanUp() throws IOException {
+        // cleaning downloadable files/directories
+        FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
+        FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
     }
 
     @Test
