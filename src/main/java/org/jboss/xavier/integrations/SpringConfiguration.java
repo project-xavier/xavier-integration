@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({"prod", "dev"})
+@Profile("!test")
 public class SpringConfiguration {
     @Value("${S3_ACCESS_KEY_ID}")
     String key;
