@@ -23,6 +23,7 @@ import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetected
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
+import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
@@ -156,7 +157,7 @@ public class EndToEndTest {
     @Value("${test.timetout.ics:10000}") // 10 seconds
     private int timeoutMilliseconds_InitialCostSavingsReport;
 
-    @Value("${minio.host:x}")
+    @Value("${minio.host}") // Set in the Initializer
     private String minio_host;
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -342,12 +343,14 @@ public class EndToEndTest {
         camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
-                weaveById("setTempHttpUri")
-                        .after()
+                weaveById("setHttpUri")
+                        .replace()
                         .process(e -> {
-                            String headerURI = "tempHTTP_URI";
-                            e.getIn().setHeader(headerURI, e.getIn().getHeader(headerURI, String.class).replace("minio:9000", minio_host));
+                            String url = e.getIn().getBody(FilePersistedNotification.class).getUrl();
+                            url = url.replace("minio:9000", minio_host);
+                            e.getIn().setHeader("httpUriReplaced", url);
                         })
+                        .setHeader("Exchange.HTTP_URI", header("httpUriReplaced"))
                         .setHeader("Host", constant("minio:9000"));
 
                 weaveById("toOldHost")

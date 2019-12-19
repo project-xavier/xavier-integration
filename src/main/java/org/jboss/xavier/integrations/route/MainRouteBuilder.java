@@ -129,8 +129,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
         from("direct:download-file")
                 .routeId("download-file")
-                .setHeader("tempHTTP_URI", simple("${body.url}")).id("setTempHttpUri")
-                .setHeader("Exchange.HTTP_URI", simple("${header.tempHTTP_URI}"))
+                .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
                 .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
