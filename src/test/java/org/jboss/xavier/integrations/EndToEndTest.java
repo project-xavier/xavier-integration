@@ -173,6 +173,7 @@ public class EndToEndTest {
                         .withEnv("MINIO_SECRET_KEY", "uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC");
                 minio.start();
 
+                Thread.sleep(5000);
                 GenericContainer createbuckets = new GenericContainer<>("minio/mc")
                         .dependsOn(minio)
                         .withNetwork(network)
