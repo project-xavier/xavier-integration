@@ -70,7 +70,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
-    @Value("${minio.host}")
+    @Value("${minio.host:x}")
     private String minio_host;
 
     public void configure() throws Exception {
