@@ -95,6 +95,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 public class EndToEndTest {
     private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
 
+
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
             .withExposedPorts(61616, 8161)
@@ -155,7 +156,11 @@ public class EndToEndTest {
     @Value("${test.timetout.ics:10000}") // 10 seconds
     private int timeoutMilliseconds_InitialCostSavingsReport;
 
+    @Value("${minio.host:x}")
+    private String minio_host;
+
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
@@ -331,6 +336,23 @@ public class EndToEndTest {
             public void configure() {
                 weaveById("set-s3-key")
                         .replace().process(e -> e.getIn().setHeader(S3Constants.KEY, "S3KEY123"));
+            }
+        });
+
+        camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() {
+                weaveById("setTempHttpUri")
+                        .after()
+                        .process(e -> {
+                            String headerURI = "tempHTTP_URI";
+                            e.getIn().setHeader(headerURI, e.getIn().getHeader(headerURI, String.class).replace("minio:9000", minio_host));
+                        })
+                        .setHeader("Host", constant("minio:9000"));
+
+                weaveById("toOldHost")
+                        .replace()
+                        .to("http4:oldhost?preserveHostHeader=true");
             }
         });
 
