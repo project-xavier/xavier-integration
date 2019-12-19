@@ -51,6 +51,7 @@
 
         <interceptFrom id="interceptor-username" uri="rest:*">
             <to uri="direct:check-authenticated-request" />
+            <to uri="direct:check-allowed-request" />
             <when>
                 <simple>${header.CamelServletContextPath} contains '/administration/'</simple>
                 <to uri="direct:check-authorized-request" />
