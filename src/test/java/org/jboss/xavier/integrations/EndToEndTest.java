@@ -514,7 +514,7 @@ public class EndToEndTest {
     private static class ScanRunModelComparator implements Comparator<ScanRunModel> {
         @Override
         public int compare(ScanRunModel o1, ScanRunModel o2) {
-            return o1.getTarget().equals(o2.getTarget()) && o1.getType().equals(o2.getType()) ? 0 : 1;
+            return o1.getTarget().equals(o2.getTarget()) && o1.getSmartStateEnabled().equals(o2.getSmartStateEnabled()) ? 0 : 1;
         }
     }
 

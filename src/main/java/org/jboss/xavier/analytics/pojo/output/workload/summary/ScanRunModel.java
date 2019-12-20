@@ -59,14 +59,14 @@ public class ScanRunModel {
 
     private String target;
     private Date date;
-    private Boolean type;
+    private Boolean smartStateEnabled;
 
     public ScanRunModel(){}
 
-    public ScanRunModel(String target, Date date, Boolean type){
+    public ScanRunModel(String target, Date date, Boolean smartStateEnabled){
         this.target = target;
         this.date = date;
-        this.type = type;
+        this.smartStateEnabled = smartStateEnabled;
     }
 
     public Long getId() {
@@ -101,19 +101,19 @@ public class ScanRunModel {
         this.date = date;
     }
 
-    public Boolean getType() {
-        return type;
+    public Boolean getSmartStateEnabled() {
+        return smartStateEnabled;
     }
 
-    public void setType(Boolean type) {
-        this.type = type;
+    public void setSmartStateEnabled(Boolean smartStateEnabled) {
+        this.smartStateEnabled = smartStateEnabled;
     }
 
     public void setType(String strType) {
         if (isBoolean(strType)) {
-            setType(Boolean.parseBoolean(strType));
+            setSmartStateEnabled(Boolean.parseBoolean(strType));
         } else {
-            setType(strType.toLowerCase().contains("smartstate"));
+            setSmartStateEnabled(strType.toLowerCase().contains("smartstate"));
         }
     }
 
