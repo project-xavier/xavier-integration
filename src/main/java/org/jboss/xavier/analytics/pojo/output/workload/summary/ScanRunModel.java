@@ -1,6 +1,8 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -59,14 +61,16 @@ public class ScanRunModel {
 
     private String target;
     private Date date;
-    private Boolean smartStateEnabled;
+
+    @JsonProperty("smartStateEnabled")
+    private Boolean type;
 
     public ScanRunModel(){}
 
-    public ScanRunModel(String target, Date date, Boolean smartStateEnabled){
+    public ScanRunModel(String target, Date date, Boolean type){
         this.target = target;
         this.date = date;
-        this.smartStateEnabled = smartStateEnabled;
+        this.type = type;
     }
 
     public Long getId() {
@@ -101,19 +105,19 @@ public class ScanRunModel {
         this.date = date;
     }
 
-    public Boolean getSmartStateEnabled() {
-        return smartStateEnabled;
+    public Boolean getType() {
+        return type;
     }
 
-    public void setSmartStateEnabled(Boolean smartStateEnabled) {
-        this.smartStateEnabled = smartStateEnabled;
+    public void setType(Boolean type) {
+        this.type = type;
     }
 
     public void setType(String strType) {
         if (isBoolean(strType)) {
-            setSmartStateEnabled(Boolean.parseBoolean(strType));
+            setType(Boolean.parseBoolean(strType));
         } else {
-            setSmartStateEnabled(strType.toLowerCase().contains("smartstate"));
+            setType(strType.toLowerCase().contains("smartstate"));
         }
     }
 
