@@ -39,6 +39,26 @@ public class RBACService {
         return operation;
     }
 
+    public static Map<String, Map<String, List<String>>> update_access_obj(Map<String, List<AclData>> access, Map<String, Map<String, List<String>>> res_access, List<String> resource_list) {
+//        """Update access object with access data."""
+        for (String res : resource_list) {
+            List<AclData> access_items = access.getOrDefault(res, Collections.emptyList());
+            for (AclData access_item : access_items) {
+                String operation = get_operation(access_item, res);
+                List<String> res_list = access_item.getResources();
+                if (operation.equals("write") && res_access.get(res).get("write") != null) {
+                    res_access.get(res).get("write").addAll(res_list);
+                    res_access.get(res).get("read").addAll(res_list);
+                }
+                if (operation.equals("read")) {
+                    res_access.get(res).get("read").addAll(res_list);
+                }
+            }
+        }
+
+        return res_access;
+    }
+
     public static Map<String, Map<String, List<String>>> apply_access(Map<String, List<AclData>> access) {
 //        """Apply access to managed resources."""
         Map<String, Map<String, List<String>>> res_access = new HashMap<>();
@@ -78,6 +98,8 @@ public class RBACService {
             }
         }
 
+        res_access = update_access_obj(access, res_access, resources);
+
 //    # compact down to only '*' if present
         for (Map.Entry<String, List<String>> resourceType : RESOURCE_TYPES.entrySet()) {
             String res_type = resourceType.getKey();
@@ -87,7 +109,7 @@ public class RBACService {
             for (String operation : operations) {
                 Map<String, List<String>> curr = res_access.get(res_type);
                 List<String> res_list = curr.get(operation);
-                if (res_list.stream().anyMatch(p -> p.equals("*"))) {
+                if (res_list.stream().anyMatch(p -> p.equals(WILDCARD))) {
                     curr.put(operation, Collections.singletonList("*"));
                 }
             }
@@ -96,11 +118,11 @@ public class RBACService {
         return res_access;
     }
 
-    public static List<String> extractResourceDefinitions(List<Acl.ResourceDefinition> resource_definitions) {
+    public static List<String> _extract_resource_definitions(List<Acl.ResourceDefinition> resource_definitions) {
 //        """Extract resource definition information."""
         List<String> result = new ArrayList<>();
         if (resource_definitions.isEmpty()) {
-            return Collections.singletonList("*");
+            return Collections.singletonList(WILDCARD);
         }
 
         for (Acl.ResourceDefinition res_def : resource_definitions) {
@@ -134,7 +156,8 @@ public class RBACService {
             }
             String res_typ = perm_components[1];
             String operation = perm_components[2];
-            List<String> resources = extractResourceDefinitions(resource_definitions);
+
+            List<String> resources = _extract_resource_definitions(resource_definitions);
             AclData acl_data = new AclData(operation, resources);
 
             if (!access.containsKey(res_typ)) {
@@ -163,16 +186,22 @@ public class RBACService {
         List<Acl> acls = new ArrayList<>();
 
         acls.add(
-                new Acl("migration-analytics:*:*", Collections.emptyList())
+                new Acl("migration-analytics:payload:read", Collections.emptyList())
         );
-
-//        acls.add(
-//                new Acl("migration-analytics:*:*", Arrays.asList(
-//                        new Acl.ResourceDefinition(
-//                                new Acl.AttributeFilter("")
-//                        )
-//                ))
-//        );
+        acls.add(
+                new Acl("migration-analytics:payload:write", Arrays.asList(
+                        new Acl.ResourceDefinition(
+                                new Acl.AttributeFilter("migration-analytics.payload", "in", "1,3,5")
+                        )
+                ))
+        );
+        acls.add(
+                new Acl("migration-analytics:payload:write", Arrays.asList(
+                        new Acl.ResourceDefinition(
+                                new Acl.AttributeFilter("migration-analytics.payload", "equal", "8")
+                        )
+                ))
+        );
 
         Map<String, Map<String, List<String>>> result = get_access_for_user(acls);
         System.out.println(result);
