@@ -119,6 +119,16 @@
             </get>
         </rest>
 
+        <rest path="/greetings">
+            <post uri="/">
+                <param name="queryParamKey" type="query" />
+                <route id="my-endpoint-route">
+                    <log message="Starting greetings service with Body=${body}, queryParamKey=${header.queryParamKey}, and rbacAcl=${header.rbacAcl}"/>
+                    <bean ref="greetingsService" method="greetings(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.queryParamKey}, ${body})" />
+                </route>
+            </post>
+        </rest>
+
         <rest path="/report">
             <description>Report REST API</description>
             <get uri="/">
