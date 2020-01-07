@@ -183,8 +183,8 @@ public class EndToEndTest {
                         .dependsOn(minio)
                         .withNetwork(network)
                         .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("MINIO-MC-LOG"))
-                        .withCopyFileToContainer(MountableFile.forClasspathResource("minio.sh"), "/")
-                        .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("sh", "/minio.sh", "minio:9000"));
+                        .withCopyFileToContainer(MountableFile.forClasspathResource("minio-bucket-creation-commands.sh"), "/")
+                        .withCreateContainerCmdModifier(createContainerCmd -> createContainerCmd.withEntrypoint("sh", "/minio-bucket-creation-commands.sh", "minio:9000"));
                 createbuckets.start();
 
                 KafkaContainer kafka = new KafkaContainer()
