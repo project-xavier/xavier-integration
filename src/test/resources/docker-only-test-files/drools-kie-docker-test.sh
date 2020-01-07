@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+#
+# This file serves as a Docker only test for the Drools+KIE containers in order to test the interaction and deployment
+#
+
+
 # Docker Drools container
 drools_ext_port=8080
 kie_ext_port=8180
