@@ -46,7 +46,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -251,9 +250,6 @@ public class EndToEndTest {
 
     @Inject
     CamelContext camelContext;
-
-    @Inject
-    JmsTemplate jmsTemplate;
 
     @Inject
     AmazonS3 amazonS3;
