@@ -48,7 +48,7 @@ public abstract class XavierCamelTest {
                         .setBody(exchange -> {
                             List<Acl> acls = new ArrayList<>();
                             acls.add(
-                                    new Acl(rbacApplicationName + ":user:read", Collections.emptyList())
+                                    new Acl(rbacApplicationName + ":*:*", Collections.emptyList())
                             );
                             return acls;
                         });
