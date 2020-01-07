@@ -43,7 +43,7 @@
         "id": 311,
         "target": "vSphere",
         "date": 1568239200000,
-        "type": "Virt Platform + SmartState"
+        "smartStateEnabled": "Virt Platform + SmartState"
       }
     ]
   }
