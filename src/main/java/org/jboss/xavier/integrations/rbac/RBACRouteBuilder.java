@@ -32,8 +32,24 @@ public class RBACRouteBuilder extends RouteBuilder {
 //                .setHeader(Exchange.HTTP_QUERY, constant("application=" + rbacApplicationName))
 //                .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
                 .to("http4://" + rbacHost + "/api/rbac/v1/access?bridgeEndpoint=true").id("rbac-server-rest")
+                .bean(RBACService.class, "get_access_for_user")
                 .setHeader("rbacAcl", body())
                 .setBody(exchange -> exchange.getIn().getHeader("tmpBody"));
+
+        from("direct:check-rbac-permissions")
+                .routeId("check-rbac-permissions")
+                .choice()
+                    .when(exchange -> {
+                        String resource = (String) exchange.getIn().getHeader("rbacResource");
+                        String permission = (String) exchange.getIn().getHeader("rbacPermission");
+                        Map<String, Map<String, List<String>>> acl = (Map<String, Map<String, List<String>>>) exchange.getIn().getHeader("rbacAcl");
+
+                        Map<String, List<String>> resourceAcl = acl.getOrDefault(resource, Collections.emptyMap());
+                        List<String> permissionAcl = resourceAcl.getOrDefault(permission, Collections.emptyList());
+                        return permissionAcl.isEmpty();
+                    })
+                    .to("direct:request-forbidden")
+                .endChoice();
     }
 
 }

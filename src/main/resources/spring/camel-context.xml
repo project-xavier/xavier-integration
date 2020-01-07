@@ -124,6 +124,11 @@
                 <param name="queryParamKey" type="query" />
                 <route id="my-endpoint-route">
                     <log message="Starting greetings service with Body=${body}, queryParamKey=${header.queryParamKey}, and rbacAcl=${header.rbacAcl}"/>
+
+                    <setHeader headerName="rbacResource"><constant>greetings</constant></setHeader>
+                    <setHeader headerName="rbacPermission"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions"/>
+
                     <bean ref="greetingsService" method="greetings(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.queryParamKey}, ${body})" />
                 </route>
             </post>

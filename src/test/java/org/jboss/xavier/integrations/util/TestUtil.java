@@ -15,6 +15,7 @@ public class TestUtil
         camelContext.startRoute("check-authenticated-request");
         camelContext.startRoute("check-allowed-request");
         camelContext.startRoute("check-authorized-request");
+        camelContext.startRoute("check-rbac-permissions");
     }
 
     public static String getBase64RHIdentity()
