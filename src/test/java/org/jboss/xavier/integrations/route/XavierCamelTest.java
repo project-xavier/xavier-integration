@@ -40,10 +40,10 @@ public abstract class XavierCamelTest {
         camelContext.setAutoStartup(false);
         camelContext.addComponent("aws-s3", camelContext.getComponent("stub"));
 
-        camelContext.getRouteDefinition("check-allowed-request").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+        camelContext.getRouteDefinition("fetch-and-process-rbac-user-access").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                weaveById("rbac-server-rest").replace()
+                weaveById("rbac-server-access-endpoint").replace()
                         .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
                         .setBody(exchange -> {
                             List<Acl> acls = new ArrayList<>();

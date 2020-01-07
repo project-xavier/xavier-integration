@@ -13,7 +13,7 @@ public class TestUtil
         camelContext.startRoute("request-forbidden");
         camelContext.startRoute("add-username-header");
         camelContext.startRoute("check-authenticated-request");
-        camelContext.startRoute("check-allowed-request");
+        camelContext.startRoute("fetch-and-process-rbac-user-access");
         camelContext.startRoute("check-authorized-request");
         camelContext.startRoute("check-rbac-permissions");
     }
