@@ -66,7 +66,7 @@ public class AbstractVMWorkloadInventoryCalculator {
             List<List<Map>> value = jsonParsed.read(expandParamsInPath);
             value.stream().flatMap(Collection::stream).collect(Collectors.toList()).forEach(e-> files.put((String) e.get(keyfield), (String) e.get(valuefield)));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("Exception reading value from JSON", e);
         }
         return files;
     }
@@ -100,11 +100,16 @@ public class AbstractVMWorkloadInventoryCalculator {
     protected <T> List<T> readListValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
 
-        Object value = jsonParsed.read(expandParamsInPath);
-        if (value instanceof Collection) {
-            return new ArrayList<>((List<T>) value);
-        } else {
-            return Collections.singletonList((T) value);
+        try {
+            Object value = jsonParsed.read(expandParamsInPath);
+            if (value instanceof Collection) {
+                return new ArrayList<>((List<T>) value);
+            } else {
+                return Collections.singletonList((T) value);
+            }
+        } catch (Exception e) {
+            log.warn("Exception reading value from JSON", e);
+            return Collections.emptyList();
         }
     }
 
