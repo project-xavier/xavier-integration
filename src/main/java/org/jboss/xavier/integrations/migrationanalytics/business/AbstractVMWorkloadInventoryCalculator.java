@@ -123,7 +123,7 @@ public class AbstractVMWorkloadInventoryCalculator {
         Matcher m = p.matcher(path);
         while (m.find() && vmStructMap != null) {
             String key = m.group().substring(1, m.group().length() - 1);
-            String value = vmStructMap.containsKey(key) ? vmStructMap.get(key).toString() : "";
+            String value = (vmStructMap.containsKey(key) && vmStructMap.get(key) != null) ? vmStructMap.get(key).toString() : "";
             path = path.replace(m.group(), value);
         }
 
