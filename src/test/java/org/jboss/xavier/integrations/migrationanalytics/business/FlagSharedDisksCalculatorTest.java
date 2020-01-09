@@ -64,17 +64,13 @@ public class FlagSharedDisksCalculatorTest {
 
     @Test
     public void calculate_GivenMissingAttributes_ShouldNotFail() throws IOException {
-        Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
-        expectedVmNamesWithSharedDisk.add("tomcat");
-        expectedVmNamesWithSharedDisk.add("lb");
-
         String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, FlagSharedDisksCalculatorTest.class.getClassLoader());
-        cloudFormsJson.replace("filename", "XXfilename");
-        cloudFormsJson.replace("device_type", "XXdevice_type");
+        cloudFormsJson = cloudFormsJson.replace("filename", "XXfilename");
+        cloudFormsJson = cloudFormsJson.replace("device_type", "XXdevice_type");
         Map<String, Object> headers = new HashMap<>();
         headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, "30");
 
         Set<String> vmNamesWithSharedDisk = calculator.calculate(cloudFormsJson, headers);
-        assertThat(vmNamesWithSharedDisk).contains("tomcat");
+        assertThat(vmNamesWithSharedDisk).isEmpty();
     }
 }
