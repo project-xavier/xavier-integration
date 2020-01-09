@@ -89,8 +89,8 @@ public class ParamsCalculatorTest {
 
         UploadFormInputDataModel expectedFormInputDataModel = new UploadFormInputDataModel(customerid, filename, hypervisor,
                 totaldiskspace, sourceproductindicator,
-                year1hypervisorpercentage/100, year2hypervisorpercentage/100,
-                year3hypervisorpercentage/100, growthratepercentage/100, analysisId);
+                year1hypervisorpercentage / 100, year2hypervisorpercentage / 100,
+                year3hypervisorpercentage / 100, growthratepercentage / 100, analysisId);
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("filename", filename);
@@ -114,4 +114,46 @@ public class ParamsCalculatorTest {
         doReturn("0_0_9").when(reportCalculator).getManifestVersion(any());
         analyticsCalculator_calculate_CloudFormsModelGiven_ShouldReturn2HostAndTotalDiskSpace();
     }
+
+    @Test
+    public void analyticsCalculator_calculate_CloudFormsModelMissingAttibutes_ShouldReturn0Hosts() throws IOException {
+        // Given
+        String filename = "cloudforms-export-v1.json";
+        String customerid = "CIDE9988";
+
+        String cloudFormJSON = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream(filename), StandardCharsets.UTF_8);
+        cloudFormJSON = cloudFormJSON.replace("cpu_cores_per_socket", "XXcpu_cores_per_socket");
+        Double year1hypervisorpercentage = 10D;
+        Double year2hypervisorpercentage = 20D;
+        Double year3hypervisorpercentage = 30D;
+        Double growthratepercentage = 7D;
+        Long analysisId = 3L;
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("filename", filename);
+        headers.put("org_id", customerid);
+        headers.put(Calculator.YEAR_1_HYPERVISORPERCENTAGE, year1hypervisorpercentage);
+        headers.put(Calculator.YEAR_2_HYPERVISORPERCENTAGE, year2hypervisorpercentage);
+        headers.put(Calculator.YEAR_3_HYPERVISORPERCENTAGE, year3hypervisorpercentage);
+        headers.put(Calculator.GROWTHRATEPERCENTAGE, growthratepercentage);
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        // When
+        UploadFormInputDataModel inputDataModelCalculated = reportCalculator.calculate(cloudFormJSON, headers);
+
+        // Then
+        assertThat(inputDataModelCalculated.getHypervisor()).isEqualTo(0);
+
+        Map<String, Object> mapa = new HashMap<>();
+        mapa.put("id",2);
+        mapa.put("ems_ref", "host-29");
+        mapa.put("name", "esx13.v2v.bos.redhat.com");
+        mapa.put("hostname", "esx13.v2v.bos.redhat.com");
+        mapa.put("type", "ManageIQ::Providers::Vmware::InfraManager::HostEsx");
+        mapa.put("cpu_total_cores", 4);
+        mapa.put("cpu_cores_per_socket", 0);
+        mapa.put("ems_cluster_id", 1);
+        assertThat(reportCalculator.calculateHypervisors(mapa, "cpu_total_cores", "cpu_cores_per_socket")).isEqualTo(0);
+    }
+
 }

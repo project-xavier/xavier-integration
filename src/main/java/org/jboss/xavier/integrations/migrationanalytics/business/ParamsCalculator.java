@@ -21,10 +21,9 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
         this.manifestVersionService = manifestVersionService;
     }
 
-    private static Integer calculateHypervisors(Object e, String cpuTotalCoresPath, String cpuCoresPerSocketPath) {
-        Map mapa = (Map) e;
-        Integer cputotalcores = (Integer) mapa.get(cpuTotalCoresPath);
-        Integer cpucorespersocket = (Integer) mapa.get(cpuCoresPerSocketPath);
+    public Integer calculateHypervisors(Map valuesMap, String cpuTotalCoresPath, String cpuCoresPerSocketPath) {
+        Integer cputotalcores = (Integer) valuesMap.get(cpuTotalCoresPath);
+        Integer cpucorespersocket = (Integer) valuesMap.get(cpuCoresPerSocketPath);
         if (cputotalcores != null && cpucorespersocket != null && cpucorespersocket > 0) {
             return (int) Math.ceil(cputotalcores / (cpucorespersocket * 2.0));
         } else {
@@ -44,7 +43,7 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
         // Calculations
         Integer numberofhypervisors = ((JSONArray) JsonPath.read(cloudFormsJson, hypervisorPath))
                 .stream()
-                .map(e -> calculateHypervisors(e, cpuTotalCoresPath, cpuCoresPerSocketPath))
+                .map(e -> calculateHypervisors((Map) e, cpuTotalCoresPath, cpuCoresPerSocketPath))
                 .mapToInt(Integer::intValue)
                 .sum();
         Long totalspace = ((List<Number>) JsonPath.parse(cloudFormsJson).read(totalSpacePath)).stream().mapToLong(Number::longValue).sum();
