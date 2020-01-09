@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class AbstractVMWorkloadInventoryCalculator {
+public abstract class AbstractVMWorkloadInventoryCalculator {
 
     public static final String VMPATH = "vmworkloadinventory.vmPath";
     public static final String CLUSTERPATH = "vmworkloadinventory.clusterPath";
