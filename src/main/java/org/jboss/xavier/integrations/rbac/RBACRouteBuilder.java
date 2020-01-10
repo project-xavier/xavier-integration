@@ -1,18 +1,31 @@
 package org.jboss.xavier.integrations.rbac;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.http4.HttpMethods;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Component
 public class RBACRouteBuilder extends RouteBuilder {
 
+    private static final String RBAC_X_RH_IDENTITY = "x-rh-identity";
+    private static final String RBAC_X_RH_IDENTITY_DECODED = "rbacXRhIdentityDecoded";
+    private static final String RBAC_IS_ORG_ADMIN = "rbacIsOrgAdmin";
     private static final String RBAC_TMP_BODY = "rbacTmpBody";
-    public static final String RBAC_USER_ACCESS_HEADER_NAME = "rbacUserAccess";
+    public static final String RBAC_USER_ACCESS = "rbacUserAccess";
+
     public static final String RBAC_ENDPOINT_RESOURCE_NAME = "rbacEndpointResourceName";
     public static final String RBAC_ENDPOINT_RESOURCE_PERMISSION = "rbacEndpointResourcePermission";
 
@@ -25,23 +38,74 @@ public class RBACRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
         from("direct:fetch-and-process-rbac-user-access")
                 .routeId("fetch-and-process-rbac-user-access")
-                .setHeader(RBAC_TMP_BODY, body())
-//                .setHeader(Exchange.HTTP_QUERY, constant("application=" + rbacApplicationName))
-//                .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-                .to("http4://" + rbacHost + "/api/rbac/v1/access?bridgeEndpoint=true").id("rbac-server-access-endpoint")
-                .bean(RBACService.class, "get_access_for_user")
-                .setHeader(RBAC_USER_ACCESS_HEADER_NAME, body())
-                .setBody(exchange -> exchange.getIn().getHeader(RBAC_TMP_BODY));
+                .process(exchange -> {
+                    // save decoded x-rh-identity JsonNode as header
+
+                    String xRHIdentity = exchange.getIn().getHeader(RBAC_X_RH_IDENTITY, String.class);
+                    JsonNode xRHIdentityDecodedJsonNode;
+                    try {
+                        xRHIdentityDecodedJsonNode = new ObjectMapper().reader().readTree(
+                                new String(
+                                        Base64.getDecoder().decode(xRHIdentity)
+                                )
+                        );
+                    } catch (IOException e) {
+                        Logger.getLogger(this.getClass().getName()).warning("Unable to read " + RBAC_X_RH_IDENTITY);
+                        throw new IllegalStateException("Could not read header " + RBAC_X_RH_IDENTITY);
+                    }
+                    exchange.getIn().setHeader(RBAC_X_RH_IDENTITY_DECODED, xRHIdentityDecodedJsonNode);
+                })
+                .process(exchange -> {
+                    // isOrgAdmin
+
+                    JsonNode xRHIdentity = exchange.getIn().getHeader(RBAC_X_RH_IDENTITY_DECODED, JsonNode.class);
+                    JsonNode isOrgAdmin = xRHIdentity.get("identity").get("user").get("is_org_admin");
+                    exchange.getIn().setHeader(RBAC_IS_ORG_ADMIN, isOrgAdmin.booleanValue());
+                })
+                .choice()
+                    .when(exchange -> exchange.getIn().getHeader(RBAC_IS_ORG_ADMIN, Boolean.class))
+                        .setHeader(RBAC_USER_ACCESS, constant(null))
+                    .otherwise()
+                        .setHeader(RBAC_TMP_BODY, body())
+
+                        .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
+                        .setBody(() -> null)
+                        .setHeader(Exchange.HTTP_QUERY, constant("application=" + rbacApplicationName))
+                        .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+                        .setHeader(Exchange.HTTP_URI, simple(rbacHost))
+                        .setHeader(Exchange.HTTP_PATH, simple("/api/rbac/v1/access"))
+                        .to("http4://oldhost").id("rbac-server-access-endpoint")
+                        .choice()
+                            .when(exchange -> exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class) != 200)
+                                .to("direct:request-forbidden")
+                        .end()
+                        .convertBodyTo(String.class)
+                        .process(exchange -> {
+                            String body = exchange.getIn().getBody(String.class);
+                            RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
+
+                            exchange.getIn().setBody(rbacResponse.getData());
+                        })
+                        .bean(RBACService.class, "get_access_for_user")
+
+                        .setHeader(RBAC_USER_ACCESS, body())
+                        .setBody(exchange -> exchange.getIn().getHeader(RBAC_TMP_BODY))
+                .endChoice();
+
 
         from("direct:check-rbac-permissions")
                 .routeId("check-rbac-permissions")
                 .choice()
                     .when(exchange -> {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Map<String, List<String>>> acl = (Map<String, Map<String, List<String>>>) exchange.getIn().getHeader(RBAC_USER_ACCESS);
+                        // Null means access to everything
+                        if (acl == null) {
+                            return false;
+                        }
+
                         String endpointResourceName = (String) exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_NAME);
                         String endpointResourcePermission = (String) exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_PERMISSION);
-
-                        @SuppressWarnings("unchecked")
-                        Map<String, Map<String, List<String>>> acl = (Map<String, Map<String, List<String>>>) exchange.getIn().getHeader(RBAC_USER_ACCESS_HEADER_NAME);
 
                         Map<String, List<String>> resourceAcl = acl.getOrDefault(endpointResourceName, Collections.emptyMap());
                         List<String> permissionAcl = resourceAcl.getOrDefault(endpointResourcePermission, Collections.emptyList());

@@ -1,5 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -8,6 +10,7 @@ import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.rbac.Acl;
+import org.jboss.xavier.integrations.rbac.RbacResponse;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +53,16 @@ public abstract class XavierCamelTest {
                             acls.add(
                                     new Acl(rbacApplicationName + ":*:*", Collections.emptyList())
                             );
-                            return acls;
+
+                            RbacResponse.Meta meta = new RbacResponse.Meta(1, 10, 0);
+                            RbacResponse.Links links = new RbacResponse.Links("first", "next", "previous", "last");
+                            RbacResponse rbacResponse = new RbacResponse(meta, links, acls);
+                            try {
+                                return new ObjectMapper().writeValueAsString(rbacResponse);
+                            } catch (JsonProcessingException e) {
+                                e.printStackTrace();
+                                throw new IllegalStateException(e);
+                            }
                         });
             }
         });
