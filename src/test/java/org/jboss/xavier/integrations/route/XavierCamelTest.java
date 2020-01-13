@@ -43,10 +43,10 @@ public abstract class XavierCamelTest {
         camelContext.setAutoStartup(false);
         camelContext.addComponent("aws-s3", camelContext.getComponent("stub"));
 
-        camelContext.getRouteDefinition("fetch-and-process-rbac-user-access").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+        camelContext.getRouteDefinition("fetch-rbac-user-access").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                weaveById("rbac-server-access-endpoint").replace()
+                weaveById("fetch-rbac-user-access-endpoint").replace()
                         .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
                         .setBody(exchange -> {
                             List<Acl> acls = new ArrayList<>();
@@ -55,7 +55,7 @@ public abstract class XavierCamelTest {
                             );
 
                             RbacResponse.Meta meta = new RbacResponse.Meta(1, 10, 0);
-                            RbacResponse.Links links = new RbacResponse.Links("first", "next", "previous", "last");
+                            RbacResponse.Links links = new RbacResponse.Links("first", null, "previous", "last");
                             RbacResponse rbacResponse = new RbacResponse(meta, links, acls);
                             try {
                                 return new ObjectMapper().writeValueAsString(rbacResponse);

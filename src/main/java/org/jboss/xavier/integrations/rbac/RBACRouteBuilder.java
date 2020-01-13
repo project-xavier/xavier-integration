@@ -2,15 +2,14 @@ package org.jboss.xavier.integrations.rbac;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http4.HttpMethods;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +56,6 @@ public class RBACRouteBuilder extends RouteBuilder {
                 })
                 .process(exchange -> {
                     // isOrgAdmin
-
                     JsonNode xRHIdentity = exchange.getIn().getHeader(RBAC_X_RH_IDENTITY_DECODED, JsonNode.class);
                     JsonNode isOrgAdmin = xRHIdentity.get("identity").get("user").get("is_org_admin");
                     exchange.getIn().setHeader(RBAC_IS_ORG_ADMIN, isOrgAdmin.booleanValue());
@@ -68,30 +66,54 @@ public class RBACRouteBuilder extends RouteBuilder {
                     .otherwise()
                         .setHeader(RBAC_TMP_BODY, body())
 
-                        .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-                        .setBody(() -> null)
-                        .setHeader(Exchange.HTTP_QUERY, constant("application=" + rbacApplicationName))
-                        .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-                        .setHeader(Exchange.HTTP_URI, simple(rbacHost))
-                        .setHeader(Exchange.HTTP_PATH, simple("/api/rbac/v1/access"))
-                        .to("http4://oldhost").id("rbac-server-access-endpoint")
-                        .choice()
-                            .when(exchange -> exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class) != 200)
-                                .to("direct:request-forbidden")
-                        .end()
-                        .convertBodyTo(String.class)
-                        .process(exchange -> {
-                            String body = exchange.getIn().getBody(String.class);
-                            RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
-
-                            exchange.getIn().setBody(rbacResponse.getData());
-                        })
+                        .to("direct:fetch-rbac-user-access")
                         .bean(RBACService.class, "get_access_for_user")
 
                         .setHeader(RBAC_USER_ACCESS, body())
                         .setBody(exchange -> exchange.getIn().getHeader(RBAC_TMP_BODY))
                 .endChoice();
 
+        from("direct:fetch-rbac-user-access")
+                .routeId("fetch-rbac-user-access")
+                .setHeader("access", ArrayList::new)
+                .setHeader("nextLink", () -> "")
+                .loopDoWhile(exchange -> exchange.getIn().getHeader("nextLink") != null)
+                    .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
+                    .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+                    .setHeader(Exchange.HTTP_PATH, constant("/api/rbac/v1/access"))
+                    .process(exchange -> {
+                        String httpQuery;
+                        String nextLink = exchange.getIn().getHeader("nextLink", String.class);
+                        int queryParamsIndex = nextLink.indexOf("?");
+                        if (queryParamsIndex != -1) {
+                            httpQuery = nextLink.substring(queryParamsIndex + 1);
+                        } else {
+                            httpQuery = "application=" + rbacApplicationName;
+                        }
+                        exchange.getIn().setHeader(Exchange.HTTP_QUERY, httpQuery);
+                    })
+                    .setHeader(Exchange.HTTP_URI, simple(rbacHost))
+                    .setBody(() -> null)
+                    .to("http4://oldhost").id("fetch-rbac-user-access-endpoint")
+                    .choice()
+                        .when(exchange -> exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class) != 200)
+                            .log("Error requesting user access code: ${header.CamelHttpResponseCode} body: ${header.CamelHttpResponseText}")
+                        .otherwise()
+                            .convertBodyTo(String.class)
+                            .process(exchange -> {
+                                String body = exchange.getIn().getBody(String.class);
+                                RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
+                                List<Acl> access = rbacResponse.getData();
+                                exchange.getIn().getHeader("access", List.class).addAll(access);
+
+                                // Pagination
+                                RbacResponse.Links links = rbacResponse.getLinks();
+                                String nextLink = links.getNext();
+                                exchange.getIn().setHeader("nextLink", nextLink);
+                            })
+                    .end()
+                .end()
+                .setBody(exchange -> exchange.getIn().getHeader("access"));
 
         from("direct:check-rbac-permissions")
                 .routeId("check-rbac-permissions")
