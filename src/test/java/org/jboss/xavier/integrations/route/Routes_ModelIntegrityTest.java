@@ -23,7 +23,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class XmlRoutes_ModelIntegrityTest extends XavierCamelTest {
+public class Routes_ModelIntegrityTest extends XavierCamelTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -41,8 +41,13 @@ public class XmlRoutes_ModelIntegrityTest extends XavierCamelTest {
         camel_context = camel_context.substring(0, camel_context.indexOf("*"));
     }
 
+    /**
+     * https://issues.redhat.com/browse/MIGENG-371
+     * Fixing More than one row with the given identifier was found X,
+     * for class: org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel
+     */
     @Test
-    public void xmlRouteBuilder_RestReport_NoParamGiven_ShouldCallFindReports() throws Exception {
+    public void Routes_ModelIntegrity_NoOrphanInitialSavingsEstimationReportModelRemainsAfterAnalysisModelUpdate() throws Exception {
         //Given
         camelContext.addRoutes(new RouteBuilder() {
             @Override
