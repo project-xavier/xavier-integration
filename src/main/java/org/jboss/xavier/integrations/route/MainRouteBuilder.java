@@ -121,10 +121,11 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                         .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Upload Service")
                 .end();
 
-        from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=earliest&autoCommitEnable=true")
+        from("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoCommitEnable=true")
                 .routeId("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
+                .idempotentConsumer("body.requestId") // lookup to use
                 .to("direct:download-file");
 
         from("direct:download-file")
