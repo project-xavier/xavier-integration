@@ -4,6 +4,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.util.TestUtil;
@@ -18,6 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,6 +69,10 @@ public class Routes_ModelIntegrityTest extends XavierCamelTest {
 
                             InitialSavingsEstimationReportModel initialSavingsEstimationReportModel = new InitialSavingsEstimationReportModel();
                             analysisService.setInitialSavingsEstimationReportModel(initialSavingsEstimationReportModel, analysisModel.getId());
+
+
+                            List<WorkloadInventoryReportModel> workloadInventoryReportModels = Arrays.asList(new WorkloadInventoryReportModel(), new WorkloadInventoryReportModel());
+                            analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
                         })
                         .to("direct:replace-analysis-initialSavingsEstimation");
 
@@ -74,12 +82,21 @@ public class Routes_ModelIntegrityTest extends XavierCamelTest {
                             List<AnalysisModel> analysisModels = analysisRepository.findAll();
                             AnalysisModel analysisModel = analysisModels.get(0);
 
-                            // Force expected failure replacing initialSavingsEstimationReportModel by a new Object
+                            // Set new InitialSavingsEstimationReportModel
                             InitialSavingsEstimationReportModel initialSavingsEstimationReportModel = new InitialSavingsEstimationReportModel();
                             analysisService.setInitialSavingsEstimationReportModel(initialSavingsEstimationReportModel, analysisModel.getId());
 
-                            // If code below executes with error we will see `More than one row with the given identifier was found: 1`
-                            analysisRepository.findAll();
+                            List<AnalysisModel> all = analysisRepository.findAll();
+                            assertThat(all.get(0).getInitialSavingsEstimationReportModel()).isNotNull();
+
+
+                            // Set new list of WorkloadInventoryReportModel
+                            List<WorkloadInventoryReportModel> workloadInventoryReportModels = Arrays.asList(new WorkloadInventoryReportModel(), new WorkloadInventoryReportModel());
+                            analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
+
+                            all = analysisRepository.findAll();
+                            assertThat(all.get(0).getWorkloadInventoryReportModels()).isNotNull();
+                            assertThat(all.get(0).getWorkloadInventoryReportModels().size()).isEqualTo(2);
                         });
             }
         });
