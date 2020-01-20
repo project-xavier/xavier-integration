@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -131,6 +132,7 @@ public class EndToEndTest {
     @ClassRule
     public static LocalStackContainer localstack = new LocalStackContainer()
             .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"))
+            .withEnv("DEBUG", "1")
             .withServices(S3);
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
@@ -158,6 +160,9 @@ public class EndToEndTest {
 
     @Value("${minio.host}") // Set in the Initializer
     private String minio_host;
+
+    @Value("${insights.kafka.host}")
+    private String kafkaHost;
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -448,6 +453,19 @@ public class EndToEndTest {
                         workloadSummaryReport_PerformanceTest.getBody().getSummaryModels() != null);
              });
 
+        camelContext.stop();
+
+        camelContext.getRouteDefinition("kafka-upload-message").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=earliest&autoCommitEnable=true");
+            }
+        });
+        camelContext.start();
+        Thread.sleep(10000);
+
+        // checking some Initial Savings Report is duplicated regarding the analysisId
+        assertThat(initialSavingsEstimationReportRepository.findAll().stream().collect(Collectors.groupingBy(e -> e.getAnalysis().getId())).values().stream().anyMatch(m -> m.size() > 1)).isTrue();
         camelContext.stop();
     }
 
