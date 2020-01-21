@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -451,22 +452,37 @@ public class EndToEndTest {
                         workloadSummaryReport_PerformanceTest.getBody() != null &&
                         workloadSummaryReport_PerformanceTest.getBody().getSummaryModels() != null);
              });
-/*
-        camelContext.suspend();
 
+        // Testing the duplication of Rows depending on the type of the Kafka consumer
+        assertThat(numberOfDuplicatedRowsInReports("", "fourthconsumer")).isEqualTo(0);
+
+        long duplicatedRows = numberOfDuplicatedRowsInReports("&autoOffsetReset=earliest", "secondconsumer");
+        assertThat(duplicatedRows).isGreaterThan(0);
+
+        assertThat(numberOfDuplicatedRowsInReports("&autoOffsetReset=latest", "thirdconsumer")).isEqualTo(duplicatedRows);
+
+        camelContext.stop();
+    }
+
+    private long numberOfDuplicatedRowsInReports(String autoOffsetReset, String consumer) throws Exception {
+        camelContext.stop();
+
+        // To avoid issues with Localstack
+        camelContext.addComponent("aws-s3", camelContext.getComponent("stub"));
+
+        // Test to check we will have duplicates if we set autoOffsetReset=earliest
         camelContext.getRouteDefinition("kafka-upload-message").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                replaceFromWith("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + "&autoOffsetReset=earliest&autoCommitEnable=true");
+                replaceFromWith("kafka:" + kafkaHost + "?topic={{insights.kafka.upload.topic}}&brokers=" + kafkaHost + autoOffsetReset + "&autoCommitEnable=true&clientId=" + consumer);
             }
         });
-        camelContext.resume();
+
+        camelContext.start();
         Thread.sleep(10000);
 
         // checking some Initial Savings Report is duplicated regarding the analysisId
-        assertThat(initialSavingsEstimationReportRepository.findAll().stream().collect(Collectors.groupingBy(e -> e.getAnalysis().getId())).values().stream().anyMatch(m -> m.size() > 1)).isTrue();
-  */
-        camelContext.stop();
+        return initialSavingsEstimationReportRepository.findAll().stream().collect(Collectors.groupingBy(e -> e.getAnalysis().getId())).values().stream().filter(m -> m.size() > 1).count();
     }
 
     @NotNull
