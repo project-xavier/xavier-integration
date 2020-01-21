@@ -125,7 +125,6 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .routeId("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
-//                .idempotentConsumer("body.requestId") // lookup to use
                 .to("direct:download-file");
 
         from("direct:download-file")
