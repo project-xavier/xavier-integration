@@ -39,7 +39,6 @@ public abstract class XavierCamelTest {
     @Before
     public void beforeTest() throws Exception {
         //Given
-        camelContext.setTracing(true);
         camelContext.setAutoStartup(false);
         camelContext.addComponent("aws-s3", camelContext.getComponent("stub"));
 
