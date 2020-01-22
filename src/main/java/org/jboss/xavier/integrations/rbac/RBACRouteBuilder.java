@@ -37,6 +37,7 @@ public class RBACRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
         from("direct:fetch-and-process-rbac-user-access")
                 .routeId("fetch-and-process-rbac-user-access")
+                .log("RBAC start processing x-rh-identity: ${header.x-rh-identity}")
                 .process(exchange -> {
                     // save decoded x-rh-identity JsonNode as header
 
