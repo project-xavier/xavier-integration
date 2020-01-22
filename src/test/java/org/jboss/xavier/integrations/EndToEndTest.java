@@ -454,12 +454,13 @@ public class EndToEndTest {
              });
 
         // Testing the duplication of Rows depending on the type of the Kafka consumer
-        assertThat(camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("", "noOffsetConsumer")).isEqualTo(0);
+        long duplicatedRows = camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=latest", "latestOffsetConsumer");
+        assertThat(duplicatedRows).isEqualTo(0);
 
-        long duplicatedRows = camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=earliest", "earliestOffsetConsumer");
+        duplicatedRows = camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=earliest", "earliestOffsetConsumer");
         assertThat(duplicatedRows).isGreaterThan(0);
 
-        assertThat(camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=latest", "latestOffsetConsumer")).isEqualTo(duplicatedRows);
+        assertThat(camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=latest", "secondLatestOffsetConsumer")).isEqualTo(duplicatedRows);
 
         camelContext.stop();
     }
