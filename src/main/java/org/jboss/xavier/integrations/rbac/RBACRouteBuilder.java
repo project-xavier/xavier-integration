@@ -80,7 +80,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                 .loopDoWhile(exchange -> exchange.getIn().getHeader("nextLink") != null)
                     .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
                     .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-                    .setHeader(Exchange.HTTP_PATH, constant("/api/rbac/v1/access"))
+                    .setHeader(Exchange.HTTP_PATH, constant("/api/rbac/v1/access/"))
                     .process(exchange -> {
                         String httpQuery;
                         String nextLink = exchange.getIn().getHeader("nextLink", String.class);
