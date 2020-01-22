@@ -94,6 +94,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                     })
                     .setHeader(Exchange.HTTP_URI, simple(rbacHost))
                     .setBody(() -> null)
+                    .log("Requestion RBAC using x-rh-identity: ${header.x-rh-identity}")
                     .to("http4://oldhost").id("fetch-rbac-user-access-endpoint")
                     .choice()
                         .when(exchange -> exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class) != 200)
