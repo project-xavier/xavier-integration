@@ -174,8 +174,11 @@ public class RBACService {
     }
 
     public static Map<String, Map<String, List<String>>> get_access_for_user(List<Acl> acls) {
-        if (acls == null || acls.isEmpty()) {
+        if (acls == null) {
             return null;
+        }
+        if (acls.isEmpty()) {
+            return Collections.emptyMap();
         }
 
         Map<String, List<AclData>> processed_acls = process_acls(acls);
