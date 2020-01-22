@@ -454,17 +454,17 @@ public class EndToEndTest {
              });
 
         // Testing the duplication of Rows depending on the type of the Kafka consumer
-        assertThat(numberOfDuplicatedRowsInReports("", "fourthconsumer")).isEqualTo(0);
+        assertThat(camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("", "noOffsetConsumer")).isEqualTo(0);
 
-        long duplicatedRows = numberOfDuplicatedRowsInReports("&autoOffsetReset=earliest", "secondconsumer");
+        long duplicatedRows = camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=earliest", "earliestOffsetConsumer");
         assertThat(duplicatedRows).isGreaterThan(0);
 
-        assertThat(numberOfDuplicatedRowsInReports("&autoOffsetReset=latest", "thirdconsumer")).isEqualTo(duplicatedRows);
+        assertThat(camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=latest", "latestOffsetConsumer")).isEqualTo(duplicatedRows);
 
         camelContext.stop();
     }
 
-    private long numberOfDuplicatedRowsInReports(String autoOffsetReset, String consumer) throws Exception {
+    private long camelStopKafkaReconnectnumberOfDuplicatedRowsInReports(String autoOffsetReset, String consumer) throws Exception {
         camelContext.stop();
 
         // To avoid issues with Localstack
@@ -479,10 +479,15 @@ public class EndToEndTest {
         });
 
         camelContext.start();
-        Thread.sleep(10000);
+        Thread.sleep(20000);
 
         // checking some Initial Savings Report is duplicated regarding the analysisId
-        return initialSavingsEstimationReportRepository.findAll().stream().collect(Collectors.groupingBy(e -> e.getAnalysis().getId())).values().stream().filter(m -> m.size() > 1).count();
+        return initialSavingsEstimationReportRepository.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(e -> e.getAnalysis().getId()))
+                .values().stream()
+                .filter(m -> m.size() > 1)
+                .count();
     }
 
     @NotNull
