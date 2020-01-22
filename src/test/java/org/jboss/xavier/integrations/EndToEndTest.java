@@ -155,7 +155,7 @@ public class EndToEndTest {
     @Value("${test.timeout.performance:60000}") // 1 minute
     private int timeoutMilliseconds_PerformaceTest;
 
-    @Value("${test.timetout.ics:10000}") // 10 seconds
+    @Value("${test.timeout.ics:10000}") // 10 seconds
     private int timeoutMilliseconds_InitialCostSavingsReport;
 
     @Value("${minio.host}") // Set in the Initializer
@@ -163,6 +163,10 @@ public class EndToEndTest {
 
     @Value("${insights.kafka.host}")
     private String kafkaHost;
+
+    @Value("${test.sleep.startandcheckduplicated:10000")
+    private long sleepBetweenStartAndDuplicatedReportCheck_inMillis;
+
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -480,7 +484,7 @@ public class EndToEndTest {
         });
 
         camelContext.start();
-        Thread.sleep(20000);
+        Thread.sleep(sleepBetweenStartAndDuplicatedReportCheck_inMillis);
 
         // checking some Initial Savings Report is duplicated regarding the analysisId
         return initialSavingsEstimationReportRepository.findAll()
