@@ -10,17 +10,6 @@ import java.util.Map;
 public class RBACService {
 
     public static final String WILDCARD = "*";
-    public static final Map<String, List<String>> RESOURCE_TYPES = new HashMap<>();
-
-    static {
-        RESOURCE_TYPES.put("user", Collections.singletonList("read"));
-        RESOURCE_TYPES.put("analysis", Arrays.asList("read", "write"));
-        RESOURCE_TYPES.put("payload", Arrays.asList("read", "write"));
-        RESOURCE_TYPES.put("report.initial-saving-estimation", Collections.singletonList("read"));
-        RESOURCE_TYPES.put("report.workload-summary", Collections.singletonList("read"));
-        RESOURCE_TYPES.put("report.workload-inventory", Collections.singletonList("read"));
-        RESOURCE_TYPES.put("mappings", Collections.singletonList("read"));
-    }
 
     /**
      * Get operation and default wildcard to write for now.
@@ -28,7 +17,7 @@ public class RBACService {
     public static String get_operation(AclData access_item, String res_type) {
         String operation = access_item.getOperation();
         if (operation.equals(WILDCARD)) {
-            List<String> operations = RESOURCE_TYPES.getOrDefault(res_type, Collections.emptyList());
+            List<String> operations = ResourceTypes.RESOURCE_TYPES.getOrDefault(res_type, Collections.emptyList());
             if (!operations.isEmpty()) {
                 operation = operations.get(operations.size() - 1);
             } else {
@@ -64,7 +53,7 @@ public class RBACService {
         Map<String, Map<String, List<String>>> res_access = new HashMap<>();
         List<String> resources = new ArrayList<>();
 
-        for (Map.Entry<String, List<String>> resourceType : RESOURCE_TYPES.entrySet()) {
+        for (Map.Entry<String, List<String>> resourceType : ResourceTypes.RESOURCE_TYPES.entrySet()) {
             String res_type = resourceType.getKey();
             List<String> operations = resourceType.getValue();
 
@@ -101,7 +90,7 @@ public class RBACService {
         res_access = update_access_obj(access, res_access, resources);
 
 //    # compact down to only '*' if present
-        for (Map.Entry<String, List<String>> resourceType : RESOURCE_TYPES.entrySet()) {
+        for (Map.Entry<String, List<String>> resourceType : ResourceTypes.RESOURCE_TYPES.entrySet()) {
             String res_type = resourceType.getKey();
             List<String> operations = resourceType.getValue();
 

@@ -37,10 +37,14 @@ public class RBACRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
         from("direct:fetch-and-process-rbac-user-access")
                 .routeId("fetch-and-process-rbac-user-access")
-                .log("RBAC start processing x-rh-identity: ${header.x-rh-identity}")
+
+                .choice()
+                    .when(exchange -> exchange.getIn().getHeader(RBAC_X_RH_IDENTITY) == null)
+                        .to("direct:request-forbidden")
+                .end()
+
                 .process(exchange -> {
                     // save decoded x-rh-identity JsonNode as header
-
                     String xRHIdentity = exchange.getIn().getHeader(RBAC_X_RH_IDENTITY, String.class);
                     JsonNode xRHIdentityDecodedJsonNode;
                     try {
