@@ -184,29 +184,4 @@ public class RBACService {
         Map<String, List<AclData>> processed_acls = process_acls(acls);
         return apply_access(processed_acls);
     }
-
-    public static void main(String[] args) {
-        List<Acl> acls = new ArrayList<>();
-
-        acls.add(
-                new Acl("migration-analytics:payload:read", Collections.emptyList())
-        );
-        acls.add(
-                new Acl("migration-analytics:payload:write", Arrays.asList(
-                        new Acl.ResourceDefinition(
-                                new Acl.AttributeFilter("migration-analytics.payload", "in", "1,3,5")
-                        )
-                ))
-        );
-        acls.add(
-                new Acl("migration-analytics:payload:write", Arrays.asList(
-                        new Acl.ResourceDefinition(
-                                new Acl.AttributeFilter("migration-analytics.payload", "equal", "8")
-                        )
-                ))
-        );
-
-        Map<String, Map<String, List<String>>> result = get_access_for_user(acls);
-        System.out.println(result);
-    }
 }
