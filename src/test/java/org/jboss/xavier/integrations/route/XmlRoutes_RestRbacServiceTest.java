@@ -2,7 +2,6 @@ package org.jboss.xavier.integrations.route;
 
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.jpa.service.GreetingsService;
-import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -46,6 +44,7 @@ public class XmlRoutes_RestRbacServiceTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("my-endpoint-route");
 

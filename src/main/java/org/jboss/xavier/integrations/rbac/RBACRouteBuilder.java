@@ -98,10 +98,10 @@ public class RBACRouteBuilder extends RouteBuilder {
                     .to("http4://oldhost").id("fetch-rbac-user-access-endpoint")
                     .choice()
                         .when(exchange -> exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class) != 200)
-                            .log("Error requesting user access code: ${header.CamelHttpResponseCode} body: ${header.CamelHttpResponseText}")
+                            .log("Invalid user access response responseCode:${header.CamelHttpResponseCode} responseText:${header.CamelHttpResponseText}")
+                            .setHeader("nextLink", () -> null)
                         .otherwise()
                             .convertBodyTo(String.class)
-                            .log("RBAC Response: ${body}")
                             .process(exchange -> {
                                 String body = exchange.getIn().getBody(String.class);
                                 RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
@@ -110,8 +110,7 @@ public class RBACRouteBuilder extends RouteBuilder {
 
                                 // Pagination
                                 RbacResponse.Links links = rbacResponse.getLinks();
-                                String nextLink = links.getNext();
-                                exchange.getIn().setHeader("nextLink", nextLink);
+                                exchange.getIn().setHeader("nextLink", links.getNext());
                             })
                     .end()
                 .end()
