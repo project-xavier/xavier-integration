@@ -164,7 +164,7 @@ public class EndToEndTest {
     @Value("${insights.kafka.host}")
     private String kafkaHost;
 
-    @Value("${test.sleep.startandcheckduplicated:10000")
+    @Value("${test.sleep.startandcheckduplicated:10000}")
     private long sleepBetweenStartAndDuplicatedReportCheck_inMillis;
 
 
