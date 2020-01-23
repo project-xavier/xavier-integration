@@ -1,12 +1,11 @@
-package org.jboss.xavier.integrations.route;
+package org.jboss.xavier.integrations.rbac;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.integrations.rbac.Acl;
-import org.jboss.xavier.integrations.rbac.RbacResponse;
+import org.jboss.xavier.integrations.route.XavierCamelTest;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;

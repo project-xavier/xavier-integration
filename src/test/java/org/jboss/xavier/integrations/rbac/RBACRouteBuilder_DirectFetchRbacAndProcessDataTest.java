@@ -1,16 +1,11 @@
-package org.jboss.xavier.integrations.route;
+package org.jboss.xavier.integrations.rbac;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.integrations.rbac.Acl;
-import org.jboss.xavier.integrations.rbac.RBACRouteBuilder;
-import org.jboss.xavier.integrations.rbac.RBACService;
-import org.jboss.xavier.integrations.rbac.RbacResponse;
-import org.jboss.xavier.integrations.rbac.ResourceTypes;
+import org.jboss.xavier.integrations.route.XavierCamelTest;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,10 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
