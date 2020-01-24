@@ -11,10 +11,88 @@ public class RBACService {
 
     public static final String WILDCARD = "*";
 
+    /***
+     * Extract resource definition information. Right now it supports just "equal" and "in" operations
+     *
+     * @return List of resourceDefinition values.
+     * E.g. Given:
+     * [
+     *     {
+     *         "attributeFilter": {
+     *             "key": "key1",
+     *             "operation": "equal",
+     *             "value": "1"
+     *         }
+     *     },
+     *     {
+     *         "attributeFilter": {
+     *             "key": "key2",
+     *             "operation": "in",
+     *             "value": "2,3,4"
+     *         }
+     *     }
+     * ]
+     *
+     * Will return ["1", "2", "3", "4", "5"]
+     * */
+    public static List<String> extractResourceDefinitions(List<Acl.ResourceDefinition> resourceDefinitions) {
+        List<String> result = new ArrayList<>();
+
+        if (resourceDefinitions.isEmpty()) {
+            return Collections.singletonList(WILDCARD);
+        }
+
+        for (Acl.ResourceDefinition resourceDefinition : resourceDefinitions) {
+            Acl.AttributeFilter attributeFilter = resourceDefinition.getAttributeFilter();
+            String operation = attributeFilter.getOperation();
+            String value = attributeFilter.getValue();
+
+            if (operation.equals("equal") && value != null) {
+                result.add(value);
+            } else if (operation.equals("in") && value != null) {
+                result.addAll(Arrays.asList(value.split(",")));
+            }
+        }
+
+        return result;
+    }
+
+    //        """Process acls to determine capabilities."""
+    public static Map<String, List<AclData>> processAcls(List<Acl> acls) {
+        Map<String, List<AclData>> access = new HashMap<>();
+        for (Acl acl : acls) {
+            String permission = acl.getPermission();
+            List<Acl.ResourceDefinition> resourceDefinitions = acl.getResourceDefinitions();
+
+            // extract permission_data
+            String[] permComponents = permission.split(":");
+            if (permComponents.length != 3) {
+                throw new IllegalStateException("Invalid permission definition permission:" + permission);
+            }
+
+            String resourceType = permComponents[1];
+            String operation = permComponents[2];
+
+            List<String> resources = extractResourceDefinitions(resourceDefinitions);
+            AclData aclData = new AclData(operation, resources);
+
+            if (!access.containsKey(resourceType)) {
+                access.put(resourceType, new ArrayList<>());
+            }
+            access.get(resourceType).add(aclData);
+        }
+
+        if (access.isEmpty()) {
+            return null;
+        }
+
+        return access;
+    }
+
     /**
      * Get operation and default wildcard to write for now.
      */
-    public static String get_operation(AclData access_item, String res_type) {
+    private static String get_operation(AclData access_item, String res_type) {
         String operation = access_item.getOperation();
         if (operation.equals(WILDCARD)) {
             List<String> operations = ResourceTypes.RESOURCE_TYPES.getOrDefault(res_type, Collections.emptyList());
@@ -28,7 +106,7 @@ public class RBACService {
         return operation;
     }
 
-    public static Map<String, Map<String, List<String>>> update_access_obj(Map<String, List<AclData>> access, Map<String, Map<String, List<String>>> res_access, List<String> resource_list) {
+    private static Map<String, Map<String, List<String>>> update_access_obj(Map<String, List<AclData>> access, Map<String, Map<String, List<String>>> res_access, List<String> resource_list) {
 //        """Update access object with access data."""
         for (String res : resource_list) {
             List<AclData> access_items = access.getOrDefault(res, Collections.emptyList());
@@ -48,7 +126,7 @@ public class RBACService {
         return res_access;
     }
 
-    public static Map<String, Map<String, List<String>>> apply_access(Map<String, List<AclData>> access) {
+    private static Map<String, Map<String, List<String>>> apply_access(Map<String, List<AclData>> access) {
 //        """Apply access to managed resources."""
         Map<String, Map<String, List<String>>> res_access = new HashMap<>();
         List<String> resources = new ArrayList<>();
@@ -107,61 +185,6 @@ public class RBACService {
         return res_access;
     }
 
-    public static List<String> _extract_resource_definitions(List<Acl.ResourceDefinition> resource_definitions) {
-//        """Extract resource definition information."""
-        List<String> result = new ArrayList<>();
-        if (resource_definitions.isEmpty()) {
-            return Collections.singletonList(WILDCARD);
-        }
-
-        for (Acl.ResourceDefinition res_def : resource_definitions) {
-            Acl.AttributeFilter att_filter = res_def.getAttributeFilter();
-            String operation = att_filter.getOperation();
-            String value = att_filter.getValue();
-
-            if (operation.equals("equal") && value != null) {
-                result.add(value);
-            }
-
-            if (operation.equals("in") && value != null) {
-                result.addAll(Arrays.asList(value.split(",")));
-            }
-        }
-
-        return result;
-    }
-
-    public static Map<String, List<AclData>> process_acls(List<Acl> acls) {
-//        """Process acls to determine capabilities."""
-        Map<String, List<AclData>> access = new HashMap<>();
-        for (Acl acl : acls) {
-            String permission = acl.getPermission();
-            List<Acl.ResourceDefinition> resource_definitions = acl.getResourceDefinitions();
-
-            // _extract_permission_data
-            String[] perm_components = permission.split(":");
-            if (perm_components.length != 3) {
-                throw new IllegalStateException("Invalid permission definition.");
-            }
-            String res_typ = perm_components[1];
-            String operation = perm_components[2];
-
-            List<String> resources = _extract_resource_definitions(resource_definitions);
-            AclData acl_data = new AclData(operation, resources);
-
-            if (!access.containsKey(res_typ)) {
-                access.put(res_typ, new ArrayList<>());
-            }
-            access.get(res_typ).add(acl_data);
-        }
-
-        if (access.isEmpty()) {
-            return null;
-        }
-
-        return access;
-    }
-
     public static Map<String, Map<String, List<String>>> get_access_for_user(List<Acl> acls) {
         if (acls == null) {
             return null;
@@ -170,7 +193,7 @@ public class RBACService {
             return Collections.emptyMap();
         }
 
-        Map<String, List<AclData>> processed_acls = process_acls(acls);
+        Map<String, List<AclData>> processed_acls = processAcls(acls);
         return apply_access(processed_acls);
     }
 }
