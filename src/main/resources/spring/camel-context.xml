@@ -129,10 +129,12 @@
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>
+                            <log message="No filterText parameter"/>
                             <bean ref="analysisService" method="findAllAnalysisSummaryByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.page}, ${header.size})" />
                         </when>
                         <otherwise>
-                            <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.page}, ${header.size})" />
+                            <log message="With filterText parameter"/>
+                            <bean ref="analysisService" method="findAnalysisSummaryByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.page}, ${header.size})" />
                         </otherwise>
                     </choice>
                 </route>

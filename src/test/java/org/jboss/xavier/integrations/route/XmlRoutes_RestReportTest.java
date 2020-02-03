@@ -169,7 +169,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?page={page}&size={size}&filterText={filterText}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        verify(analysisService).findByOwnerAndReportName("mrizzi@redhat.com", filterText, page, size);
+        verify(analysisService).findAnalysisSummaryByOwnerAndReportName("mrizzi@redhat.com", filterText, page, size);
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("\"content\":[]");
         assertThat(response.getBody()).contains("\"size\":3");

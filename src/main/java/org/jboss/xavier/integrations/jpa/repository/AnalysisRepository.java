@@ -19,6 +19,8 @@ public interface AnalysisRepository extends JpaRepository<AnalysisModel, Long>
 
     Page<AnalysisModel> findByOwnerAndReportNameIgnoreCaseContaining(String owner, String filterText, Pageable pageable);
 
+    Page<AnalysisSummary> findAnalysisSummaryByOwnerAndReportNameIgnoreCaseContaining(String owner, String filterText, Pageable pageable);
+
     Page<AnalysisModel> findAllByOwner(String owner, Pageable pageable);
 
     Page<AnalysisSummary> findAllAnalysisSummaryByOwner(String owner, Pageable pageable);

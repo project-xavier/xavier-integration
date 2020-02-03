@@ -126,6 +126,12 @@ public class AnalysisService
         return analysisRepository.findByOwnerAndReportNameIgnoreCaseContaining(owner, filterText.trim(), pageable);
     }
 
+    public Page<AnalysisSummary> findAnalysisSummaryByOwnerAndReportName(String owner, String filterText, int page, int size)
+    {
+        Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
+        return analysisRepository.findAnalysisSummaryByOwnerAndReportNameIgnoreCaseContaining(owner, filterText.trim(), pageable);
+    }
+
     public void updateStatus(String status, Long id) {
         AnalysisModel analysisModel = findById(id);
         analysisModel.setStatus(status);
