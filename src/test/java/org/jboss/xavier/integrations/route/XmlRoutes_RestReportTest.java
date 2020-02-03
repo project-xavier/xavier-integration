@@ -5,6 +5,7 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.integrations.jpa.projection.AnalysisSummary;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.jpa.service.FlagService;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
@@ -34,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -89,7 +91,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/", HttpMethod.GET, entity, String.class);
 
         //Then
-        verify(analysisService).findAllByOwner("mrizzi@redhat.com", 0, 10);
+        verify(analysisService).findAllAnalysisSummaryByOwner("mrizzi@redhat.com", 0, 10);
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("\"content\":[]");
         assertThat(response.getBody()).contains("\"size\":10");
@@ -136,7 +138,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?page={page}&size={size}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        verify(analysisService).findAllByOwner("mrizzi@redhat.com", page, size);
+        verify(analysisService).findAllAnalysisSummaryByOwner("mrizzi@redhat.com", page, size);
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("\"content\":[]");
         assertThat(response.getBody()).contains("\"size\":3");
@@ -195,7 +197,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
+        verify(analysisService).findAnalysisSummaryByOwnerAndId("mrizzi@redhat.com", one);
         assertThat(response).isNotNull();
         camelContext.stop();
     }
@@ -437,7 +439,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         //Given
 
         Long one = 1L;
-        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(null);
+        when(analysisService.findAnalysisSummaryByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(null);
 
         //When
         camelContext.start();
@@ -454,7 +456,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         Assert.assertEquals(response.getStatusCodeValue(), HttpServletResponse.SC_NOT_FOUND);
-        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
+        verify(analysisService).findAnalysisSummaryByOwnerAndId("mrizzi@redhat.com", one);
         verify(analysisService, never()).deleteById(one);
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("Analysis not found");
@@ -466,7 +468,42 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         //Given
 
         Long one = 1L;
-        when(analysisService.findByOwnerAndId("mrizzi@redhat.com",one)).thenReturn(new AnalysisModel());
+        when(analysisService.findAnalysisSummaryByOwnerAndId("mrizzi@redhat.com",one)).thenReturn(new AnalysisSummary() {
+            @Override
+            public Long getId() {
+                return null;
+            }
+
+            @Override
+            public String getReportName() {
+                return null;
+            }
+
+            @Override
+            public String getReportDescription() {
+                return null;
+            }
+
+            @Override
+            public String getPayloadName() {
+                return null;
+            }
+
+            @Override
+            public Date getInserted() {
+                return null;
+            }
+
+            @Override
+            public Date getLastUpdate() {
+                return null;
+            }
+
+            @Override
+            public String getStatus() {
+                return null;
+            }
+        });
         doNothing().when(analysisService).deleteById(one);
 
         //When
@@ -485,7 +522,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         //Then
         Assert.assertEquals(response.getStatusCodeValue(), HttpServletResponse.SC_NO_CONTENT);
         Assert.assertNull(response.getBody());
-        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com",one);
+        verify(analysisService).findAnalysisSummaryByOwnerAndId("mrizzi@redhat.com",one);
         verify(analysisService).deleteById(one);
         assertThat(response).isNotNull();
         assertThat(response.getBody()).isNull();
@@ -524,7 +561,42 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnAvailableFilters() throws Exception {
         //Given
         Long one = 1L;
-        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
+        when(analysisService.findAnalysisSummaryByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisSummary() {
+            @Override
+            public Long getId() {
+                return null;
+            }
+
+            @Override
+            public String getReportName() {
+                return null;
+            }
+
+            @Override
+            public String getReportDescription() {
+                return null;
+            }
+
+            @Override
+            public String getPayloadName() {
+                return null;
+            }
+
+            @Override
+            public Date getInserted() {
+                return null;
+            }
+
+            @Override
+            public Date getLastUpdate() {
+                return null;
+            }
+
+            @Override
+            public String getStatus() {
+                return null;
+            }
+        });
 
         //When
         camelContext.start();
@@ -539,7 +611,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/available-filters" , HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
+        verify(analysisService).findAnalysisSummaryByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadInventoryReportService).findAvailableFiltersByAnalysisId(one);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -819,7 +891,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> answer = restTemplate.exchange(camel_context + "report/15/payload", HttpMethod.GET, entity, String.class);
 
         //Then
-        assertThat(answer.getBody()).isEqualToIgnoringCase(IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, this.getClass().getClassLoader()));
+        assertThat(answer.getBody()).isEqualToIgnoringCase(IOUtils.toString(getClass().getClassLoader().getResource("cloudforms-export-v1_0_0.json"), StandardCharsets.UTF_8));
         assertThat(answer.getHeaders().get("Content-Disposition").get(0)).isEqualToIgnoringCase("attachment; filename=\"cloudforms-export-v1_0_0.json\"");
 
         camelContext.stop();
