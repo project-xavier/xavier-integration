@@ -119,20 +119,6 @@
             </get>
         </rest>
 
-        <rest path="/greetings">
-            <post uri="/">
-                <param name="queryParamKey" type="query" />
-                <route id="my-endpoint-route">
-
-                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>user</constant></setHeader>
-                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
-                    <to uri="direct:check-rbac-permissions" />
-
-                    <bean ref="greetingsService" method="greetings(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.queryParamKey}, ${body})" />
-                </route>
-            </post>
-        </rest>
-
         <rest path="/report">
             <description>Report REST API</description>
             <get uri="/">
