@@ -98,6 +98,10 @@ public class EndToEndTest {
     private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
 
     @ClassRule
+    public static GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac-mock:20200203.5")
+            .withExposedPorts(8111);
+
+    @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
             .withExposedPorts(61616, 8161)
             .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"))
@@ -219,6 +223,7 @@ public class EndToEndTest {
                 EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
                         "amq.server=" + activemq.getContainerIpAddress(),
                         "amq.port=" + activemq.getMappedPort(61616),
+                        "amq.server=" + activemq.getContainerIpAddress(),
                         "minio.host=" + getContainerHost(minio, 9000),
                         "insights.upload.host=" + getContainerHost(ingress),
                         "insights.properties=yearOverYearGrowthRatePercentage,percentageOfHypervisorsMigratedOnYear1,percentageOfHypervisorsMigratedOnYear2,percentageOfHypervisorsMigratedOnYear3,reportName,reportDescription",
@@ -232,7 +237,8 @@ public class EndToEndTest {
                         "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
                         "kieserver.devel-service=" + getHostForKie() + "/kie-server",
                         "spring.datasource.url = jdbc:postgresql://" + getContainerHost(postgreSQL) + "/sampledb" ,
-                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect");
+                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect",
+                        "insights.rbac.host=" + "http://" + rbacServer.getContainerIpAddress() + ":" + rbacServer.getMappedPort(8111));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -593,7 +599,7 @@ public class EndToEndTest {
                 //"\"filename\":\"" + filename + "\"," +
                 "\"origin\":\"xavier\",\"customerid\":\"CID888\"}," +
                 // \"analysisId\":\"" + analysisId + "\"}," +
-                "\"account_number\":\"1460290\", \"user\":{\"first_name\":\"User\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Dumy\",\"locale\":\"en_US\",\"is_org_admin\":true,\"username\":\"dummy@redhat.com\",\"email\":\"dummy+qa@redhat.com\"},\"type\":\"User\"}}";
+                "\"account_number\":\"1460290\", \"user\":{\"first_name\":\"User\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Dumy\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"dummy@redhat.com\",\"email\":\"dummy+qa@redhat.com\"},\"type\":\"User\"}}";
         headers.set("x-rh-identity", Base64.encodeAsString(rhIdentityJson.getBytes()) );
         headers.set("username", "dummy@redhat.com");
         return headers;
