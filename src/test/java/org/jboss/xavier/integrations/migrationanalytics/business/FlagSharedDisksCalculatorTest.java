@@ -61,4 +61,16 @@ public class FlagSharedDisksCalculatorTest {
         assertThat(Integer.valueOf(vmNamesWithSharedDisk.size())).isEqualTo(2);
         assertThat(vmNamesWithSharedDisk).isEqualTo(expectedVmNamesWithSharedDisk);
     }
+
+    @Test
+    public void calculate_GivenMissingAttributes_ShouldNotFail() throws IOException {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, FlagSharedDisksCalculatorTest.class.getClassLoader());
+        cloudFormsJson = cloudFormsJson.replace("filename", "XXfilename");
+        cloudFormsJson = cloudFormsJson.replace("device_type", "XXdevice_type");
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, "30");
+
+        Set<String> vmNamesWithSharedDisk = calculator.calculate(cloudFormsJson, headers);
+        assertThat(vmNamesWithSharedDisk).isEmpty();
+    }
 }

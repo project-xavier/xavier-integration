@@ -124,4 +124,62 @@ public class VMWorkloadInventoryCalculatorTest {
                 .findFirst().get())
                 .isEqualToIgnoringNullFields(expectedModel);
     }
+
+
+    @Test
+    public void calculate_jsonV1_0_0_GivenWithMissingAttributes_ShouldReturnCalculatedValues() throws IOException, ParseException {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
+        cloudFormsJson = cloudFormsJson.replace("ems_ref", "XXems_ref");
+
+        Map<String, Object> headers = new HashMap<>();
+        Long analysisId = 30L;
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(8);
+        assertThat(modelList.stream().filter(e -> e.getNicsCount() == 2).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana")).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("tomcat")).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getOsProductName().equalsIgnoreCase("Linux")).count()).isEqualTo(7);
+        assertThat(modelList.stream().filter(e -> e.getOsProductName().equalsIgnoreCase("CentOS 7 (64-bit)")).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("CentOS 7 (64-bit)")).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("Red Hat Enterprise Linux Server release 7.6 (Maipo)")).count()).isEqualTo(6);
+        assertThat(modelList.stream().filter(e -> e.getDiskSpace() == (17980588032L)).count()).isEqualTo(1);
+
+        VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
+        expectedModel.setVmName("oracle_db");
+        expectedModel.setProvider("vSphere");
+        expectedModel.setOsProductName("Linux");
+        expectedModel.setNicsCount(1);
+        expectedModel.setMemory(8589934592L);
+        expectedModel.setHasRdmDisk(false);
+        expectedModel.setGuestOSFullName("CentOS Linux release 7.6.1810 (Core) ");
+        expectedModel.setDiskSpace(17980588032L);
+        expectedModel.setCpuCores(2);
+        expectedModel.setSystemServicesNames(Arrays.asList("NetworkManager-dispatcher","NetworkManager-wait-online","NetworkManager"));
+        expectedModel.setVmDiskFilenames(Arrays.asList("[NFS-Storage] oracle_db_1/", "[NFS-Storage] oracle_db_1/oracle_db.vmdk", "[NFS-Storage] oracle_db_1/"));
+        expectedModel.setAnalysisId(analysisId);
+        expectedModel.setVersion("6.7.2");
+        expectedModel.setProduct("VMware vCenter");
+        expectedModel.setScanRunDate(new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse("2019-09-18T14:52:45.871Z"));
+
+        // These are the params missing because of the replace above
+        expectedModel.setCluster(null);
+        expectedModel.setHost_name(null);
+        expectedModel.setDatacenter(null);
+
+        HashMap<String, String> files = new HashMap<>();
+        files.put("/etc/GeoIP.conf","dummy content");
+        files.put("/etc/asound.conf", null);
+        files.put("/etc/autofs.conf", null);
+        expectedModel.setFiles(files);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db"))
+                .findFirst().get())
+                .isEqualToIgnoringNullFields(expectedModel);
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db"))
+                .findFirst().get().getProvider()).isEqualTo("vSphere");
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db"))
+                .findFirst().get().getCluster()).isNull();
+    }
 }
