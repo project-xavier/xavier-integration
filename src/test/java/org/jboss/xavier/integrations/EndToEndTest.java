@@ -593,7 +593,7 @@ public class EndToEndTest {
                 //"\"filename\":\"" + filename + "\"," +
                 "\"origin\":\"xavier\",\"customerid\":\"CID888\"}," +
                 // \"analysisId\":\"" + analysisId + "\"}," +
-                "\"account_number\":\"1460290\", \"user\":{\"first_name\":\"User\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Dumy\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"dummy@redhat.com\",\"email\":\"dummy+qa@redhat.com\"},\"type\":\"User\"}}";
+                "\"account_number\":\"1460290\", \"user\":{\"first_name\":\"User\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Dumy\",\"locale\":\"en_US\",\"is_org_admin\":true,\"username\":\"dummy@redhat.com\",\"email\":\"dummy+qa@redhat.com\"},\"type\":\"User\"}}";
         headers.set("x-rh-identity", Base64.encodeAsString(rhIdentityJson.getBytes()) );
         headers.set("username", "dummy@redhat.com");
         return headers;
