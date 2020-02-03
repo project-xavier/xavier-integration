@@ -177,6 +177,35 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     }
 
     @Test
+    public void xmlRouteBuilder_RestReport_FilterTextEmptyPageAndSizeParamGiven_ShouldCallFindReports() throws Exception {
+        //Given
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("reports-get-all");
+        Map<String, Object> variables = new HashMap<>();
+        int page = 2;
+        variables.put("page", page);
+        int size = 3;
+        variables.put("size", size);
+        String filterText = "";
+        variables.put("filterText", filterText);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?page={page}&size={size}&filterText={filterText}", HttpMethod.GET, entity, String.class, variables);
+
+        //Then
+        verify(analysisService).findAllAnalysisSummaryByOwner("mrizzi@redhat.com", page, size);
+        assertThat(response).isNotNull();
+        assertThat(response.getBody()).contains("\"content\":[]");
+        assertThat(response.getBody()).contains("\"size\":3");
+        camelContext.stop();
+    }
+
+    @Test
     public void xmlRouteBuilder_RestReportId_IdParamGiven_ShouldCallFindById() throws Exception {
         //Given
 

@@ -128,7 +128,7 @@
                 <route id="reports-get-all">
                     <choice>
                         <when>
-                            <simple>${header.filterText} == null</simple>
+                            <simple>${header.filterText} == null || ${header.filterText} == ''</simple>
                             <log message="No filterText parameter"/>
                             <bean ref="analysisService" method="findAllAnalysisSummaryByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.page}, ${header.size})" />
                         </when>
