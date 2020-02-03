@@ -920,7 +920,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> answer = restTemplate.exchange(camel_context + "report/15/payload", HttpMethod.GET, entity, String.class);
 
         //Then
-        assertThat(answer.getBody()).isEqualToIgnoringCase(IOUtils.toString(getClass().getClassLoader().getResource("cloudforms-export-v1_0_0.json"), StandardCharsets.UTF_8));
+        assertThat(answer.getBody()).isEqualToIgnoringCase(IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, this.getClass().getClassLoader()));
         assertThat(answer.getHeaders().get("Content-Disposition").get(0)).isEqualToIgnoringCase("attachment; filename=\"cloudforms-export-v1_0_0.json\"");
 
         camelContext.stop();
