@@ -229,7 +229,6 @@ public class EndToEndTest {
                 EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
                         "amq.server=" + activemq.getContainerIpAddress(),
                         "amq.port=" + activemq.getMappedPort(61616),
-                        "amq.server=" + activemq.getContainerIpAddress(),
                         "minio.host=" + getContainerHost(minio, 9000),
                         "insights.upload.host=" + getContainerHost(ingress),
                         "insights.properties=yearOverYearGrowthRatePercentage,percentageOfHypervisorsMigratedOnYear1,percentageOfHypervisorsMigratedOnYear2,percentageOfHypervisorsMigratedOnYear3,reportName,reportDescription",
