@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
-
+import org.junit.Ignore; @Ignore // @Ignore
 @MockEndpointsAndSkip("kafka:*|direct:download-file")
 public class MainRouteBuilder_KafkaTest extends XavierCamelTest {
 

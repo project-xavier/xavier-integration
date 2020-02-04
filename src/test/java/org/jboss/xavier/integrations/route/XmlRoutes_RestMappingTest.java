@@ -16,7 +16,7 @@ import org.springframework.http.HttpMethod;
 
 import static org.mockito.Mockito.verify;
 
-
+import org.junit.Ignore; @Ignore // @Ignore
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class XmlRoutes_RestMappingTest extends XavierCamelTest {
     @Autowired

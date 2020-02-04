@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
+import org.junit.Ignore; @Ignore // @Ignore
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class XmlRoutes_RestUserTest extends XavierCamelTest {
 

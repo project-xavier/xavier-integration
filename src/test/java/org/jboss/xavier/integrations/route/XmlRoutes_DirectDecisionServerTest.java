@@ -10,7 +10,7 @@ import org.jboss.xavier.integrations.DecisionServerHelper;
 import org.junit.Test;
 import org.kie.api.command.BatchExecutionCommand;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.junit.Ignore; @Ignore // @Ignore
 @MockEndpointsAndSkip("http:*")
 public class XmlRoutes_DirectDecisionServerTest extends XavierCamelTest {
 

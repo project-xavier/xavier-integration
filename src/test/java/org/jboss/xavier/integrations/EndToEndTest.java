@@ -54,6 +54,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
@@ -98,11 +99,6 @@ public class EndToEndTest {
     private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
 
     @ClassRule
-    public static GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac-mock:20200204.1")
-            .withExposedPorts(8111)
-            .withEnv("RBAC_PERMISSIONS", "migration-analytics:*:*");
-
-    @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
             .withExposedPorts(61616, 8161)
             .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"))
@@ -140,6 +136,7 @@ public class EndToEndTest {
             .withServices(S3);
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
+    private static String rbacCommitHash = "debb5b0559f9fe3f7868160dafd2dfb3873ac03a"; // 2019-11-11
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -171,6 +168,7 @@ public class EndToEndTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
                 cloneIngressRepoAndUnzip();
+                cloneRbacRepoAndUnzip();
 
                 Network network = Network.newNetwork();
 
@@ -219,6 +217,11 @@ public class EndToEndTest {
                         .withEnv("INGRESS_KAFKABROKERS", "kafka:9092");
                 ingress.start();
 
+                DockerComposeContainer rbac = new DockerComposeContainer(
+                        new File("src/test/resources/insights-rbac/docker-compose.yml")
+                );
+                rbac.start();
+
                 importProjectIntoKIE();
 
                 EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
@@ -238,8 +241,7 @@ public class EndToEndTest {
                         "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
                         "kieserver.devel-service=" + getHostForKie() + "/kie-server",
                         "spring.datasource.url = jdbc:postgresql://" + getContainerHost(postgreSQL) + "/sampledb" ,
-                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect",
-                        "insights.rbac.host=" + "http://" + rbacServer.getContainerIpAddress() + ":" + rbacServer.getMappedPort(8111));
+                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -271,6 +273,17 @@ public class EndToEndTest {
 
         // we rename the directory because we had issues with Docker and the long folder
         FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-" + ingressCommitHash), new File("src/test/resources/insights-ingress-go"));
+    }
+
+    private static void cloneRbacRepoAndUnzip() throws IOException {
+        // downloading, unzipping, renaming
+        String rbacRepoZipURL = "https://github.com/RedHatInsights/rbac/archive/" + rbacCommitHash + ".zip";
+        File compressedFile = new File("src/test/resources/rbacRepo.zip");
+        FileUtils.copyURLToFile(new URL(rbacRepoZipURL), compressedFile, 1000, 10000);
+        unzipFile(compressedFile, "src/test/resources");
+
+        // we rename the directory because we had issues with Docker and the long folder
+        FileUtils.moveDirectory(new File("src/test/resources/insights-rbac-" + rbacCommitHash), new File("src/test/resources/insights-rbac"));
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
@@ -326,6 +339,9 @@ public class EndToEndTest {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
+
+        FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
+        FileUtils.deleteQuietly(new File("src/test/resources/rbacRepo.zip"));
     }
 
     private List<String> getS3Objects(String bucket) {

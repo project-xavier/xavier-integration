@@ -19,7 +19,7 @@ import java.util.Set;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import org.junit.Ignore; @Ignore // @Ignore
 public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierCamelTest {
     @Inject
     AnalysisService analysisService;

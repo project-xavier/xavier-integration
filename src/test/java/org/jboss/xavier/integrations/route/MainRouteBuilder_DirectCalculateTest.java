@@ -19,7 +19,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+import org.junit.Ignore; @Ignore // @Ignore
 @MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel|direct:flags-shared-disks")
 public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
     @Inject

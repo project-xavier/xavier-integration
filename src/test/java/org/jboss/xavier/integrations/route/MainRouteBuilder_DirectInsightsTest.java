@@ -20,7 +20,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+import org.junit.Ignore; @Ignore // @Ignore
 @MockEndpointsAndSkip("http4:{{insights.upload.host}}/api/ingress/v1/upload")
 public class MainRouteBuilder_DirectInsightsTest extends XavierCamelTest {
     @EndpointInject(uri = "mock:http4:{{insights.upload.host}}/api/ingress/v1/upload")

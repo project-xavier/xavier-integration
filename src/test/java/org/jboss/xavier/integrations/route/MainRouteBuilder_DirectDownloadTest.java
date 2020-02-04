@@ -20,7 +20,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+import org.junit.Ignore; @Ignore // @Ignore
 @MockEndpointsAndSkip("http.*|direct:unzip-file")
 public class MainRouteBuilder_DirectDownloadTest extends XavierCamelTest {
     @Autowired
