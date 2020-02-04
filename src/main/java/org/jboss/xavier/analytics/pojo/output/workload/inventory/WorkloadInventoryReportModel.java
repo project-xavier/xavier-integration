@@ -18,7 +18,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.transaction.Transactional;
 import java.util.Date;
@@ -65,7 +65,7 @@ public class WorkloadInventoryReportModel
     )
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = ANALYSIS_ID)
     @JsonBackReference
     private AnalysisModel analysis;
