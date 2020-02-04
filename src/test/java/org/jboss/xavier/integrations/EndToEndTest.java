@@ -136,7 +136,7 @@ public class EndToEndTest {
             .withServices(S3);
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
-    private static String rbacCommitHash = "debb5b0559f9fe3f7868160dafd2dfb3873ac03a"; // 2019-11-11
+    private static String rbacCommitHash = "1d648769a709259bd860d380d2e6fd055bce948b"; // 2019-11-11
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -278,7 +278,7 @@ public class EndToEndTest {
 
     private static void cloneRbacRepoAndUnzip() throws IOException {
         // downloading, unzipping, renaming
-        String rbacRepoZipURL = "https://github.com/RedHatInsights/insights-rbac/archive/" + rbacCommitHash + ".zip";
+        String rbacRepoZipURL = "https://github.com/carlosthe19916/insights-rbac/archive/" + rbacCommitHash + ".zip";
         File compressedFile = new File("src/test/resources/rbacRepo.zip");
         FileUtils.copyURLToFile(new URL(rbacRepoZipURL), compressedFile, 1000, 10000);
         unzipFile(compressedFile, "src/test/resources");
