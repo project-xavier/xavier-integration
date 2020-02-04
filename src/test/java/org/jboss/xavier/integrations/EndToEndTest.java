@@ -228,11 +228,11 @@ public class EndToEndTest {
                         .withExposedPorts(8000)
                         .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
                         .withEnv("DATABASE_ENGINE", "postgresql")
-                        .withEnv("DATABASE_NAME", "postgresql")
+                        .withEnv("DATABASE_NAME", rbacPostgreSQL.getDatabaseName())
                         .withEnv("POSTGRES_SQL_SERVICE_HOST", rbacPostgreSQL.getContainerIpAddress())
-                        .withEnv("POSTGRES_SQL_SERVICE_PORT", String.valueOf(rbacPostgreSQL.getMappedPort(5432)))
-                        .withEnv("DATABASE_USER","postgres")
-                        .withEnv("DATABASE_PASSWORD","postgres");
+                        .withEnv("POSTGRES_SQL_SERVICE_PORT", String.valueOf(rbacPostgreSQL.getFirstMappedPort()))
+                        .withEnv("DATABASE_USER", rbacPostgreSQL.getUsername())
+                        .withEnv("DATABASE_PASSWORD", rbacPostgreSQL.getPassword());
                 rbacServer.start();
 
                 importProjectIntoKIE();
