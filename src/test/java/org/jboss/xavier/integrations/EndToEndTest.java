@@ -98,8 +98,9 @@ public class EndToEndTest {
     private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
 
     @ClassRule
-    public static GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac-mock:20200203.5")
-            .withExposedPorts(8111);
+    public static GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac-mock:20200204.1")
+            .withExposedPorts(8111)
+            .withEnv("RBAC_PERMISSIONS", "migration-analytics:*:*");
 
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
