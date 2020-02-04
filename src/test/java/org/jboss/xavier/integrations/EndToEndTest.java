@@ -28,6 +28,7 @@ import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotif
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -335,8 +336,18 @@ public class EndToEndTest {
         }
     }
 
+    @Before
+    public void cleanUpBefore() throws IOException {
+        // cleaning downloadable files/directories
+        FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
+        FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
+
+        FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
+        FileUtils.deleteQuietly(new File("src/test/resources/rbacRepo.zip"));
+    }
+
     @After
-    public void cleanUp() throws IOException {
+    public void cleanUpAfter() throws IOException {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
