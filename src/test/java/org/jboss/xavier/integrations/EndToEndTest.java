@@ -220,7 +220,7 @@ public class EndToEndTest {
 
                 DockerComposeContainer rbac = new DockerComposeContainer(
                         new File("src/test/resources/insights-rbac/docker-compose.yml")
-                );
+                ).withLocalCompose(true);
 //                        .withExposedService("rbac-server", 9080);
                 rbac.start();
 
