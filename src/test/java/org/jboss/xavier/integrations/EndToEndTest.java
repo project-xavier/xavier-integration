@@ -28,7 +28,6 @@ import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotif
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -143,7 +142,6 @@ public class EndToEndTest {
             .withPassword("postgres");
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
-    private static String rbacCommitHash = "1d648769a709259bd860d380d2e6fd055bce948b"; // 2019-11-11
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -175,9 +173,22 @@ public class EndToEndTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
                 cloneIngressRepoAndUnzip();
-                cloneRbacRepoAndUnzip();
 
                 Network network = Network.newNetwork();
+
+                System.out.println("rbacPostgreSQL.getContainerIpAddress()" + rbacPostgreSQL.getContainerIpAddress());
+                System.out.println("rbacPostgreSQL.getFirstMappedPort()" + rbacPostgreSQL.getFirstMappedPort());
+                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.9")
+                        .withExposedPorts(8000)
+                        .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
+                        .withEnv("DATABASE_ENGINE", "postgresql")
+                        .withEnv("DATABASE_NAME", rbacPostgreSQL.getDatabaseName())
+                        .withEnv("POSTGRES_SQL_SERVICE_HOST", rbacPostgreSQL.getContainerIpAddress())
+                        .withEnv("POSTGRES_SQL_SERVICE_PORT", String.valueOf(rbacPostgreSQL.getFirstMappedPort()))
+                        .withEnv("DATABASE_USER", rbacPostgreSQL.getUsername())
+                        .withEnv("DATABASE_PASSWORD", rbacPostgreSQL.getPassword())
+                        .withNetwork(network);
+                rbacServer.start();
 
                 GenericContainer minio = new GenericContainer<>("minio/minio")
                         .withCommand("server /data")
@@ -223,17 +234,6 @@ public class EndToEndTest {
                         .withEnv("INGRESS_MINIOENDPOINT", "minio:9000")
                         .withEnv("INGRESS_KAFKABROKERS", "kafka:9092");
                 ingress.start();
-
-                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.9")
-                        .withExposedPorts(8000)
-                        .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
-                        .withEnv("DATABASE_ENGINE", "postgresql")
-                        .withEnv("DATABASE_NAME", rbacPostgreSQL.getDatabaseName())
-                        .withEnv("POSTGRES_SQL_SERVICE_HOST", rbacPostgreSQL.getContainerIpAddress())
-                        .withEnv("POSTGRES_SQL_SERVICE_PORT", String.valueOf(rbacPostgreSQL.getFirstMappedPort()))
-                        .withEnv("DATABASE_USER", rbacPostgreSQL.getUsername())
-                        .withEnv("DATABASE_PASSWORD", rbacPostgreSQL.getPassword());
-                rbacServer.start();
 
                 importProjectIntoKIE();
 
@@ -287,17 +287,6 @@ public class EndToEndTest {
         FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-" + ingressCommitHash), new File("src/test/resources/insights-ingress-go"));
     }
 
-    private static void cloneRbacRepoAndUnzip() throws IOException {
-        // downloading, unzipping, renaming
-        String rbacRepoZipURL = "https://github.com/carlosthe19916/insights-rbac/archive/" + rbacCommitHash + ".zip";
-        File compressedFile = new File("src/test/resources/rbacRepo.zip");
-        FileUtils.copyURLToFile(new URL(rbacRepoZipURL), compressedFile, 1000, 10000);
-        unzipFile(compressedFile, "src/test/resources");
-
-        // we rename the directory because we had issues with Docker and the long folder
-        FileUtils.moveDirectory(new File("src/test/resources/insights-rbac-" + rbacCommitHash), new File("src/test/resources/insights-rbac"));
-    }
-
     private static void unzipFile(File file, String outputDir) throws IOException {
         java.util.zip.ZipFile zipFile = new ZipFile(file);
         try {
@@ -346,24 +335,11 @@ public class EndToEndTest {
         }
     }
 
-    @Before
-    public void cleanUpBefore() throws IOException {
-        // cleaning downloadable files/directories
-        FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
-        FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
-
-        FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
-        FileUtils.deleteQuietly(new File("src/test/resources/rbacRepo.zip"));
-    }
-
     @After
     public void cleanUpAfter() throws IOException {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
-
-        FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
-        FileUtils.deleteQuietly(new File("src/test/resources/rbacRepo.zip"));
     }
 
     private List<String> getS3Objects(String bucket) {
