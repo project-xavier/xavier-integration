@@ -136,6 +136,12 @@ public class EndToEndTest {
             .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"))
             .withServices(S3);
 
+    @ClassRule
+    public static PostgreSQLContainer rbacPostgreSQL = new PostgreSQLContainer()
+            .withDatabaseName("postgres")
+            .withUsername("postgres")
+            .withPassword("postgres");
+
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
     private static String rbacCommitHash = "1d648769a709259bd860d380d2e6fd055bce948b"; // 2019-11-11
 
@@ -218,11 +224,16 @@ public class EndToEndTest {
                         .withEnv("INGRESS_KAFKABROKERS", "kafka:9092");
                 ingress.start();
 
-                DockerComposeContainer rbac = new DockerComposeContainer(
-                        new File("src/test/resources/insights-rbac/docker-compose.yml")
-                ).withLocalCompose(true);
-//                        .withExposedService("rbac-server", 9080);
-                rbac.start();
+                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.9")
+                        .withExposedPorts(8000)
+                        .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
+                        .withEnv("DATABASE_ENGINE", "postgresql")
+                        .withEnv("DATABASE_NAME", "postgresql")
+                        .withEnv("POSTGRES_SQL_SERVICE_HOST", rbacPostgreSQL.getContainerIpAddress())
+                        .withEnv("POSTGRES_SQL_SERVICE_PORT", String.valueOf(rbacPostgreSQL.getMappedPort(5432)))
+                        .withEnv("DATABASE_USER","postgres")
+                        .withEnv("DATABASE_PASSWORD","postgres");
+                rbacServer.start();
 
                 importProjectIntoKIE();
 
