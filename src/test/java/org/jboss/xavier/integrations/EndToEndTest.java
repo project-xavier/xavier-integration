@@ -220,6 +220,7 @@ public class EndToEndTest {
                 DockerComposeContainer rbac = new DockerComposeContainer(
                         new File("src/test/resources/insights-rbac/docker-compose.yml")
                 );
+//                        .withExposedService("rbac-server", 9080);
                 rbac.start();
 
                 importProjectIntoKIE();
@@ -277,7 +278,7 @@ public class EndToEndTest {
 
     private static void cloneRbacRepoAndUnzip() throws IOException {
         // downloading, unzipping, renaming
-        String rbacRepoZipURL = "https://github.com/RedHatInsights/rbac/archive/" + rbacCommitHash + ".zip";
+        String rbacRepoZipURL = "https://github.com/RedHatInsights/insights-rbac/archive/" + rbacCommitHash + ".zip";
         File compressedFile = new File("src/test/resources/rbacRepo.zip");
         FileUtils.copyURLToFile(new URL(rbacRepoZipURL), compressedFile, 1000, 10000);
         unzipFile(compressedFile, "src/test/resources");
