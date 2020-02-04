@@ -177,9 +177,12 @@ public class EndToEndTest {
                 Network network = Network.newNetwork();
 
                 System.out.println("rbacPostgreSQL.getContainerIpAddress()" + rbacPostgreSQL.getContainerIpAddress());
-                System.out.println("rbacPostgreSQL.getFirstMappedPort()" + rbacPostgreSQL.getFirstMappedPort());
+                System.out.println("rbacPostgreSQL.getFirstMappedPort()" + rbacPostgreSQL.getMappedPort(5432));
+                System.out.println("rbacPostgreSQL.getFirstMappedPort()" + rbacPostgreSQL.getNetwork());
                 System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getContainerIpAddress());
                 System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getFirstMappedPort());
+                System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getNetwork());
+
 
                 GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.9")
                         .withExposedPorts(8000)
