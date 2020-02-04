@@ -180,7 +180,7 @@ public class EndToEndTest {
                 System.out.println("rbacPostgreSQL.getFirstMappedPort()" + rbacPostgreSQL.getFirstMappedPort());
                 System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getContainerIpAddress());
                 System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getFirstMappedPort());
-                
+
                 GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.9")
                         .withExposedPorts(8000)
                         .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
