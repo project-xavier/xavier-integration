@@ -218,20 +218,21 @@ public class EndToEndTest {
 
                 Network rbacNetwork = Network.newNetwork();
                 GenericContainer rbacPostgreSQL = new PostgreSQLContainer()
-                        .withDatabaseName("postgres")
-                        .withUsername("postgres")
-                        .withPassword("postgres")
+                        .withDatabaseName("rb_database")
+                        .withUsername("rbac_username")
+                        .withPassword("rbac_password")
                         .withNetwork(rbacNetwork)
                         .withNetworkAliases("rbac_db");
                 rbacPostgreSQL.start();
                 GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.12")
                         .withNetwork(rbacNetwork)
                         .withNetworkAliases("rbac")
+                        .withExposedPorts(8000)
                         .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
                         .withEnv("DATABASE_ENGINE", "postgresql")
-                        .withEnv("DATABASE_NAME", "postgres")
-                        .withEnv("DATABASE_USER", "postgres")
-                        .withEnv("DATABASE_PASSWORD", "postgres")
+                        .withEnv("DATABASE_NAME", "rb_database")
+                        .withEnv("DATABASE_USER", "rbac_username")
+                        .withEnv("DATABASE_PASSWORD", "rbac_password")
                         .withEnv("POSTGRES_SQL_SERVICE_HOST", "rbac_db")
                         .withEnv("POSTGRES_SQL_SERVICE_PORT", "5432");
                 rbacServer.start();
