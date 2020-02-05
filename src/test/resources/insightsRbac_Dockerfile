@@ -11,5 +11,7 @@ USER root
 
 ADD rbac /opt/app-root/src/rbac
 ADD run_server.sh /opt/app-root/src/run_server.sh
+chmod +x /opt/app-root/src/run_server.sh
+
 EXPOSE 8000
 ENTRYPOINT ["/opt/app-root/src/run_server.sh"]
