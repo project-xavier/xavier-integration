@@ -171,42 +171,6 @@ public class EndToEndTest {
 
                 Network network = Network.newNetwork();
 
-                Network rbacNetwork = Network.newNetwork();
-                GenericContainer rbacPostgreSQL = new PostgreSQLContainer()
-                        .withDatabaseName("postgres")
-                        .withUsername("postgres")
-                        .withPassword("postgres")
-                        .withNetwork(rbacNetwork)
-                        .withNetworkAliases("rbac_db");
-//                        .withEnv("POSTGRES_DB", "postgres")
-//                        .withEnv("POSTGRES_USER", "postgres")
-//                        .withEnv("POSTGRES_PASSWORD", "postgres")
-//                        .waitingFor(new LogMessageWaitStrategy()
-//                                .withRegEx(".*database system is ready to accept connections.*\\s")
-//                                .withTimes(2)
-//                                .withStartupTimeout(java.time.Duration.of(60, SECONDS)));
-                rbacPostgreSQL.start();
-                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.12")
-//                        .withExposedPorts(8000)
-                        .withNetwork(rbacNetwork)
-                        .withNetworkAliases("rbac")
-                        .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
-                        .withEnv("DATABASE_ENGINE", "postgresql")
-                        .withEnv("DATABASE_NAME", "postgres")
-                        .withEnv("DATABASE_USER", "postgres")
-                        .withEnv("DATABASE_PASSWORD", "postgres")
-                        .withEnv("POSTGRES_SQL_SERVICE_HOST", "rbac_db")
-                        .withEnv("POSTGRES_SQL_SERVICE_PORT", "5432")
-//                        .waitingFor(new LogMessageWaitStrategy()
-//                                .withRegEx(".*development server at.*")
-//                                .withTimes(20)
-//                                .withStartupTimeout(java.time.Duration.of(60, SECONDS))
-//                        )
-                        ;
-                rbacServer.start();
-
-                Thread.sleep(5000);
-
                 GenericContainer minio = new GenericContainer<>("minio/minio")
                         .withCommand("server /data")
                         .withExposedPorts(9000)
@@ -251,6 +215,27 @@ public class EndToEndTest {
                         .withEnv("INGRESS_MINIOENDPOINT", "minio:9000")
                         .withEnv("INGRESS_KAFKABROKERS", "kafka:9092");
                 ingress.start();
+
+                Network rbacNetwork = Network.newNetwork();
+                GenericContainer rbacPostgreSQL = new PostgreSQLContainer()
+                        .withDatabaseName("postgres")
+                        .withUsername("postgres")
+                        .withPassword("postgres")
+                        .withNetwork(rbacNetwork)
+                        .withNetworkAliases("rbac_db");
+                rbacPostgreSQL.start();
+                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.12")
+                        .withNetwork(rbacNetwork)
+                        .withNetworkAliases("rbac")
+                        .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
+                        .withEnv("DATABASE_ENGINE", "postgresql")
+                        .withEnv("DATABASE_NAME", "postgres")
+                        .withEnv("DATABASE_USER", "postgres")
+                        .withEnv("DATABASE_PASSWORD", "postgres")
+                        .withEnv("POSTGRES_SQL_SERVICE_HOST", "rbac_db")
+                        .withEnv("POSTGRES_SQL_SERVICE_PORT", "5432");
+                rbacServer.start();
+                Thread.sleep(5000);
 
                 importProjectIntoKIE();
 
