@@ -137,6 +137,7 @@ public class EndToEndTest {
             .withServices(S3);
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
+    private static String insightsRbacCommitHash = "debb5b0559f9fe3f7868160dafd2dfb3873ac03a"; // 2019-11-11
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -168,6 +169,7 @@ public class EndToEndTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
                 cloneIngressRepoAndUnzip();
+                cloneInsightsRbacRepoAndUnzip();
 
                 Network network = Network.newNetwork();
 
@@ -224,7 +226,8 @@ public class EndToEndTest {
                         .withNetwork(rbacNetwork)
                         .withNetworkAliases("rbac_db");
                 rbacPostgreSQL.start();
-                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.12")
+                GenericContainer rbacServer = new GenericContainer<>(new ImageFromDockerfile()
+                        .withDockerfile(Paths.get("src/test/resources/insights-rbac/insightsRbac_Dockerfile")))
                         .withNetwork(rbacNetwork)
                         .withNetworkAliases("rbac")
                         .withExposedPorts(8000)
@@ -293,6 +296,26 @@ public class EndToEndTest {
         FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-" + ingressCommitHash), new File("src/test/resources/insights-ingress-go"));
     }
 
+    private static void cloneInsightsRbacRepoAndUnzip() throws IOException {
+        // downloading, unzipping, renaming
+        String insightsRbacRepoZipURL = "https://github.com/RedHatInsights/insights-rbac/archive/" + insightsRbacCommitHash + ".zip";
+        File compressedFile = new File("src/test/resources/insightsRbacRepo.zip");
+        FileUtils.copyURLToFile(new URL(insightsRbacRepoZipURL), compressedFile, 1000, 10000);
+        unzipFile(compressedFile, "src/test/resources");
+
+        // we rename the directory because we had issues with Docker and the long folder
+        FileUtils.moveDirectory(new File("src/test/resources/insights-rbac-" + insightsRbacCommitHash), new File("src/test/resources/insights-rbac"));
+
+        FileUtils.copyFile(
+                new File("src/test/resources/insightsRbac_Dockerfile"),
+                new File("src/test/resources/insights-rbac/insightsRbac_Dockerfile")
+        );
+        FileUtils.copyFile(
+                new File("src/test/resources/insightsRbac_roleDefinitions.json"),
+                new File("src/test/resources/insights-rbac/rbac/management/role/definitions/migration-analytics.json")
+        );
+    }
+
     private static void unzipFile(File file, String outputDir) throws IOException {
         java.util.zip.ZipFile zipFile = new ZipFile(file);
         try {
@@ -346,6 +369,9 @@ public class EndToEndTest {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
+
+        FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
+        FileUtils.deleteQuietly(new File("src/test/resources/insightsRbacRepo.zip"));
     }
 
     private List<String> getS3Objects(String bucket) {
