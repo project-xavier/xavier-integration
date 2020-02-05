@@ -271,7 +271,7 @@ public class EndToEndTest {
                         "spring.datasource.url = jdbc:postgresql://" + getContainerHost(postgreSQL) + "/sampledb" ,
                         "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect",
                         "insights.rbac.path=/api/v1/access/",
-                        "insights.rbac.host=" + "http://" + ":" + getContainerHost(rbacServer, 8000)
+                        "insights.rbac.host=" + "http://" + getContainerHost(rbacServer, 8000)
                 );
             } catch (Exception e) {
                 e.printStackTrace();
