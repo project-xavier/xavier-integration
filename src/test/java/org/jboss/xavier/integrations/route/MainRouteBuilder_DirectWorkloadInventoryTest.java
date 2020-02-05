@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Ignore; @Ignore // @Ignore
+
 @MockEndpointsAndSkip("direct:decisionserver")
 public class MainRouteBuilder_DirectWorkloadInventoryTest extends XavierCamelTest {
     @Inject

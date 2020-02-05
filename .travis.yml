@@ -29,7 +29,6 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - docker-compose --version
   - docker info
-  - docker network create rbac-network
 
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml

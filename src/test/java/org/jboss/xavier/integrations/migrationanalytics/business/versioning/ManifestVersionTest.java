@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import org.junit.Ignore; @Ignore // @Ignore
+
 public class ManifestVersionTest {
     @Test
     public void compareVersion_FewVersionNumbersGiven_ReturnsCorrectComparisson() {

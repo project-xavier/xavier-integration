@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Ignore; @Ignore // @Ignore
+
 @MockEndpointsAndSkip("direct:store")
 public class MainRouteBuilder_DirectUploadTest extends XavierCamelTest {
     @EndpointInject(uri = "mock:direct:store")

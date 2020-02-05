@@ -19,7 +19,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore; @Ignore // @Ignore
+
 @MockEndpointsAndSkip("direct:vm-workload-inventory")
 public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest extends XavierCamelTest {
     @Inject

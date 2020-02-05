@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-import org.junit.Ignore; @Ignore // @Ignore
+
 @MockEndpointsAndSkip("direct:insights|file:*")
 public class MainRouteBuilder_DirectStoreAnalysisModelTest extends XavierCamelTest {
 

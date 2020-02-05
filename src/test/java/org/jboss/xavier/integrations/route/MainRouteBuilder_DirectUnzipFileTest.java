@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Ignore; @Ignore // @Ignore
+
 @MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|direct:send-costsavings|direct:calculate-vmworkloadinventory|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel|direct:flags-shared-disks")
 public class MainRouteBuilder_DirectUnzipFileTest extends XavierCamelTest {
 

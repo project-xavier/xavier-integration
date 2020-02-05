@@ -26,7 +26,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-import org.junit.Ignore; @Ignore // @Ignore
+
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @SpringBootTest(classes = {Application.class})
