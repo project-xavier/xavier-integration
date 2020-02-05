@@ -21,7 +21,7 @@ public abstract class XavierCamelTest {
     protected CamelContext camelContext;
 
     @Before
-    public void beforeTest() throws Exception {
+    public void beforeTest() {
         //Given
         camelContext.setAutoStartup(false);
         camelContext.addComponent("aws-s3", camelContext.getComponent("stub"));

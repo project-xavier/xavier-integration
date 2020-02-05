@@ -60,7 +60,6 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
 
@@ -84,7 +83,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
@@ -137,7 +135,7 @@ public class EndToEndTest {
             .withServices(S3);
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
-    private static String insightsRbacCommitHash = "debb5b0559f9fe3f7868160dafd2dfb3873ac03a"; // 2019-11-11
+    private static String insightsRbacCommitHash = "debb5b0559f9fe3f7868160dafd2dfb3873ac03a"; // 2020-02-03
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -239,7 +237,6 @@ public class EndToEndTest {
                         .withEnv("POSTGRES_SQL_SERVICE_HOST", "rbac_db")
                         .withEnv("POSTGRES_SQL_SERVICE_PORT", "5432");
                 rbacServer.start();
-                Thread.sleep(5000);
 
                 importProjectIntoKIE();
 
@@ -365,7 +362,7 @@ public class EndToEndTest {
     }
 
     @After
-    public void cleanUpAfter() throws IOException {
+    public void cleanUp() throws IOException {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
