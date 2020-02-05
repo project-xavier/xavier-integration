@@ -54,13 +54,13 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.LogMessageWaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
 
@@ -84,6 +84,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
@@ -135,12 +136,6 @@ public class EndToEndTest {
             .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"))
             .withServices(S3);
 
-    @ClassRule
-    public static PostgreSQLContainer rbacPostgreSQL = new PostgreSQLContainer()
-            .withDatabaseName("postgres")
-            .withUsername("postgres")
-            .withPassword("postgres");
-
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
 
     @Inject
@@ -176,25 +171,40 @@ public class EndToEndTest {
 
                 Network network = Network.newNetwork();
 
-                System.out.println("rbacPostgreSQL.getContainerIpAddress()" + rbacPostgreSQL.getContainerIpAddress());
-                System.out.println("rbacPostgreSQL.getFirstMappedPort()" + rbacPostgreSQL.getMappedPort(5432));
-                System.out.println("rbacPostgreSQL.getFirstMappedPort()" + rbacPostgreSQL.getNetwork());
-                System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getContainerIpAddress());
-                System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getFirstMappedPort());
-                System.out.println("postgreSQL.getFirstMappedPort()" + postgreSQL.getNetwork());
+                Network rbacNetwork = Network.newNetwork();
 
-
-                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.9")
-                        .withExposedPorts(8000)
+                GenericContainer rbacPostgreSQL = new GenericContainer<>("postgres:9.6")
+//                        .withExposedPorts(5432)
+                        .withNetwork(rbacNetwork)
+                        .withNetworkAliases("rbac_db")
+                        .withEnv("POSTGRES_DB", "postgres")
+                        .withEnv("POSTGRES_USER", "postgres")
+                        .withEnv("POSTGRES_PASSWORD", "postgres")
+                        .waitingFor(new LogMessageWaitStrategy()
+                                .withRegEx(".*database system is ready to accept connections.*\\s")
+                                .withTimes(2)
+                                .withStartupTimeout(java.time.Duration.of(60, SECONDS)));
+                rbacPostgreSQL.start();
+                GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.12")
+//                        .withExposedPorts(8000)
+                        .withNetwork(rbacNetwork)
+                        .withNetworkAliases("rbac")
                         .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
                         .withEnv("DATABASE_ENGINE", "postgresql")
-                        .withEnv("DATABASE_NAME", rbacPostgreSQL.getDatabaseName())
-                        .withEnv("POSTGRES_SQL_SERVICE_HOST", rbacPostgreSQL.getContainerIpAddress())
-                        .withEnv("POSTGRES_SQL_SERVICE_PORT", String.valueOf(rbacPostgreSQL.getFirstMappedPort()))
-                        .withEnv("DATABASE_USER", rbacPostgreSQL.getUsername())
-                        .withEnv("DATABASE_PASSWORD", rbacPostgreSQL.getPassword())
-                        .withNetwork(network);
+                        .withEnv("DATABASE_NAME", "postgres")
+                        .withEnv("DATABASE_USER", "postgres")
+                        .withEnv("DATABASE_PASSWORD", "postgres")
+                        .withEnv("POSTGRES_SQL_SERVICE_HOST", "rbac_db")
+                        .withEnv("POSTGRES_SQL_SERVICE_PORT", "5432")
+//                        .waitingFor(new LogMessageWaitStrategy()
+//                                .withRegEx(".*development server at.*")
+//                                .withTimes(20)
+//                                .withStartupTimeout(java.time.Duration.of(60, SECONDS))
+//                        )
+                        ;
                 rbacServer.start();
+
+                Thread.sleep(5000);
 
                 GenericContainer minio = new GenericContainer<>("minio/minio")
                         .withCommand("server /data")
@@ -259,7 +269,10 @@ public class EndToEndTest {
                         "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
                         "kieserver.devel-service=" + getHostForKie() + "/kie-server",
                         "spring.datasource.url = jdbc:postgresql://" + getContainerHost(postgreSQL) + "/sampledb" ,
-                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect");
+                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect",
+                        "insights.rbac.path=/api/v1/access/",
+                        "insights.rbac.host=" + "http://" + ":" + getContainerHost(rbacServer, 8000)
+                );
             } catch (Exception e) {
                 e.printStackTrace();
             }
