@@ -172,18 +172,19 @@ public class EndToEndTest {
                 Network network = Network.newNetwork();
 
                 Network rbacNetwork = Network.newNetwork();
-
-                GenericContainer rbacPostgreSQL = new GenericContainer<>("postgres:9.6")
-//                        .withExposedPorts(5432)
+                GenericContainer rbacPostgreSQL = new PostgreSQLContainer()
+                        .withDatabaseName("postgres")
+                        .withUsername("postgres")
+                        .withPassword("postgres")
                         .withNetwork(rbacNetwork)
-                        .withNetworkAliases("rbac_db")
-                        .withEnv("POSTGRES_DB", "postgres")
-                        .withEnv("POSTGRES_USER", "postgres")
-                        .withEnv("POSTGRES_PASSWORD", "postgres")
-                        .waitingFor(new LogMessageWaitStrategy()
-                                .withRegEx(".*database system is ready to accept connections.*\\s")
-                                .withTimes(2)
-                                .withStartupTimeout(java.time.Duration.of(60, SECONDS)));
+                        .withNetworkAliases("rbac_db");
+//                        .withEnv("POSTGRES_DB", "postgres")
+//                        .withEnv("POSTGRES_USER", "postgres")
+//                        .withEnv("POSTGRES_PASSWORD", "postgres")
+//                        .waitingFor(new LogMessageWaitStrategy()
+//                                .withRegEx(".*database system is ready to accept connections.*\\s")
+//                                .withTimes(2)
+//                                .withStartupTimeout(java.time.Duration.of(60, SECONDS)));
                 rbacPostgreSQL.start();
                 GenericContainer rbacServer = new GenericContainer<>("carlosthe19916/insights-rbac:20200204.12")
 //                        .withExposedPorts(8000)
