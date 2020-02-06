@@ -57,7 +57,60 @@ public class RBACService {
         return result;
     }
 
-    //        """Process acls to determine capabilities."""
+    /***
+     * Process acls to determine capabilities. Empty resourceDefinitions means all access ('*')
+     *
+     * @return List of resourceDefinition values.
+     * E.g. Given:
+     * [
+     *     {
+     *         "permission": "migration-analytics:resource1:read",
+     *         "resourceDefinitions": []
+     *     },
+     *     {
+     *         "permission": "migration-analytics:resource2:write",
+     *         "resourceDefinitions": [
+     *             {
+     *                 "attributeFilter": {
+     *                     "key": "key1",
+     *                     "operation": "equal",
+     *                     "value": "1"
+     *                 }
+     *             },
+     *             {
+     *                 "attributeFilter": {
+     *                     "key": "key2",
+     *                     "operation": "in",
+     *                     "value": "2,3,4"
+     *                 }
+     *             }
+     *         ]
+     *     }
+     * ]
+     *
+     * Will return:
+     * {
+     *     "resource1": [
+     *         {
+     *             "operation": "read",
+     *             "resources": [
+     *                 "*"
+     *             ]
+     *         }
+     *     ],
+     *     "resource2": [
+     *         {
+     *             "operation": "write",
+     *             "resources": [
+     *                 "1",
+     *                 "2",
+     *                 "3",
+     *                 "4"
+     *             ]
+     *         }
+     *     ]
+     * }
+     * */
     public static Map<String, List<AclData>> processAcls(List<Acl> acls) {
         Map<String, List<AclData>> access = new HashMap<>();
         for (Acl acl : acls) {
@@ -89,103 +142,116 @@ public class RBACService {
         return access;
     }
 
-    /**
+
+    /***
      * Get operation and default wildcard to write for now.
-     */
-    private static String get_operation(AclData access_item, String res_type) {
-        String operation = access_item.getOperation();
+     **/
+    public static String getOperation(AclData accessItem, String resType) {
+        String operation = accessItem.getOperation();
         if (operation.equals(WILDCARD)) {
-            List<String> operations = ResourceTypes.RESOURCE_TYPES.getOrDefault(res_type, Collections.emptyList());
+            List<String> operations = ResourceTypes.RESOURCE_TYPES.getOrDefault(resType, Collections.emptyList());
             if (!operations.isEmpty()) {
                 operation = operations.get(operations.size() - 1);
             } else {
-                throw new IllegalStateException("Invalid resource type: " + res_type);
+                throw new IllegalStateException("Invalid resource type: " + resType);
             }
         }
 
         return operation;
     }
 
-    private static Map<String, Map<String, List<String>>> update_access_obj(Map<String, List<AclData>> access, Map<String, Map<String, List<String>>> res_access, List<String> resource_list) {
-//        """Update access object with access data."""
-        for (String res : resource_list) {
-            List<AclData> access_items = access.getOrDefault(res, Collections.emptyList());
-            for (AclData access_item : access_items) {
-                String operation = get_operation(access_item, res);
-                List<String> res_list = access_item.getResources();
-                if (operation.equals("write") && res_access.get(res).get("write") != null) {
-                    res_access.get(res).get("write").addAll(res_list);
-                    res_access.get(res).get("read").addAll(res_list);
+    /***
+     * Update access object with access data.
+     * @param resourceList list of system defined resources
+     **/
+    private static Map<String, Map<String, List<String>>> updateAccessObj(
+            Map<String, List<AclData>> access,
+            Map<String, Map<String, List<String>>> resAccess,
+            List<String> resourceList
+    ) {
+        for (String res : resourceList) {
+            List<AclData> accessItems = access.getOrDefault(res, Collections.emptyList());
+            for (AclData accessItem : accessItems) {
+                String operation = getOperation(accessItem, res);
+                List<String> resList = accessItem.getResources();
+                if (operation.equals("write") && resAccess.get(res).get("write") != null) {
+                    resAccess.get(res).get("write").addAll(resList);
+                    resAccess.get(res).get("read").addAll(resList);
                 }
                 if (operation.equals("read")) {
-                    res_access.get(res).get("read").addAll(res_list);
+                    resAccess.get(res).get("read").addAll(resList);
                 }
             }
         }
 
-        return res_access;
+        return resAccess;
     }
 
-    private static Map<String, Map<String, List<String>>> apply_access(Map<String, List<AclData>> access) {
-//        """Apply access to managed resources."""
-        Map<String, Map<String, List<String>>> res_access = new HashMap<>();
+    /***
+     * Apply access to managed resources.
+     * @param access processed Acl
+     * @return map of system resources and their operations
+     */
+    private static Map<String, Map<String, List<String>>> applyAccess(Map<String, List<AclData>> access) {
+        Map<String, Map<String, List<String>>> resourceAccess = new HashMap<>();
+
         List<String> resources = new ArrayList<>();
 
-        for (Map.Entry<String, List<String>> resourceType : ResourceTypes.RESOURCE_TYPES.entrySet()) {
-            String res_type = resourceType.getKey();
-            List<String> operations = resourceType.getValue();
+        for (Map.Entry<String, List<String>> systemResourceType : ResourceTypes.RESOURCE_TYPES.entrySet()) {
+            String systemResType = systemResourceType.getKey();
+            List<String> systemResOperations = systemResourceType.getValue();
 
-            resources.add(res_type);
-            for (String operation : operations) {
-                if (!res_access.containsKey(res_type)) {
-                    res_access.put(res_type, new HashMap<>());
+            resources.add(systemResType);
+            for (String systemOperation : systemResOperations) {
+                if (!resourceAccess.containsKey(systemResType)) {
+                    resourceAccess.put(systemResType, new HashMap<>());
                 }
 
-                Map<String, List<String>> curr = res_access.get(res_type);
-                curr.put(operation, new ArrayList<>());
+                Map<String, List<String>> curr = resourceAccess.get(systemResType);
+                curr.put(systemOperation, new ArrayList<>());
             }
         }
         if (access == null) {
-            return res_access;
+            return resourceAccess;
         }
 
-//    # process '*' special case
-        List<AclData> wildcard_items = access.getOrDefault(WILDCARD, Collections.emptyList());
-        for (AclData wildcard_item : wildcard_items) {
-            List<String> res_list = wildcard_item.getResources();
-            for (String res_type : resources) {
-                String operation = get_operation(wildcard_item, res_type);
-                AclData acl = new AclData(operation, res_list);
+        // process '*' special case
+        List<AclData> wildcardItems = access.getOrDefault(WILDCARD, Collections.emptyList());
+        for (AclData wildcardItem : wildcardItems) {
+            List<String> resList = wildcardItem.getResources();
+            for (String resType : resources) {
+                String operation = getOperation(wildcardItem, resType);
+                AclData acl = new AclData(operation, resList);
 
-                if (!access.containsKey(res_type)) {
-                    access.put(res_type, new ArrayList<>());
+                if (!access.containsKey(resType)) {
+                    access.put(resType, new ArrayList<>());
                 }
-                List<AclData> curr_access = access.get(res_type);
-                curr_access.add(acl);
+                List<AclData> currAccess = access.get(resType);
+                currAccess.add(acl);
             }
         }
 
-        res_access = update_access_obj(access, res_access, resources);
+        resourceAccess = updateAccessObj(access, resourceAccess, resources);
 
-//    # compact down to only '*' if present
+        // compact down to only '*' if present
         for (Map.Entry<String, List<String>> resourceType : ResourceTypes.RESOURCE_TYPES.entrySet()) {
-            String res_type = resourceType.getKey();
+            String resType = resourceType.getKey();
             List<String> operations = resourceType.getValue();
 
-            resources.add(res_type);
+            resources.add(resType);
             for (String operation : operations) {
-                Map<String, List<String>> curr = res_access.get(res_type);
-                List<String> res_list = curr.get(operation);
-                if (res_list.stream().anyMatch(p -> p.equals(WILDCARD))) {
+                Map<String, List<String>> curr = resourceAccess.get(resType);
+                List<String> resList = curr.get(operation);
+                if (resList.stream().anyMatch(p -> p.equals(WILDCARD))) {
                     curr.put(operation, Collections.singletonList("*"));
                 }
             }
         }
 
-        return res_access;
+        return resourceAccess;
     }
 
-    public static Map<String, Map<String, List<String>>> get_access_for_user(List<Acl> acls) {
+    public static Map<String, Map<String, List<String>>> getAccessForUser(List<Acl> acls) {
         if (acls == null) {
             return null;
         }
@@ -193,7 +259,7 @@ public class RBACService {
             return Collections.emptyMap();
         }
 
-        Map<String, List<AclData>> processed_acls = processAcls(acls);
-        return apply_access(processed_acls);
+        Map<String, List<AclData>> processedAcls = processAcls(acls);
+        return applyAccess(processedAcls);
     }
 }

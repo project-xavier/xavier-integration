@@ -14,10 +14,13 @@ public class RBACServiceTest {
 
     @Test
     public void extractResourceDefinitions_givenEmptyResourceDefinitions_shouldReturnWildcard() {
+        //Given
         List<Acl.ResourceDefinition> resourceDefinitions = Collections.emptyList();
 
+        //When
         List<String> result = RBACService.extractResourceDefinitions(resourceDefinitions);
 
+        //Then
         assertThat(result).isNotNull();
         assertThat(result.size()).isEqualTo(1);
         assertThat(result.get(0)).isEqualTo(RBACService.WILDCARD);
@@ -25,6 +28,7 @@ public class RBACServiceTest {
 
     @Test
     public void extractResourceDefinitions_givenResourceDefinitions_shouldReturnCollection() {
+        //Given
         List<Acl.ResourceDefinition> resourceDefinitions = Arrays.asList(
                 new Acl.ResourceDefinition(
                         new Acl.AttributeFilter("key1", "equal", "1")
@@ -37,8 +41,10 @@ public class RBACServiceTest {
                 )
         );
 
+        //When
         List<String> result = RBACService.extractResourceDefinitions(resourceDefinitions);
 
+        //Then
         assertThat(result).isNotNull();
         assertThat(result.size()).isEqualTo(4);
         assertThat(result).containsAll(Arrays.asList("1", "2", "3", "4"));
@@ -50,6 +56,7 @@ public class RBACServiceTest {
 
     @Test
     public void processAcls_givenMultipleAcl_shouldReturnProcessedAcl() {
+        //Given
         List<Acl> acls = Arrays.asList(
                 new Acl(
                         "application:resource1:operation1",
@@ -61,7 +68,10 @@ public class RBACServiceTest {
                 )
         );
 
+        //When
         Map<String, List<AclData>> processedAcls = RBACService.processAcls(acls);
+
+        //Then
         assertThat(processedAcls).isNotNull();
         assertThat(processedAcls).hasSize(2);
 
@@ -80,6 +90,7 @@ public class RBACServiceTest {
 
     @Test
     public void processAcls_givenCommonResourceName_shouldMergeAclResult() {
+        //Given
         List<Acl> acls = Arrays.asList(
                 new Acl(
                         "application:resource1:operation1",
@@ -91,7 +102,10 @@ public class RBACServiceTest {
                 )
         );
 
+        //When
         Map<String, List<AclData>> processedAcls = RBACService.processAcls(acls);
+
+        //Then
         assertThat(processedAcls).isNotNull();
         assertThat(processedAcls).hasSize(1);
 
@@ -104,19 +118,78 @@ public class RBACServiceTest {
         assertThat(resource1.get(1).getResources()).containsAll(Collections.singletonList(RBACService.WILDCARD));
     }
 
+    @Test
+    public void processAcls_givenMultipleAclAndResourceDefinitions_shouldReturnProcessedAcl() {
+        //Given
+        List<Acl> acls = Arrays.asList(
+                new Acl(
+                        "application:resource1:operation1",
+                        Collections.emptyList()
+                ),
+                new Acl(
+                        "application:resource2:operation2",
+                        Arrays.asList(
+                                new Acl.ResourceDefinition(
+                                        new Acl.AttributeFilter("key1", "equal", "1")
+                                ),
+                                new Acl.ResourceDefinition(
+                                        new Acl.AttributeFilter("key2", "in", "2,3,4")
+                                )
+                        )
+                )
+        );
+
+        //When
+        Map<String, List<AclData>> processedAcls = RBACService.processAcls(acls);
+
+        //Then
+        assertThat(processedAcls).isNotNull();
+        assertThat(processedAcls).hasSize(2);
+
+        List<AclData> resource1 = processedAcls.get("resource1");
+        assertThat(resource1).isNotNull();
+        assertThat(resource1).hasSize(1);
+        assertThat(resource1.get(0).getOperation()).isEqualTo("operation1");
+        assertThat(resource1.get(0).getResources()).containsAll(Collections.singletonList(RBACService.WILDCARD));
+
+        List<AclData> resource2 = processedAcls.get("resource2");
+        assertThat(resource2).isNotNull();
+        assertThat(resource2).hasSize(1);
+        assertThat(resource2.get(0).getOperation()).isEqualTo("operation2");
+        assertThat(resource2.get(0).getResources()).containsAll(Arrays.asList("1", "2", "3", "4"));
+    }
+
+
+    //
+
+
+    @Test
+    public void getOperation_givenNonAsterixOperation_shouldReturnOriginalOperation() {
+        //Given
+        AclData aclData = new AclData("read", Collections.emptyList());
+        String resource = "resource1";
+
+        //When
+        String resultOperation = RBACService.getOperation(aclData, resource);
+
+        //Then
+        assertThat(resultOperation).isNotNull();
+        assertThat(resultOperation).isEqualTo("read");
+    }
+
 
     //
 
 
     @Test
     public void getAccessForUser_givenNull_shouldReturnNull() {
-        Map<String, Map<String, List<String>>> access_for_user = RBACService.get_access_for_user(null);
+        Map<String, Map<String, List<String>>> access_for_user = RBACService.getAccessForUser(null);
         assertThat(access_for_user).isNull();
     }
 
     @Test
     public void getAccessForUser_givenEmpty_shouldReturnEmpty() {
-        Map<String, Map<String, List<String>>> access_for_user = RBACService.get_access_for_user(new ArrayList<>());
+        Map<String, Map<String, List<String>>> access_for_user = RBACService.getAccessForUser(new ArrayList<>());
         assertThat(access_for_user).isNotNull();
         assertThat(access_for_user).isEmpty();
     }
@@ -127,7 +200,7 @@ public class RBACServiceTest {
                 new Acl("applicationName:*:*", new ArrayList<>())
         );
 
-        Map<String, Map<String, List<String>>> access_for_user = RBACService.get_access_for_user(acls);
+        Map<String, Map<String, List<String>>> access_for_user = RBACService.getAccessForUser(acls);
         assertThat(access_for_user).isNotNull();
         assertThat(access_for_user.size()).isEqualTo(ResourceTypes.RESOURCE_TYPES.size());
 
@@ -154,7 +227,7 @@ public class RBACServiceTest {
                 new Acl("applicationName:*:*", new ArrayList<>())
         );
 
-        Map<String, Map<String, List<String>>> access_for_user = RBACService.get_access_for_user(acls);
+        Map<String, Map<String, List<String>>> access_for_user = RBACService.getAccessForUser(acls);
         assertThat(access_for_user).isNotNull();
         assertThat(access_for_user.size()).isEqualTo(ResourceTypes.RESOURCE_TYPES.size());
 

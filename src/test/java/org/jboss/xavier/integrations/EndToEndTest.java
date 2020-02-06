@@ -167,7 +167,7 @@ public class EndToEndTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
                 cloneIngressRepoAndUnzip();
-                cloneInsightsRbacRepoAndUnzip();
+                cloneInsightsRbacRepo_UnzipAndConfigure();
 
                 Network network = Network.newNetwork();
 
@@ -293,7 +293,7 @@ public class EndToEndTest {
         FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-" + ingressCommitHash), new File("src/test/resources/insights-ingress-go"));
     }
 
-    private static void cloneInsightsRbacRepoAndUnzip() throws IOException {
+    private static void cloneInsightsRbacRepo_UnzipAndConfigure() throws IOException {
         // downloading, unzipping, renaming
         String insightsRbacRepoZipURL = "https://github.com/RedHatInsights/insights-rbac/archive/" + insightsRbacCommitHash + ".zip";
         File compressedFile = new File("src/test/resources/insightsRbacRepo.zip");
@@ -303,10 +303,13 @@ public class EndToEndTest {
         // we rename the directory because we had issues with Docker and the long folder
         FileUtils.moveDirectory(new File("src/test/resources/insights-rbac-" + insightsRbacCommitHash), new File("src/test/resources/insights-rbac"));
 
+        // Use custom Dockerfile
         FileUtils.copyFile(
                 new File("src/test/resources/insightsRbac_Dockerfile"),
                 new File("src/test/resources/insights-rbac/insightsRbac_Dockerfile")
         );
+
+        // Configure default system roles for application=migration-analytics
         FileUtils.copyFile(
                 new File("src/test/resources/insightsRbac_roleDefinitions.json"),
                 new File("src/test/resources/insights-rbac/rbac/management/role/definitions/migration-analytics.json")

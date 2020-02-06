@@ -75,7 +75,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                         .setHeader(RBAC_TMP_BODY, body())
 
                         .to("direct:fetch-rbac-user-access")
-                        .bean(RBACService.class, "get_access_for_user")
+                        .bean(RBACService.class, "getAccessForUser")
 
                         .setHeader(RBAC_USER_ACCESS, body())
                         .setBody(exchange -> exchange.getIn().getHeader(RBAC_TMP_BODY))
