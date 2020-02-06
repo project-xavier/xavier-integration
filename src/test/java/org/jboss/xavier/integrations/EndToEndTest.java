@@ -135,7 +135,7 @@ public class EndToEndTest {
             .withServices(S3);
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
-    private static String insightsRbacCommitHash = "debb5b0559f9fe3f7868160dafd2dfb3873ac03a"; // 2020-02-03
+    private static String insightsRbacCommitHash = "a55b610a1385f0f6d3188b08710ec6a5890a97f6"; // 2020-02-05
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
