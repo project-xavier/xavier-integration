@@ -46,8 +46,6 @@ public class RBACRouteBuilder extends RouteBuilder {
                         .to("direct:request-forbidden")
                 .end()
 
-                .log("Request x-rh-identity: ${header.x-rh-identity}")
-
                 .process(exchange -> {
                     // save decoded x-rh-identity JsonNode as header
                     String xRHIdentity = exchange.getIn().getHeader(RBAC_X_RH_IDENTITY, String.class);
@@ -111,7 +109,6 @@ public class RBACRouteBuilder extends RouteBuilder {
                             .setHeader("nextLink", () -> null)
                         .otherwise()
                             .convertBodyTo(String.class)
-                            .log("Response from RBAC server is: ${body}")
                             .process(exchange -> {
                                 String body = exchange.getIn().getBody(String.class);
                                 RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
