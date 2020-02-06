@@ -98,7 +98,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                         if (queryParamsIndex != -1) {
                             httpQuery = nextLink.substring(queryParamsIndex + 1);
                         } else {
-                            httpQuery = "application=" + rbacApplicationName;
+                            httpQuery = "application=" + rbacApplicationName + "&limit=100&offset=0";
                         }
                         exchange.getIn().setHeader(Exchange.HTTP_QUERY, httpQuery);
                     })
