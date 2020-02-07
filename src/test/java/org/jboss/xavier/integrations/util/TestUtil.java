@@ -12,6 +12,7 @@ public class TestUtil
     {
         camelContext.startRoute("request-forbidden");
         camelContext.startRoute("add-username-header");
+        camelContext.startRoute("add-userAccount-header");
         camelContext.startRoute("check-authenticated-request");
         camelContext.startRoute("check-authorized-request");
     }

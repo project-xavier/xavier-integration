@@ -47,7 +47,7 @@ public class AnalysisService
         analysisRepository.delete(id);
     }
 
-    public AnalysisModel buildAndSave(String reportName, String reportDescription, String payloadName, String owner) {
+    public AnalysisModel buildAndSave(String reportName, String reportDescription, String payloadName, String owner, String ownerAccountNumber) {
         AnalysisModel analysisModel = new AnalysisModel();
         analysisModel.setPayloadName(payloadName);
         analysisModel.setReportDescription(reportDescription);
@@ -56,6 +56,7 @@ public class AnalysisService
         analysisModel.setLastUpdate(new Date());
         analysisModel.setStatus(STATUS.IN_PROGRESS.toString());
         analysisModel.setOwner(owner);
+        analysisModel.setOwnerAccountNumber(ownerAccountNumber);
         return analysisRepository.save(analysisModel);
     }
 

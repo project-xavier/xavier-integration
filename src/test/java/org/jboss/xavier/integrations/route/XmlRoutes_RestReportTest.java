@@ -805,6 +805,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.startRoute("report-payload-download");
         camelContext.startRoute("check-authenticated-request");
         camelContext.startRoute("add-username-header");
+        camelContext.startRoute("add-userAccount-header");
 
         AnalysisModel analysisModel = new AnalysisModel();
         analysisModel.setId(9L);

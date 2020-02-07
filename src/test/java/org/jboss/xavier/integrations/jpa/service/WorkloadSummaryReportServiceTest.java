@@ -33,7 +33,7 @@ public class WorkloadSummaryReportServiceTest {
 
     @Test
     public void workloadSummaryReportService_NewReportGiven_ShouldPersistEntityAndFilterByAnalysisOwner() {
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         WorkloadSummaryReportModel reportModel = new WorkloadSummaryReportModel();
         analysisService.setWorkloadSummaryReportModel(reportModel, analysisModel.getId());
 

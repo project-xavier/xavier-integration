@@ -99,9 +99,14 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         from("direct:analysis-model").routeId("analysis-model-creation")
                 .process(e -> {
                     String userName = e.getIn().getHeader(USERNAME, String.class);
-                    AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportName"),
+                    String userAccountNumber = e.getIn().getHeader(USER_ACCOUNT_NUMBER, String.class);
+                    AnalysisModel analysisModel = analysisService.buildAndSave(
+                            (String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportName"),
                             (String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportDescription"),
-                            (String) e.getIn().getHeader(Exchange.FILE_NAME), userName);
+                            (String) e.getIn().getHeader(Exchange.FILE_NAME),
+                            userName,
+                            userAccountNumber
+                    );
                     e.getIn().getHeader(MA_METADATA, Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
                 });
 
@@ -202,6 +207,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         from("direct:check-authenticated-request")
                 .routeId("check-authenticated-request")
                 .to("direct:add-username-header")
+                .to("direct:add-userAccount-header")
                 .choice()
                     .when(header(USERNAME).isEqualTo(""))
                     .to("direct:request-forbidden");
@@ -220,6 +226,13 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .process(exchange ->  {
                     String userName = this.getUserNameFromRHIdentity(exchange.getIn().getHeader("x-rh-identity", String.class));
                     exchange.getIn().setHeader(USERNAME, userName);
+                });
+
+        from("direct:add-userAccount-header")
+                .routeId("add-userAccount-header")
+                .process(exchange ->  {
+                    String userAccountNumber = this.getUserAccountFromRHIdentity(exchange.getIn().getHeader("x-rh-identity", String.class));
+                    exchange.getIn().setHeader(USER_ACCOUNT_NUMBER, userAccountNumber);
                 });
 
         from("direct:request-forbidden")
@@ -312,6 +325,19 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
             result = usernameNode.textValue();
         } catch (Exception e) {
             Logger.getLogger(this.getClass().getName()).warning("Unable to retrieve the 'username' field from cookies due to the following exception. Hence 'username' value set to '" + result + "'.");
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public String getUserAccountFromRHIdentity(String x_rh_identity_base64) {
+        String result = "";
+        try {
+            JsonNode node = new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
+            JsonNode userAccountNumberNode = node.get("identity").get("account_number");
+            result = userAccountNumberNode.textValue();
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).warning("Unable to retrieve the 'account_number' field from cookies due to the following exception. Hence 'account_number' value set to '" + result + "'.");
             e.printStackTrace();
         }
         return result;

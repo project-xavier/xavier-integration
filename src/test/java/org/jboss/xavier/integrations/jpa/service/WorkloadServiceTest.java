@@ -37,7 +37,7 @@ public class WorkloadServiceTest {
 
     @Test
     public void workloadService_NewReportGiven_ShouldPersistEntityAndFilterByAnalysisOwner() {
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         WorkloadSummaryReportModel reportModel = new WorkloadSummaryReportModel();
         WorkloadModel workloadModel = new WorkloadModel();
         workloadModel.setWorkload("JBoss");

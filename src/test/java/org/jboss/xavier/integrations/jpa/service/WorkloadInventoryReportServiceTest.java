@@ -42,7 +42,7 @@ public class WorkloadInventoryReportServiceTest {
 
     @Test
     public void workloadInventoryReportService_NewReportGiven_ShouldPersistEntityAndFilterByAnalysisOwnerAndFilterBean() {
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         WorkloadInventoryReportModel reportModel0 = new WorkloadInventoryReportModel();
         reportModel0.setVmName("host-0");
         reportModel0.setCreationDate(new Date());
@@ -68,7 +68,7 @@ public class WorkloadInventoryReportServiceTest {
 
     @Test
     public void workloadInventoryReportService_NewReportGiven_ShouldPersistEntityAndFilterByAnalysisOwner() {
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         WorkloadInventoryReportModel reportModel0 = new WorkloadInventoryReportModel();
         reportModel0.setVmName("host-0");
         reportModel0.setCreationDate(new Date());
