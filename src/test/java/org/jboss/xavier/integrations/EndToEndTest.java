@@ -29,7 +29,6 @@ import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -88,7 +87,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
-@Ignore
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @UseAdviceWith // Disables automatic start of Camel context
@@ -375,13 +373,13 @@ public class EndToEndTest {
 
         // then
         await()
-            .atMost(timeoutMilliseconds_InitialCostSavingsReport, TimeUnit.MILLISECONDS)
-            .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
-            .until( () -> {
-                // Check database for the ICSR to be created
-                List<InitialSavingsEstimationReportModel> all = initialSavingsEstimationReportRepository.findAll();
-                return all != null && !all.isEmpty();
-            });
+                .atMost(timeoutMilliseconds_InitialCostSavingsReport, TimeUnit.MILLISECONDS)
+                .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+                .until( () -> {
+                    // Check database for the ICSR to be created
+                    List<InitialSavingsEstimationReportModel> all = initialSavingsEstimationReportRepository.findAll();
+                    return all != null && !all.isEmpty();
+                });
 
         // Check S3
         assertThat(getS3Objects(bucket).stream().allMatch(e -> e.startsWith("S3KEY123"))).isTrue();
@@ -441,8 +439,8 @@ public class EndToEndTest {
         TreeSet<WorkloadsDetectedOSTypeModel> wks_ostypemodel_actual = getWks_ostypemodel(workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels());
 
         SoftAssertions.assertSoftly(softly -> {
-                    softly.assertThat(wks_scanrunmodel_expected).isEqualTo(wks_scanrunmodel_actual);
-                    softly.assertThat(wks_ostypemodel_expected).isEqualTo(wks_ostypemodel_actual);
+            softly.assertThat(wks_scanrunmodel_expected).isEqualTo(wks_scanrunmodel_actual);
+            softly.assertThat(wks_ostypemodel_expected).isEqualTo(wks_ostypemodel_actual);
         });
 
         // Performance test
@@ -450,15 +448,15 @@ public class EndToEndTest {
         final String workloadsummaryreport_performance = String.format("/api/xavier/report/%d/workload-summary", ++analysisNum);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz", "application/zip"), String.class);
         await()
-            .atMost(timeoutMilliseconds_PerformaceTest, TimeUnit.MILLISECONDS)
-            .with().pollInterval(Duration.FIVE_HUNDRED_MILLISECONDS)
-            .until(() -> {
-                ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_performance, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
-                return (workloadSummaryReport_PerformanceTest != null &&
-                        workloadSummaryReport_PerformanceTest.getStatusCodeValue() == 200 &&
-                        workloadSummaryReport_PerformanceTest.getBody() != null &&
-                        workloadSummaryReport_PerformanceTest.getBody().getSummaryModels() != null);
-            });
+                .atMost(timeoutMilliseconds_PerformaceTest, TimeUnit.MILLISECONDS)
+                .with().pollInterval(Duration.FIVE_HUNDRED_MILLISECONDS)
+                .until(() -> {
+                    ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_performance, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                    return (workloadSummaryReport_PerformanceTest != null &&
+                            workloadSummaryReport_PerformanceTest.getStatusCodeValue() == 200 &&
+                            workloadSummaryReport_PerformanceTest.getBody() != null &&
+                            workloadSummaryReport_PerformanceTest.getBody().getSummaryModels() != null);
+                });
 
         // Test with a file with VM without Host
         logger.info("+++++++  Test with a file with VM without Host ++++++");
