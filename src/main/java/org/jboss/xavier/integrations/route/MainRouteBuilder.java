@@ -23,6 +23,7 @@ import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.UserService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
+import org.jboss.xavier.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -69,14 +70,14 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
-    private Processor xRhIdentityHeaderProcessor = exchange -> {
+    public static Processor xRhIdentityHeaderProcessor = exchange -> {
         String xRhIdentityEncoded = exchange.getIn().getHeader(X_RH_IDENTITY, String.class);
         if (xRhIdentityEncoded != null) {
             String xRhIdentityDecoded = new String(Base64.getDecoder().decode(xRhIdentityEncoded));
             JsonNode xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
 
-            String username = getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity.user.username");
-            String userAccountNumber = getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity.account_number");
+            String username = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "username").textValue();
+            String userAccountNumber = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "account_number").textValue();
 
             exchange.getIn().setHeader(USERNAME, username);
             exchange.getIn().setHeader(USER_ACCOUNT_NUMBER, userAccountNumber);
@@ -322,17 +323,6 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         internalNode.put(ANALYSIS_ID, analysisId);
 
         return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
-    }
-
-    public String getFieldValueFromJsonNode(JsonNode node, String fieldName) {
-        for (String s : fieldName.split("\\.")) {
-            node = node.get(s);
-        }
-
-        if (node == null) {
-            throw new IllegalStateException("Could not find a valid fieldName:" + fieldName + " in:" + node);
-        }
-        return node.textValue();
     }
 
     private Predicate isZippedFile(String extension) {

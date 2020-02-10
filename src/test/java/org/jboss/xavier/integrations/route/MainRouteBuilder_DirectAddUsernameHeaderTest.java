@@ -1,6 +1,8 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.builder.RouteBuilder;
+import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Test;
 
 import java.util.Base64;
@@ -104,6 +106,67 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
 
         //Then
         assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
+        camelContext.stop();
+    }
+
+    @Test
+    public void mainRouteBuilder_xRhIdentityHeaderProcessor_givenInvalidHeader_shouldSetNullIdentityHeader() throws Exception {
+        // Given
+        camelContext.addRoutes(new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                from("direct:test-xRhIdentityProcessor")
+                        .routeId("test-xRhIdentityProcessor")
+                        .process(MainRouteBuilder.xRhIdentityHeaderProcessor);
+            }
+        });
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("test-xRhIdentityProcessor");
+
+        String x_rh_identity= Base64.getEncoder().encodeToString("BadContentGiven".getBytes());
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(MainRouteBuilder.X_RH_IDENTITY, x_rh_identity);
+
+        Exchange result = camelContext.createProducerTemplate().request("direct:test-xRhIdentityProcessor",  exchange -> {
+            exchange.getIn().setBody(null);
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
+        camelContext.stop();
+    }
+
+    @Test
+    public void mainRouteBuilder_xRhIdentityHeaderProcessor_givenValidHeader_shouldSetUserIdentityHeaders() throws Exception {
+        // Given
+        camelContext.addRoutes(new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                from("direct:test-xRhIdentityProcessor")
+                        .routeId("test-xRhIdentityProcessor")
+                        .process(MainRouteBuilder.xRhIdentityHeaderProcessor);
+            }
+        });
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("test-xRhIdentityProcessor");
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put(MainRouteBuilder.X_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+
+        Exchange result = camelContext.createProducerTemplate().request("direct:test-xRhIdentityProcessor",  exchange -> {
+            exchange.getIn().setBody(null);
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isEqualTo("mrizzi@redhat.com");
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USER_ACCOUNT_NUMBER)).isEqualTo("1460290");
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_JSON_NODE)).isNotNull();
         camelContext.stop();
     }
 }
