@@ -66,13 +66,6 @@ public class AnalysisService
         analysisRepository.save(analysisModel);
     }
 
-    @Deprecated
-    public void addWorkloadInventoryReportModel(WorkloadInventoryReportModel reportModel, Long id) {
-        AnalysisModel analysisModel = findById(id);
-        analysisModel.addWorkloadInventoryReportModel(reportModel);
-        analysisRepository.save(analysisModel);
-    }
-
     public void addWorkloadInventoryReportModels(List<WorkloadInventoryReportModel> reportModels, Long id) {
         AnalysisModel analysisModel = findById(id);
         analysisModel.setWorkloadInventoryReportModels(reportModels);
