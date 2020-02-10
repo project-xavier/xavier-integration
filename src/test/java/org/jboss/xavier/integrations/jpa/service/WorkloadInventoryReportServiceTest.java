@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -126,5 +127,50 @@ public class WorkloadInventoryReportServiceTest {
 
         assertThat(wir1.getVmName()).isEqualTo("host-0");
         assertThat(wir2.getVmName()).isEqualTo("host-1");
+    }
+
+    @Test
+    public void workloadInventoryReportService_getWorkloadInventoryReportModelSortTests_givenFieldAndDirectionTest() {
+        // Given
+        String fieldName = "fieldName";
+        SortBean bean = new SortBean(fieldName, false);
+
+        // When
+        Sort sort = WorkloadInventoryReportService.getWorkloadInventoryReportModelSort(bean);
+
+        // Then
+        assertThat(sort).isNotNull();
+
+        Sort.Order order = sort.getOrderFor(fieldName);
+        assertThat(order).isNotNull();
+        assertThat(order.getDirection()).isEqualTo(Sort.Direction.DESC);
+    }
+
+    @Test
+    public void workloadInventoryReportService_getWorkloadInventoryReportModelSortTests_defaultSortTest() {
+        // Given
+        SortBean bean = new SortBean(null, null);
+
+        // When
+        Sort sort = WorkloadInventoryReportService.getWorkloadInventoryReportModelSort(bean);
+
+        // Then
+        assertThat(sort).isNotNull();
+
+        Sort.Order order1 = sort.getOrderFor(WorkloadInventoryReportModel.PROVIDER_FIELD);
+        assertThat(order1).isNotNull();
+        assertThat(order1.getDirection()).isEqualTo(Sort.Direction.ASC);
+
+        Sort.Order order2 = sort.getOrderFor(WorkloadInventoryReportModel.DATACENTER_FIELD);
+        assertThat(order2).isNotNull();
+        assertThat(order2.getDirection()).isEqualTo(Sort.Direction.ASC);
+
+        Sort.Order order3 = sort.getOrderFor(WorkloadInventoryReportModel.CLUSTER_FIELD);
+        assertThat(order3).isNotNull();
+        assertThat(order3.getDirection()).isEqualTo(Sort.Direction.ASC);
+
+        Sort.Order order4 = sort.getOrderFor(WorkloadInventoryReportModel.VM_NAME_FIELD);
+        assertThat(order4).isNotNull();
+        assertThat(order4.getDirection()).isEqualTo(Sort.Direction.ASC);
     }
 }

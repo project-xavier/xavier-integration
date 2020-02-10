@@ -251,7 +251,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(page, size);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
@@ -282,7 +282,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
@@ -415,7 +415,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
         filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));
         filterBean.setClusters(new HashSet<>(Arrays.asList(cluster1, cluster2)));
@@ -542,7 +542,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, sortBean, filterBean);
