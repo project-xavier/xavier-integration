@@ -131,10 +131,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .to("seda:download-file");
 
         from("seda:download-file?concurrentConsumers=" + THREAD_POOL_SIZE).routeId("download-file")
-=======
-        from("seda:download-file")
                 .routeId("download-file")
->>>>>>> 8e55688... MIGENG-412 moved to seda approach with the Kafka consumer
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
