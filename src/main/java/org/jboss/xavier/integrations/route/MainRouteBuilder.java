@@ -47,6 +47,9 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
+    @Value("${thread.pool-size:5}")
+    private int THREAD_POOL_SIZE;
+
     @Value("${insights.upload.host}")
     private String uploadHost;
 
@@ -125,10 +128,13 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .routeId("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
-                .to("direct:download-file");
+                .to("seda:download-file");
 
-        from("direct:download-file")
+        from("seda:download-file?concurrentConsumers=" + THREAD_POOL_SIZE).routeId("download-file")
+=======
+        from("seda:download-file")
                 .routeId("download-file")
+>>>>>>> 8e55688... MIGENG-412 moved to seda approach with the Kafka consumer
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
