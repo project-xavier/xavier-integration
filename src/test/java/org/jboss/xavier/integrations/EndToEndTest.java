@@ -72,6 +72,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
@@ -154,11 +156,17 @@ public class EndToEndTest {
     @Value("${test.timeout.performance:60000}") // 1 minute
     private int timeoutMilliseconds_PerformaceTest;
 
-    @Value("${test.timetout.ics:10000}") // 10 seconds
+    @Value("${test.timeout.ics:10000}") // 10 seconds
     private int timeoutMilliseconds_InitialCostSavingsReport;
 
     @Value("${minio.host}") // Set in the Initializer
     private String minio_host;
+
+    @Value("${test.timeout.ultraperformance:420000}") // 7 minutes
+    private int timeoutMilliseconds_UltraPerformaceTest;
+
+    @Value("${test.timeout.stress:310000}") // 5 min 10 seconds
+    private long timeoutMilliseconds_StressTest;
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -232,7 +240,8 @@ public class EndToEndTest {
                         "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
                         "kieserver.devel-service=" + getHostForKie() + "/kie-server",
                         "spring.datasource.url = jdbc:postgresql://" + getContainerHost(postgreSQL) + "/sampledb" ,
-                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect");
+                        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect" ,
+                        "thread.pool-size=3");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -533,6 +542,51 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(5);
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().size()).isEqualTo(5);
+
+
+        // Ultra Performance test
+        logger.info("+++++++  Ultra Performance Test ++++++");
+        final String workloadsummaryreport_ultraPerformance = String.format("/api/xavier/report/%d/workload-summary", ++analysisNum);
+        LocalDateTime initTime = LocalDateTime.now();
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        await()
+                .atMost(timeoutMilliseconds_UltraPerformaceTest, TimeUnit.MILLISECONDS)
+                .with().pollInterval(Duration.ONE_SECOND)
+                .until(() -> {
+                    ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_ultraPerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_ultraPerformance, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                    return (workloadSummaryReport_ultraPerformanceTest != null &&
+                            workloadSummaryReport_ultraPerformanceTest.getStatusCodeValue() == 200 &&
+                            workloadSummaryReport_ultraPerformanceTest.getBody() != null &&
+                            workloadSummaryReport_ultraPerformanceTest.getBody().getSummaryModels() != null);
+                });
+        logger.info("****** Time consumed to process the big file : {} " , initTime.until(LocalDateTime.now(), ChronoUnit.SECONDS));
+
+        // Stress test
+        // We load 4 times a BIG file ( 8 Mb ) and a small file ( 316 Kb )
+        // More or less 5 minutes each bunch of threads of Big Files
+        // 1 bunch of threads for 3 big files, while 1 big file and small file wait in the queue
+        // 2
+        // We have 3 consumers, and 4 big files and a small file
+        // To process the small file it should take 5 minutes of the first bunch of big files plus 10 seconds of the small file
+        logger.info("+++++++  Stress Test ++++++");
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
+
+        // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
+        final String workloadsummaryreport_stress_url = String.format("/api/xavier/report/%d/workload-summary", analysisNum + 5);
+        await()
+                .atMost(timeoutMilliseconds_StressTest, TimeUnit.MILLISECONDS)
+                .with().pollInterval(Duration.ONE_SECOND)
+                .until(() -> {
+                    ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_stress = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_stress_url, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                    return (workloadSummaryReport_stress != null &&
+                            workloadSummaryReport_stress.getStatusCodeValue() == 200 &&
+                            workloadSummaryReport_stress.getBody() != null &&
+                            workloadSummaryReport_stress.getBody().getSummaryModels() != null);
+                });
 
         camelContext.stop();
     }
