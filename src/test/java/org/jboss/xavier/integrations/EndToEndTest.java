@@ -585,8 +585,25 @@ public class EndToEndTest {
                     return (workloadSummaryReport_stress != null &&
                             workloadSummaryReport_stress.getStatusCodeValue() == 200 &&
                             workloadSummaryReport_stress.getBody() != null &&
-                            workloadSummaryReport_stress.getBody().getSummaryModels() != null);
+                            workloadSummaryReport_stress.getBody().getSummaryModels() != null &&
+                            workloadSummaryReport_stress.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum() == 8);
                 });
+
+        for (int i=1; i < 5; i++) {
+            final String workloadsummaryreport_stress_url_1 = String.format("/api/xavier/report/%d/workload-summary", analysisNum + i);
+            await()
+                    .atMost(timeoutMilliseconds_PerformaceTest, TimeUnit.MILLISECONDS)
+                    .with().pollInterval(Duration.ONE_SECOND)
+                    .until(() -> {
+                        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_stress_checkVMs = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_stress_url_1, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {
+                        });
+                        return (workloadSummaryReport_stress_checkVMs != null &&
+                                workloadSummaryReport_stress_checkVMs.getStatusCodeValue() == 200 &&
+                                workloadSummaryReport_stress_checkVMs.getBody() != null &&
+                                workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels() != null &&
+                                workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum() == 4848);
+                    });
+        }
 
         camelContext.stop();
     }
