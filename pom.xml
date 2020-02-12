@@ -194,6 +194,10 @@
             <version>42.2.5</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-metrics</artifactId>
+        </dependency>
 
         <!-- Testing -->
         <dependency>
