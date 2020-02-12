@@ -33,6 +33,8 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         List<VMWorkloadInventoryModel> vmWorkloadInventoryModels = vmList.stream()
                 .map(e -> {
                     e.put("_analysisId", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString());
+                    e.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, e));
+                    e.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, e));
                     return e;
                 })
                 .peek(e -> log.info("Treating VM :{} from {}", vmList.indexOf(e), vmList.size()))
@@ -58,8 +60,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();
         model.setProvider(readValueFromExpandedEnvVarPath(PROVIDERPATH, vmStructMap));
 
-        vmStructMap.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, vmStructMap));
-        vmStructMap.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, vmStructMap));
         model.setDatacenter(readValueFromExpandedEnvVarPath(DATACENTERPATH, vmStructMap));
 
         model.setCluster(readValueFromExpandedEnvVarPath(CLUSTERPATH, vmStructMap));
