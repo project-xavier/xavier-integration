@@ -39,7 +39,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                 .map(this::createVMWorkloadInventoryModel)
                 .peek(e -> log.info("VM treated {}", e.getVmName()))
                 .collect(Collectors.toList());
-        log.info("[L42] VMs parsed {} vs VMs calculated {}", vmList.size(), vmWorkloadInventoryModels.size());
+        log.info("[L42] AnalysisID {} VMs parsed {} vs VMs calculated {}", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
         return vmWorkloadInventoryModels;
     }
 
