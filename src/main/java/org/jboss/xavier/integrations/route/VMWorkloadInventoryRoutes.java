@@ -1,10 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
-import org.apache.camel.component.metrics.MetricsConstants;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
-import org.jboss.xavier.integrations.migrationanalytics.business.FlagSharedDisksCalculator;
-import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -34,17 +31,10 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
         super.configure();
 
         from("direct:calculate-vmworkloadinventory").routeId("calculate-vmworkloadinventory")
-//            .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
-            .process(e -> {
-                VMWorkloadInventoryCalculator calculator = applicationContext.getBean(VMWorkloadInventoryCalculator.class);
-                e.getOut().setBody(calculator.calculate(e.getIn().getBody(String.class), e.getIn().getHeader(MainRouteBuilder.MA_METADATA, Map.class)));
-            })
+            .bean("VMWorkloadInventoryCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
-                .to("metrics:counter:vm-to-drools")
                 .to("direct:vm-workload-inventory")
             .end()
-            .setHeader(MetricsConstants.HEADER_COUNTER_INCREMENT, simple("${body.size}"))
-            .to("metrics:histogram:vm-to-addworkload")
             .process(exchange -> analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
                     Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString())));
 
@@ -55,7 +45,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
 
         from("direct:flags-shared-disks").routeId("flags-shared-disks")
-            .transform().method(FlagSharedDisksCalculator.class, "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
+            .bean("FlagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .process(exchange -> {
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
                 List<WorkloadInventoryReportModel> workloadInventoryReportModels = workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId(

@@ -42,9 +42,9 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                     e.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, e));
                     return e;
                 })
-                .peek(e -> log.info("------- Instance {} Treating Analysis {} VM :{} from {} : {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size(), e))
+                .peek(e -> log.debug("------- Instance {} Treating Analysis {} VM :{} from {} : {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size(), e))
                 .map(this::createVMWorkloadInventoryModel)
-                .peek(e -> log.info("+++++++ Instance {} Treated Analysis {} VM {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), e.getVmName() == null ? "****** VMNAME NULL ******" : e.getVmName()))
+                .peek(e -> log.debug("+++++++ Instance {} Treated Analysis {} VM {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), e.getVmName() == null ? "****** VMNAME NULL ******" : e.getVmName()))
                 .collect(Collectors.toList());
         log.info(" Instance {} AnalysisID {} VMs parsed {} vs VMs calculated {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
         return vmWorkloadInventoryModels;

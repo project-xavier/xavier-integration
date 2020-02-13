@@ -143,7 +143,6 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                         .removeHeader("Exchange.HTTP_URI")
                         .to("direct:process-file")
                         .log("File ${header.MA_metadata[filename]} success")
-                        .log("Metrics : ${headers}")
                     .otherwise()
                         .throwException(org.apache.commons.httpclient.HttpException.class, "Unsuccessful response from Insights Download Service")
                 .end();
