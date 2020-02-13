@@ -7,6 +7,7 @@ import org.jboss.xavier.integrations.migrationanalytics.business.FlagSharedDisks
 import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -24,12 +25,20 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
     @Value("${parallel.wir}")
     private boolean parallel;
 
+    @Inject
+    ApplicationContext applicationContext;
+
+
     @Override
     public void configure() throws Exception {
         super.configure();
 
         from("direct:calculate-vmworkloadinventory").routeId("calculate-vmworkloadinventory")
-            .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
+//            .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
+            .process(e -> {
+                VMWorkloadInventoryCalculator calculator = applicationContext.getBean(VMWorkloadInventoryCalculator.class);
+                e.getOut().setBody(calculator.calculate(e.getIn().getBody(String.class), e.getIn().getHeader(MainRouteBuilder.MA_METADATA, Map.class)));
+            })
             .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .to("metrics:counter:vm-to-drools")
                 .to("direct:vm-workload-inventory")

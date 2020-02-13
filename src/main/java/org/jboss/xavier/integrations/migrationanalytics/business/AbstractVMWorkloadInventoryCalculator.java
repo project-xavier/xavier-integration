@@ -82,6 +82,8 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
 
         try {
             value = jsonParsed.read(expandParamsInPath);
+            log.info("Reading {} Analisys {} JSON : Params {} Value {}", jsonParsed.jsonString().substring(0, 30), vmStructMap.get("_analysisId").toString(), expandParamsInPath, value);
+
             if (value instanceof Collection) {
                 value = ((List<T>) value).get(0);
             }
