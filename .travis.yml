@@ -3,7 +3,11 @@ notifications:
   email:
     if: type = cron OR branch = master
     recipients:
-      - windup-eng@redhat.com
+      - cferiavi@redhat.com
+      - jvilalop@redhat.com
+      - pcattana@redhat.com
+      - mbrophy@redhat.com
+      - mrizzi@redhat.com
     on_success: change
     on_failure: always
 jdk:
