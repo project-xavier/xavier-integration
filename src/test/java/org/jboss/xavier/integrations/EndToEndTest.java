@@ -423,8 +423,8 @@ public class EndToEndTest {
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getOsName).distinct().count()).isEqualTo(4);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("CentOS 7 (64-bit)")).count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getComplexity).distinct().count()).isEqualTo(3);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(1);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(3);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(0);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(4);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getRecommendedTargetsIMS().contains("OSP")).count()).isEqualTo(11);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
@@ -570,13 +570,13 @@ public class EndToEndTest {
         // To process the small file it should take 5 minutes of the first bunch of big files plus 10 seconds of the small file
         logger.info("+++++++  Stress Test ++++++");
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
 
         // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
-        final String workloadsummaryreport_stress_url = String.format("/api/xavier/report/%d/workload-summary", analysisNum + 5);
+        final String workloadsummaryreport_stress_url = String.format("/api/xavier/report/%d/workload-summary", analysisNum + 2);
         await()
                 .atMost(timeoutMilliseconds_StressTest, TimeUnit.MILLISECONDS)
                 .with().pollInterval(Duration.ONE_SECOND)
@@ -595,16 +595,14 @@ public class EndToEndTest {
                     .atMost(timeoutMilliseconds_PerformaceTest, TimeUnit.MILLISECONDS)
                     .with().pollInterval(Duration.ONE_SECOND)
                     .until(() -> {
-                        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_stress_checkVMs = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_stress_url_1, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {
-                        });
+                        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_stress_checkVMs = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_stress_url_1, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
                         return (workloadSummaryReport_stress_checkVMs != null &&
                                 workloadSummaryReport_stress_checkVMs.getStatusCodeValue() == 200 &&
                                 workloadSummaryReport_stress_checkVMs.getBody() != null &&
                                 workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels() != null &&
-                                workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum() == 4848);
+                                workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum() == (workloadSummaryReport_stress_checkVMs.getBody().getAnalysis().getPayloadName().equalsIgnoreCase("cloudforms-export-v1_0_0") ? 8 : 4848));
                     });
         }
-
         camelContext.stop();
     }
 
