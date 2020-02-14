@@ -36,11 +36,10 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         List<Map> vmList = readListValuesFromExpandedEnvVarPath(VMPATH, null);
 
         List<VMWorkloadInventoryModel> vmWorkloadInventoryModels = vmList.stream()
-                .map(e -> {
+                .peek(e -> {
                     e.put("_analysisId", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString());
                     e.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, e));
                     e.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, e));
-                    return e;
                 })
                 .peek(e -> log.debug("------- Instance {} Treating Analysis {} VM :{} from {} : {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size(), e))
                 .map(this::createVMWorkloadInventoryModel)
