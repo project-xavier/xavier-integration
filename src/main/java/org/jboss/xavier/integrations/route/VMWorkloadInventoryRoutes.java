@@ -45,7 +45,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
 
         from("direct:flags-shared-disks").routeId("flags-shared-disks")
-            .bean("FlagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
+            .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .process(exchange -> {
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
                 List<WorkloadInventoryReportModel> workloadInventoryReportModels = workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId(
