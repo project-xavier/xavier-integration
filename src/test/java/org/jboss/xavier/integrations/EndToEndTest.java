@@ -3,7 +3,6 @@ package org.jboss.xavier.integrations;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.util.Base64;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
@@ -12,13 +11,9 @@ import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Duration;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
@@ -41,7 +36,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -70,7 +64,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -162,7 +155,7 @@ public class EndToEndTest {
     @Value("${minio.host}") // Set in the Initializer
     private String minio_host;
 
-    @Value("${test.timeout.ultraperformance:420000}") // 7 minutes
+    @Value("${test.timeout.ultraperformance:900000}") // 15 minutes
     private int timeoutMilliseconds_UltraPerformaceTest;
 
     @Value("${test.timeout.stress:310000}") // 5 min 10 seconds
@@ -376,8 +369,10 @@ public class EndToEndTest {
         assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
 
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
-        int analysisNum = 1;
+        int analysisNum = 0;
+        /*
         logger.info("+++++++  Regular Test ++++++");
+        analysisNum++;
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz", "application/zip"), String.class);
 
         // then
@@ -542,7 +537,7 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(5);
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().size()).isEqualTo(5);
-
+*/
 
         // Ultra Performance test
         logger.info("+++++++  Ultra Performance Test ++++++");
@@ -560,12 +555,12 @@ public class EndToEndTest {
                             workloadSummaryReport_ultraPerformanceTest.getBody().getSummaryModels() != null);
                 });
         logger.info("****** Time consumed to process the big file : {} " , initTime.until(LocalDateTime.now(), ChronoUnit.SECONDS));
-
+/*
         // Stress test
         // We load 4 times a BIG file ( 8 Mb ) and a small file ( 316 Kb )
         // More or less 5 minutes each bunch of threads of Big Files
         // 1 bunch of threads for 3 big files, while 1 big file and small file wait in the queue
-        // 2
+        // 2sy
         // We have 3 consumers, and 4 big files and a small file
         // To process the small file it should take 5 minutes of the first bunch of big files plus 10 seconds of the small file
         logger.info("+++++++  Stress Test ++++++");
@@ -603,6 +598,7 @@ public class EndToEndTest {
                                 workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum() == (workloadSummaryReport_stress_checkVMs.getBody().getAnalysis().getPayloadName().equalsIgnoreCase("cloudforms-export-v1_0_0") ? 8 : 4848));
                     });
         }
+        */
         camelContext.stop();
     }
 

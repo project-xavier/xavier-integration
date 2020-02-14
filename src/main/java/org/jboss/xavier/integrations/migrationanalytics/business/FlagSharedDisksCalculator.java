@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
+import io.micrometer.core.annotation.Timed;
 import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
 import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -21,6 +22,7 @@ public class FlagSharedDisksCalculator extends AbstractVMWorkloadInventoryCalcul
     ManifestVersionService manifestVersionService;
 
     @Override
+    @Timed(description="Flagshared Calculate", longTask = true)
     public Set<String> calculate(String cloudFormsJson, Map<String, Object> headers) {
         manifestVersion = getManifestVersion(cloudFormsJson);
         jsonParsed = JsonPath.parse(cloudFormsJson);

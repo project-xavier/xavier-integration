@@ -1,6 +1,8 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
+import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -27,8 +30,12 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         this.id = Math.random();
     }
 
-    @Override
-    public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
+        @Override
+        @Counted("vmworkload count")
+        @Timed(description="vmworkload time",longTask = true)
+        public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
+            LocalDateTime initTime = LocalDateTime.now();
+
         manifestVersion = getManifestVersion(cloudFormsJson);
         jsonParsed = JsonPath.parse(cloudFormsJson);
         scanRunDate = getScanRunDate();
@@ -41,11 +48,14 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                     e.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, e));
                     e.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, e));
                 })
-                .peek(e -> log.debug("------- Instance {} Treating Analysis {} VM :{} from {} : {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size(), e))
+                .peek(e -> log.info("------- Instance {} Treating Analysis {} VM :{} from {} : ", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size()))
                 .map(this::createVMWorkloadInventoryModel)
-                .peek(e -> log.debug("+++++++ Instance {} Treated Analysis {} VM {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), e.getVmName() == null ? "****** VMNAME NULL ******" : e.getVmName()))
+                .peek(e -> log.info("+++++++ Instance {} Treated Analysis {} VM {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), e.getVmName() == null ? "****** VMNAME NULL ******" : e.getVmName()))
                 .collect(Collectors.toList());
         log.info(" Instance {} AnalysisID {} VMs parsed {} vs VMs calculated {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
+
+        LocalDateTime finishTime = LocalDateTime.now();
+
         return vmWorkloadInventoryModels;
     }
 
@@ -60,6 +70,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         return scanrundate;
     }
 
+    @Timed(description="createVMWorkloadInventoryModel", longTask = true)
     private VMWorkloadInventoryModel createVMWorkloadInventoryModel(Map vmStructMap) {
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();
         model.setProvider(readValueFromExpandedEnvVarPath(PROVIDERPATH, vmStructMap));

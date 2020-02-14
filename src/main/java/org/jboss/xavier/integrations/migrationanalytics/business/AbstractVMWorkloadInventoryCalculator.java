@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.xavier.integrations.migrationanalytics.business.issuehandling.AnalysisIssuesHandler;
 import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
@@ -75,6 +76,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
         return files;
     }
 
+    @Timed(description="readValueFromExpandedEnvVarPath")
     protected <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, Class type) {
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
 
@@ -98,7 +100,6 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
         }
         return (T) value;
     }
-
     protected <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
         return readValueFromExpandedEnvVarPath(envVarPath, vmStructMap, Object.class);
     }
