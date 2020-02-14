@@ -1,6 +1,11 @@
 language: java
 notifications:
-  email: false
+  email:
+    if: type = cron AND branch = master
+    recipients:
+      - windup-eng@redhat.com
+    on_success: change
+    on_failure: always
 jdk:
   - openjdk8
 addons:
