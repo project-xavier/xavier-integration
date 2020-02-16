@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -30,11 +31,10 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         this.id = Math.random();
     }
 
-        @Override
-        @Counted("vmworkload count")
-        @Timed(description="vmworkload time",longTask = true)
-        public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
-            LocalDateTime initTime = LocalDateTime.now();
+    @Override
+    @Counted("vmworkload count")
+    @Timed(description="vmworkload time",longTask = true, value="vm-calculate")
+    public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
 
         manifestVersion = getManifestVersion(cloudFormsJson);
         jsonParsed = JsonPath.parse(cloudFormsJson);
@@ -54,8 +54,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                 .collect(Collectors.toList());
         log.info(" Instance {} AnalysisID {} VMs parsed {} vs VMs calculated {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
 
-        LocalDateTime finishTime = LocalDateTime.now();
-
         return vmWorkloadInventoryModels;
     }
 
@@ -70,8 +68,9 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         return scanrundate;
     }
 
-    @Timed(description="createVMWorkloadInventoryModel", longTask = true)
+    @Timed(description="createVMWorkloadInventoryModel", longTask = true, value="vm-create")
     private VMWorkloadInventoryModel createVMWorkloadInventoryModel(Map vmStructMap) {
+        LocalDateTime init = LocalDateTime.now();
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();
         model.setProvider(readValueFromExpandedEnvVarPath(PROVIDERPATH, vmStructMap));
 
@@ -114,6 +113,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
 
+        log.info(" ...... time create VM : {}", init.until(LocalDateTime.now(), ChronoUnit.MILLIS));
         return model;
     }
 }
