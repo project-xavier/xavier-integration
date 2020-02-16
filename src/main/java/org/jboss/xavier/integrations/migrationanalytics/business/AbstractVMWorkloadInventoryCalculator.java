@@ -1,7 +1,6 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.xavier.integrations.migrationanalytics.business.issuehandling.AnalysisIssuesHandler;
 import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
@@ -9,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import javax.inject.Inject;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,19 +75,13 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
         return files;
     }
 
-    @Timed(description="readValueFromExpandedEnvVarPath")
     protected <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap, Class type) {
-        LocalDateTime init = LocalDateTime.now();
-
         String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
-        log.info("...... time expandParams {}", init.until(LocalDateTime.now(), ChronoUnit.MILLIS));
 
         Object value;
 
         try {
             value = jsonParsed.read(expandParamsInPath);
-            log.debug("Reading {} Analisys {} JSON : Params {} Value {}", jsonParsed.jsonString().substring(0, 30), vmStructMap.get("_analysisId").toString(), expandParamsInPath, value);
-
             if (value instanceof Collection) {
                 value = ((List<T>) value).get(0);
             }
@@ -103,21 +94,18 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
             value = null;
             analysisIssuesHandler.record(vmStructMap.get("_analysisId").toString(), "VM", vmStructMap.get("name").toString(), expandParamsInPath, e.getMessage());
         }
-        log.info("...... time readValue {}", init.until(LocalDateTime.now(), ChronoUnit.MILLIS));
-
         return (T) value;
     }
+
     protected <T> T readValueFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
         return readValueFromExpandedEnvVarPath(envVarPath, vmStructMap, Object.class);
     }
 
     protected <T> List<T> readListValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
-        LocalDateTime init = LocalDateTime.now();
         String pathWithExpandedParams = getExpandedPath(envVarPath, vmStructMap);
 
         try {
             Object value = jsonParsed.read(pathWithExpandedParams);
-            log.info("...... time readListvalues {}", init.until(LocalDateTime.now(), ChronoUnit.MILLIS));
             if (value instanceof Collection) {
                 return new ArrayList<>((List<T>) value);
             } else {

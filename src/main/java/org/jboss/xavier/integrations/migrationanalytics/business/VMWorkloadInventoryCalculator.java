@@ -1,8 +1,6 @@
 package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
-import io.micrometer.core.annotation.Counted;
-import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
@@ -32,8 +30,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
     }
 
     @Override
-    @Counted("vmworkload count")
-    @Timed(description="vmworkload time",longTask = true, value="vm-calculate")
     public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
 
         manifestVersion = getManifestVersion(cloudFormsJson);
@@ -50,7 +46,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                 })
                 .peek(e -> log.info("------- Instance {} Treating Analysis {} VM :{} from {} : ", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size()))
                 .map(this::createVMWorkloadInventoryModel)
-                .peek(e -> log.info("+++++++ Instance {} Treated Analysis {} VM {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), e.getVmName() == null ? "****** VMNAME NULL ******" : e.getVmName()))
                 .collect(Collectors.toList());
         log.info(" Instance {} AnalysisID {} VMs parsed {} vs VMs calculated {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
 
@@ -68,7 +63,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         return scanrundate;
     }
 
-    @Timed(description="createVMWorkloadInventoryModel", longTask = true, value="vm-create")
     private VMWorkloadInventoryModel createVMWorkloadInventoryModel(Map vmStructMap) {
         LocalDateTime init = LocalDateTime.now();
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();

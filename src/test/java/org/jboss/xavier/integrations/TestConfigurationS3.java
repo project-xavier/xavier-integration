@@ -5,9 +5,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import io.micrometer.core.aop.CountedAspect;
-import io.micrometer.core.aop.TimedAspect;
-import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -25,16 +22,5 @@ public class TestConfigurationS3 {
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3_host, "us-east-1"))
                 .build();
     }
-
-    @Bean
-    public TimedAspect timedAspect(MeterRegistry registry) {
-        return new TimedAspect(registry);
-    }
-
-    @Bean
-    public CountedAspect countedAspect(MeterRegistry registry) {
-        return new CountedAspect(registry);
-    }
-
 
 }
