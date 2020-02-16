@@ -4,7 +4,6 @@ import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInvento
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,10 +20,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
 
     @Value("${parallel.wir}")
     private boolean parallel;
-
-    @Inject
-    ApplicationContext applicationContext;
-
 
     @Override
     public void configure() throws Exception {

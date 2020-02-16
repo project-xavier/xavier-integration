@@ -23,12 +23,6 @@ import java.util.stream.Collectors;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCalculator implements Calculator<Collection<VMWorkloadInventoryModel>> {
-    private double id;
-
-    public VMWorkloadInventoryCalculator() {
-        this.id = Math.random();
-    }
-
     @Override
     public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
 
@@ -44,10 +38,10 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                     e.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, e));
                     e.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, e));
                 })
-                .peek(e -> log.info("------- Instance {} Treating Analysis {} VM :{} from {} : ", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size()))
+                .peek(e -> log.info("------- Instance Treating Analysis {} VM :{} from {} : ", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size()))
                 .map(this::createVMWorkloadInventoryModel)
                 .collect(Collectors.toList());
-        log.info(" Instance {} AnalysisID {} VMs parsed {} vs VMs calculated {}", id, headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
+        log.info(" Instance AnalysisID {} VMs parsed {} vs VMs calculated {}", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
 
         return vmWorkloadInventoryModels;
     }
