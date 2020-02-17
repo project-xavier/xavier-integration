@@ -163,11 +163,8 @@ public class EndToEndTest {
     @Value("${test.timeout.ultraperformance:600000}") // 10 minutes
     private int timeoutMilliseconds_UltraPerformaceTest;
 
-    @Value("${test.timeout.stress:310000}") // 5 min 10 seconds
-    private long timeoutMilliseconds_StressTest;
-
-    @Value("${thread.concurrentConsumers}")
-    private int concurrentConsumers;
+    @Value("${test.timeout.smallfilesummaryreport:10000}") // 10 seconds
+    private int timeoutMilliseconds_SmallFileSummaryReport;
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -506,12 +503,12 @@ public class EndToEndTest {
         callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_UltraPerformaceTest, 4848);
 
         // Stress test
-        // We load 4 times a BIG file ( 8 Mb ) and a small file ( 316 Kb )
-        // More or less 5 minutes each bunch of threads of Big Files
-        // 1 bunch of threads for 3 big files, while 1 big file and small file wait in the queue
-        // 2sy
-        // We have 3 consumers, and 4 big files and a small file
-        // To process the small file it should take 5 minutes of the first bunch of big files plus 10 seconds of the small file
+        // We load 3 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
+        // More or less 7 minutes each bunch of threads of Big Files
+        // 1 bunch of threads for 2 big files and 1 small file, while 1 big file and 1 small file wait in the queue
+        // We have 3 consumers
+        // To process the first small file it should take 10 seconds
+        // To process the second small file it should take 7 minutes of the first bunch of big files plus 10 seconds of the small file
         logger.info("+++++++  Stress Test ++++++");
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
@@ -520,13 +517,16 @@ public class EndToEndTest {
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
 
         // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +2 ), 10000, 8);
-        int threadsSessions = 2;
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +5 ), timeoutMilliseconds_UltraPerformaceTest * threadsSessions, 8);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +2 ), timeoutMilliseconds_SmallFileSummaryReport, 8);
+
+        int timeoutMilliseconds_secondSmallFile = timeoutMilliseconds_UltraPerformaceTest + timeoutMilliseconds_SmallFileSummaryReport;
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +5 ), timeoutMilliseconds_secondSmallFile, 8);
+
+        int timeoutMilliseconds_thirdBigFile = timeoutMilliseconds_UltraPerformaceTest * 2;
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +4 ), timeoutMilliseconds_thirdBigFile, 4848);
 
         assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 1) == 4848);
         assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 3) == 4848);
-        assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 4) == 4848);
 
         camelContext.stop();
     }
