@@ -17,7 +17,8 @@
       "easy": 7,
       "medium": 6,
       "hard": 0,
-      "unknown": 0
+      "unknown": 0,
+      "unsupported": 1
     },
     "recommendedTargetsIMSModel": {
       "id": 410,
