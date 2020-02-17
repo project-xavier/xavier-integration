@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +37,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                     e.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, e));
                     e.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, e));
                 })
-                .peek(e -> log.info("------- Instance Treating Analysis {} VM :{} from {} : ", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size()))
+                .peek(e -> log.debug("------- Treating Analysis {} VM :{} from {} : ", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size()))
                 .map(this::createVMWorkloadInventoryModel)
                 .collect(Collectors.toList());
         log.info(" Instance AnalysisID {} VMs parsed {} vs VMs calculated {}", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
@@ -101,7 +100,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
 
-        log.info(" ...... time create VM : {}", init.until(LocalDateTime.now(), ChronoUnit.MILLIS));
         return model;
     }
 }

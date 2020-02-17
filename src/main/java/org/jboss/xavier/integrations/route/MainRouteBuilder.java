@@ -47,8 +47,8 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
-    @Value("${thread.pool-size:5}")
-    private int THREAD_POOL_SIZE;
+    @Value("${thread.concurrentConsumers:5}")
+    private int CONCURRENT_CONSUMERS;
 
     @Value("${insights.upload.host}")
     private String uploadHost;
@@ -130,7 +130,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
                 .to("seda:download-file");
 
-        from("seda:download-file?concurrentConsumers=" + THREAD_POOL_SIZE).routeId("download-file")
+        from("seda:download-file?concurrentConsumers=" + CONCURRENT_CONSUMERS).routeId("download-file")
                 .routeId("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)

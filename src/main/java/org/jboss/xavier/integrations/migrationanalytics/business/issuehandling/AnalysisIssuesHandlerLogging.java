@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AnalysisIssuesHandlerLogging implements AnalysisIssuesHandler {
     @Value("${analysis.dataintegrity.log:true}")
-    boolean analysisDataIntegrityLog;
+    boolean analysisDataIntegrityLogEnabled;
 
     @Override
     public void record(String analysisId, String entity, String entityName, String jsonPath, String message) {
-        if (analysisDataIntegrityLog) {
+        if (analysisDataIntegrityLogEnabled) {
             log.warn("Exception on {} [{}] reading value from JSON [{}}] : {}", entity, entityName, jsonPath, message);
         }
     }
