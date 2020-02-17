@@ -538,18 +538,22 @@ public class EndToEndTest {
                 .until(() -> {
                     ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_stress_checkVMs = new RestTemplate().exchange("http://localhost:" + serverPort + reportUrl, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {
                     });
-                    return (workloadSummaryReport_stress_checkVMs != null &&
+                    boolean success = (workloadSummaryReport_stress_checkVMs != null &&
                             workloadSummaryReport_stress_checkVMs.getStatusCodeValue() == 200 &&
                             workloadSummaryReport_stress_checkVMs.getBody() != null &&
-                            workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels() != null &&
-                            workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum() == numberVMsExpected);
+                            workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels() != null );
+                    if (success) {
+                       assertThat(workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum()).isEqualTo(numberVMsExpected);
+                    }
+                    return success;
                 });
     }
 
     private int getWorkloadSummaryReportModelResponseVMs(int analysisNum) {
-        final String workloadsummaryreport_stress_url_1 = String.format("/api/xavier/report/%d/workload-summary", analysisNum );
-        ResponseEntity<WorkloadSummaryReportModel> response = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_stress_url_1, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {
+        final String workloadsummaryreport_stress_url = String.format("/api/xavier/report/%d/workload-summary", analysisNum );
+        ResponseEntity<WorkloadSummaryReportModel> response = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_stress_url, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {
         });
+        logger.info("URL [{}] response [{}]", workloadsummaryreport_stress_url, response.getBody());
         return response.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum();
     }
 

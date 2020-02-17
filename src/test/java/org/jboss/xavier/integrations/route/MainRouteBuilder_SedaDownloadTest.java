@@ -78,7 +78,7 @@ public class MainRouteBuilder_SedaDownloadTest extends XavierCamelTest {
         String rhIdentity = mainRouteBuilder.getRHIdentity(x_rh_identity_base64, "ficherito.txt", headers);
         FilePersistedNotification body = FilePersistedNotification.builder().url("http://dummyurl.com").category("cat").service("xavier").b64_identity(rhIdentity).build();
 
-        camelContext.createProducerTemplate().sendBody("seda:download-file", body);
+        camelContext.createProducerTemplate().sendBody("direct:download-file", body);
 
         //Then
         mockOldHost.assertIsSatisfied();
@@ -118,7 +118,7 @@ public class MainRouteBuilder_SedaDownloadTest extends XavierCamelTest {
         String rhIdentity = mainRouteBuilder.getRHIdentity(x_rh_identity_base64, "ficherito.txt", headers);
         FilePersistedNotification body = FilePersistedNotification.builder().url("http://dummyurl.com").category("cat").service("xavier").b64_identity(rhIdentity).build();
 
-        camelContext.createProducerTemplate().sendBody("seda:download-file", body);
+        camelContext.createProducerTemplate().sendBody("direct:download-file", body);
 
         //Then
         assertThat(analysisService.findByOwnerAndId("user name", analysisModel.getId()).getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.FAILED.toString());
