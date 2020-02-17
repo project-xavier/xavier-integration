@@ -413,10 +413,10 @@ public class EndToEndTest {
 
         // Checks on Initial Savings Report
         InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
-        SoftAssertions.assertSoftly(softly -> softly.assertThat(initialSavingsEstimationReport_Expected)
+        SoftAssertions.assertSoftly(softly -> softly.assertThat(initialCostSavingsReport.getBody())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*", ".*report.*")
-                .isEqualTo(initialCostSavingsReport.getBody()));
+                .isEqualTo(initialSavingsEstimationReport_Expected));
 
         // Checks on Workload Inventory Report
         SoftAssertions.assertSoftly(softly -> {
@@ -438,10 +438,10 @@ public class EndToEndTest {
         // Checks on Workload Summary Report
         WorkloadSummaryReportModel workloadSummaryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
 
-        assertThat(workloadSummaryReport_Expected)
+        assertThat(workloadSummaryReport.getBody())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*",  ".*report.*", ".*workloadsDetectedOSTypeModels.*", ".*scanRunModels.*")
-                .isEqualTo(workloadSummaryReport.getBody());
+                .isEqualTo(workloadSummaryReport_Expected);
 
         // WLSR.ScanRunModels
         TreeSet<ScanRunModel> wks_scanrunmodel_expected = getWks_scanrunmodel(workloadSummaryReport_Expected.getScanRunModels());
@@ -452,8 +452,8 @@ public class EndToEndTest {
         TreeSet<WorkloadsDetectedOSTypeModel> wks_ostypemodel_actual = getWks_ostypemodel(workloadSummaryReport.getBody().getWorkloadsDetectedOSTypeModels());
 
         SoftAssertions.assertSoftly(softly -> {
-                    softly.assertThat(wks_scanrunmodel_expected).isEqualTo(wks_scanrunmodel_actual);
-                    softly.assertThat(wks_ostypemodel_expected).isEqualTo(wks_ostypemodel_actual);
+                    softly.assertThat(wks_scanrunmodel_actual).isEqualTo(wks_scanrunmodel_expected);
+                    softly.assertThat(wks_ostypemodel_actual).isEqualTo(wks_ostypemodel_expected);
         });
 
         // Performance test
