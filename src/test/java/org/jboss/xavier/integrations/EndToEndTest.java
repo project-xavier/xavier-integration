@@ -522,7 +522,7 @@ public class EndToEndTest {
         // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
         callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +2 ), 10000, 8);
         int threadsSessions = 2;
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +5 ), timeoutMilliseconds_UltraPerformaceTest * threadsSessions, 4848);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +5 ), timeoutMilliseconds_UltraPerformaceTest * threadsSessions, 8);
 
         assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 1) == 4848);
         assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 3) == 4848);
