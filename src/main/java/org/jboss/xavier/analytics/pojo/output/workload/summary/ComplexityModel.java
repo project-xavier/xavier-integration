@@ -14,14 +14,15 @@ import javax.persistence.*;
                         @ColumnResult(name = "easy", type = Integer.class),
                         @ColumnResult(name = "medium", type = Integer.class),
                         @ColumnResult(name = "hard", type = Integer.class),
-                        @ColumnResult(name = "unknown", type = Integer.class)
+                        @ColumnResult(name = "unknown", type = Integer.class),
+                        @ColumnResult(name = "unsupported", type = Integer.class)
                 }
         )
 )
 
 @NamedNativeQuery(
         name = "ComplexityModel.calculateComplexityModels",
-        query = "select sum(case when lower(complexity)='easy' then 1 else 0 end) as easy, sum(case when lower(complexity)='medium' then 1 else 0 end) as medium, sum(case when lower(complexity)='hard' then 1 else 0 end) as hard, sum(case when (complexity is null or lower(complexity)='unknown') then 1 else 0 end) as \"unknown\" from workload_inventory_report_model where analysis_id = :analysisId",
+        query = "select sum(case when lower(complexity)='easy' then 1 else 0 end) as easy, sum(case when lower(complexity)='medium' then 1 else 0 end) as medium, sum(case when lower(complexity)='hard' then 1 else 0 end) as hard, sum(case when (complexity is null or lower(complexity)='unknown') then 1 else 0 end) as \"unknown\", sum(case when lower(complexity)='unsupported' then 1 else 0 end) as unsupported from workload_inventory_report_model where analysis_id = :analysisId",
         resultSetMapping = "mappingComplexityModels"
 )
 
@@ -48,14 +49,16 @@ public class ComplexityModel
     private Integer medium;
     private Integer hard;
     private Integer unknown;
+    private Integer unsupported;
 
     public ComplexityModel() {}
 
-    public ComplexityModel(Integer easy, Integer medium, Integer hard, Integer unknown) {
+    public ComplexityModel(Integer easy, Integer medium, Integer hard, Integer unknown, Integer unsupported) {
         this.easy = easy;
         this.medium = medium;
         this.hard = hard;
         this.unknown = unknown;
+        this.unsupported = unsupported;
     }
 
     public Long getId() {
@@ -104,6 +107,14 @@ public class ComplexityModel
 
     public void setUnknown(Integer unknown) {
         this.unknown = unknown;
+    }
+
+    public Integer getUnsupported() {
+        return unsupported;
+    }
+
+    public void setUnsupported(Integer unsupported) {
+        this.unsupported = unsupported;
     }
 
     @Override
