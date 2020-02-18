@@ -17,13 +17,14 @@
       "easy": 7,
       "medium": 6,
       "hard": 0,
-      "unknown": 1
+      "unknown": 0,
+      "unsupported": 1
     },
     "recommendedTargetsIMSModel": {
       "id": 410,
       "total": 14,
       "rhv": 13,
-      "rhel": 4,
+      "rhel": 0,
       "osp": 11
     },
     "workloadsDetectedOSTypeModels": [

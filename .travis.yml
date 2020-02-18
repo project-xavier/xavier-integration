@@ -1,6 +1,15 @@
 language: java
 notifications:
-  email: false
+  email:
+    if: type = cron OR branch = master
+    recipients:
+      - cferiavi@redhat.com
+      - jvilalop@redhat.com
+      - pcattana@redhat.com
+      - mbrophy@redhat.com
+      - mrizzi@redhat.com
+    on_success: change
+    on_failure: always
 jdk:
   - openjdk8
 addons:
