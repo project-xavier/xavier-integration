@@ -160,11 +160,14 @@ public class EndToEndTest {
     @Value("${minio.host}") // Set in the Initializer
     private String minio_host;
 
-    @Value("${test.timeout.ultraperformance:600000}") // 10 minutes
+    @Value("${test.timeout.ultraperformance:900000}") // 15 minutes
     private int timeoutMilliseconds_UltraPerformaceTest;
 
     @Value("${test.timeout.smallfilesummaryreport:10000}") // 10 seconds
     private int timeoutMilliseconds_SmallFileSummaryReport;
+
+    @Value("${test.bigfile.vms_expected:5254}")
+    private int numberVMsExpected_InBigFile;
 
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
@@ -499,8 +502,8 @@ public class EndToEndTest {
 
         // Ultra Performance test
         logger.info("+++++++  Ultra Performance Test ++++++");
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_UltraPerformaceTest, 4848);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_UltraPerformaceTest, numberVMsExpected_InBigFile);
 
         // Stress test
         // We load 3 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
@@ -510,10 +513,10 @@ public class EndToEndTest {
         // To process the first small file it should take 10 seconds
         // To process the second small file it should take 7 minutes of the first bunch of big files plus 10 seconds of the small file
         logger.info("+++++++  Stress Test ++++++");
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory_0_superbig.json", "application/json"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
 
         // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
@@ -523,10 +526,10 @@ public class EndToEndTest {
         callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +5 ), timeoutMilliseconds_secondSmallFile, 8);
 
         int timeoutMilliseconds_thirdBigFile = timeoutMilliseconds_UltraPerformaceTest * 2;
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +4 ), timeoutMilliseconds_thirdBigFile, 4848);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +4 ), timeoutMilliseconds_thirdBigFile, numberVMsExpected_InBigFile);
 
-        assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 1) == 4848);
-        assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 3) == 4848);
+        assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 1) == numberVMsExpected_InBigFile);
+        assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 3) == numberVMsExpected_InBigFile);
 
         camelContext.stop();
     }
