@@ -109,6 +109,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                             .setHeader("nextLink", () -> null)
                         .otherwise()
                             .convertBodyTo(String.class)
+                            .log("Processing RBAC permissions: ${body}")
                             .process(exchange -> {
                                 String body = exchange.getIn().getBody(String.class);
                                 RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
