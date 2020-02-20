@@ -18,6 +18,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.jboss.xavier.analytics.pojo.PayloadDownloadLinkModel;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.UserService;
@@ -164,9 +165,16 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .process(exchange -> {
                     AnalysisModel analysisModel = exchange.getIn().getBody(AnalysisModel.class);
                     exchange.getIn().setHeader("CamelAwsS3Key", analysisModel.getPayloadStorageId());
+                    exchange.getIn().setHeader("AnalysisPayloadName", analysisModel.getPayloadName());
                 })
                 .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client")
-                .setBody(exchange -> exchange.getIn().getHeader("CamelAwsS3DownloadLink"))
+                .process(exchange -> {
+                    String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
+                    String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
+
+                    PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
+                    exchange.getIn().setBody(payloadDownloadLinkModel);
+                })
                 .log("${body}");
 
         from("direct:unzip-file")
