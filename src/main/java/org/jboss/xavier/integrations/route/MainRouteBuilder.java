@@ -67,6 +67,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     @Value("${camel.springboot.tracing}")
     private boolean tracingEnabled;
 
+    @Value("${S3_DOWNLOAD_LINK_EXPIRATION:5000}")
+    private String s3DownloadLinkExpiration;
+
     @Inject
     private UserService userService;
 
@@ -160,8 +163,6 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                         Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
 
         from("direct:get-s3-payload-link")
-                .setHeader("CamelAwsS3DownloadLinkExpiration", () -> "10000")
-                .setHeader("CamelAwsS3Operation", constant("downloadLink"))
                 .process(exchange -> {
                     AnalysisModel analysisModel = exchange.getIn().getBody(AnalysisModel.class);
 
@@ -186,6 +187,8 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                     .endChoice()
                     .otherwise()
                         .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
+                        .setHeader("CamelAwsS3DownloadLinkExpiration", constant(s3DownloadLinkExpiration))
+                        .setHeader("CamelAwsS3Operation", constant("downloadLink"))
                         .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client")
                         .process(exchange -> {
                             String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
