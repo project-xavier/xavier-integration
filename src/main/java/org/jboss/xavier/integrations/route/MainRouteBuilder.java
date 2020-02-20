@@ -67,7 +67,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     @Value("${camel.springboot.tracing}")
     private boolean tracingEnabled;
 
-    @Value("${S3_DOWNLOAD_LINK_EXPIRATION:5000}")
+    @Value("${s3.download.link.expiration:5000}")
     private String s3DownloadLinkExpiration;
 
     @Inject
