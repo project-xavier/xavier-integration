@@ -164,18 +164,38 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .setHeader("CamelAwsS3Operation", constant("downloadLink"))
                 .process(exchange -> {
                     AnalysisModel analysisModel = exchange.getIn().getBody(AnalysisModel.class);
-                    exchange.getIn().setHeader("CamelAwsS3Key", analysisModel.getPayloadStorageId());
-                    exchange.getIn().setHeader("AnalysisPayloadName", analysisModel.getPayloadName());
-                })
-                .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client")
-                .process(exchange -> {
-                    String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
-                    String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
 
-                    PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
-                    exchange.getIn().setBody(payloadDownloadLinkModel);
+                    String payloadName = analysisModel.getPayloadName();
+                    String payloadStorageId = analysisModel.getPayloadStorageId();
+
+                    if (payloadStorageId != null && payloadStorageId.trim().isEmpty()) {
+                        payloadStorageId = null;
+                    }
+
+                    exchange.getIn().setHeader("AnalysisPayloadName", payloadName);
+                    exchange.getIn().setHeader("AnalysisPayloadStorageId", payloadStorageId);
                 })
-                .log("${body}");
+                .choice()
+                    .when(header("AnalysisPayloadStorageId").isNull())
+                        .process(exchange -> {
+                            String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
+
+                            PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, null);
+                            exchange.getIn().setBody(payloadDownloadLinkModel);
+                        })
+                    .endChoice()
+                    .otherwise()
+                        .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
+                        .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client")
+                        .process(exchange -> {
+                            String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
+                            String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
+
+                            PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
+                            exchange.getIn().setBody(payloadDownloadLinkModel);
+                        })
+                    .endChoice()
+                .end();
 
         from("direct:unzip-file")
                 .routeId("unzip-file")
