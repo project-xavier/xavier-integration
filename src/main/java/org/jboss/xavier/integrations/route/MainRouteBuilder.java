@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import static org.apache.camel.builder.PredicateBuilder.not;
@@ -156,6 +157,17 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client&deleteAfterWrite=false").id("s3-call")
                 .process(exchange -> analysisService.updatePayloadStorageId(exchange.getIn().getHeader(S3Constants.KEY, String.class),
                         Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
+
+        from("direct:get-s3-payload-link")
+                .setHeader("CamelAwsS3DownloadLinkExpiration", () -> "10000")
+                .setHeader("CamelAwsS3Operation", constant("downloadLink"))
+                .process(exchange -> {
+                    AnalysisModel analysisModel = exchange.getIn().getBody(AnalysisModel.class);
+                    exchange.getIn().setHeader("CamelAwsS3Key", analysisModel.getPayloadStorageId());
+                })
+                .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client")
+                .setBody(exchange -> exchange.getIn().getHeader("CamelAwsS3DownloadLink"))
+                .log("${body}");
 
         from("direct:unzip-file")
                 .routeId("unzip-file")
