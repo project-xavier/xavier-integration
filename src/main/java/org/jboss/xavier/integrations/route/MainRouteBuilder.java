@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import static org.apache.camel.builder.PredicateBuilder.not;
@@ -162,7 +161,12 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .process(exchange -> analysisService.updatePayloadStorageId(exchange.getIn().getHeader(S3Constants.KEY, String.class),
                         Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
 
-        from("direct:get-s3-payload-link")
+        from("direct:get-s3-payload-link").routeId("get-s3-payload-link")
+                .choice()
+                    .when(bodyAs(AnalysisModel.class).isNull())
+                        .to("direct:request-notfound")
+                    .endChoice()
+                .end()
                 .process(exchange -> {
                     AnalysisModel analysisModel = exchange.getIn().getBody(AnalysisModel.class);
 
@@ -189,7 +193,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                         .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
                         .setHeader("CamelAwsS3DownloadLinkExpiration", constant(s3DownloadLinkExpiration))
                         .setHeader("CamelAwsS3Operation", constant("downloadLink"))
-                        .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client")
+                        .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client").id("aws-s3-get-download-link")
                         .process(exchange -> {
                             String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
                             String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
@@ -268,6 +272,10 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         from("direct:request-forbidden")
                 .routeId("request-forbidden")
                 .process(httpError403());
+
+        from("direct:request-notfound")
+                .routeId("request-notfound")
+                .process(httpError404());
     }
 
     private Exchange calculateICSAggregated(Exchange old, Exchange neu) {
@@ -306,6 +314,14 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
           exchange.getIn().setBody("Forbidden");
           exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpServletResponse.SC_FORBIDDEN);
           exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
+        };
+    }
+
+    private Processor httpError404() {
+        return exchange -> {
+            exchange.getIn().setBody("Not found");
+            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpServletResponse.SC_NOT_FOUND);
+            exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
         };
     }
 
