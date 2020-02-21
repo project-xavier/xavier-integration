@@ -41,15 +41,16 @@ before_install:
 
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
-  - mvn install -P !fuse-fabric8-docker -DskipTests=true -Danalysis.dataintegrity.log=false -Dmaven.javadoc.skip=true -B -V
+  - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
     - stage: Test
       env:
         - CAMEL_SPRINGBOOT_TRACING=false
         - LOGGING_LEVEL_ROOT=warn
+        - ANALYSIS.DATAINTEGRITY.LOG=false
       script:
-        - mvn test -Danalysis.dataintegrity.log=false -Pcoverage
+        - mvn test -Pcoverage
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
 
