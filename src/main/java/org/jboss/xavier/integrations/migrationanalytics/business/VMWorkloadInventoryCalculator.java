@@ -75,6 +75,15 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             model.setHasRdmDisk(hasRdmDisk);
         }
 
+        String cpuAffinity = readValueFromExpandedEnvVarPath(CPUAFFINITYPATH, vmStructMap);
+        if (cpuAffinity != null) {
+            model.setCpuAffinityNotNull(true);
+        }
+        else
+        {
+            model.setCpuAffinityNotNull(false);
+        }
+
         List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
         model.setDiskSpace(diskSpaceList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum());
 

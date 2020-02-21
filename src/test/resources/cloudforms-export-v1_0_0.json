@@ -374,6 +374,7 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-321",
                     "has_rdm_disk": false,
+                    "cpu_affinity": "0,2",
                     "host": {
                         "ems_ref": "host-31"
                     },
