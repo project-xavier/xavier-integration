@@ -48,7 +48,7 @@ jobs:
       env:
         - CAMEL_SPRINGBOOT_TRACING=false
         - LOGGING_LEVEL_ROOT=warn
-        - ANALYSIS.DATAINTEGRITY.LOG=false
+        - ANALYSIS_DATAINTEGRITY_LOG=false
       script:
         - mvn test -Pcoverage
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
