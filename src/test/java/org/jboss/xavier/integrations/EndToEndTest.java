@@ -516,20 +516,15 @@ public class EndToEndTest {
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
 
         // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +2 ), timeoutMilliseconds_SmallFileSummaryReport, 8);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 2), timeoutMilliseconds_SmallFileSummaryReport, 8);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 1), timeoutMilliseconds_UltraPerformaceTest, numberVMsExpected_InBigFile);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 3), timeoutMilliseconds_UltraPerformaceTest, numberVMsExpected_InBigFile);
 
         int timeoutMilliseconds_secondSmallFile = timeoutMilliseconds_UltraPerformaceTest + timeoutMilliseconds_SmallFileSummaryReport;
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +5 ), timeoutMilliseconds_secondSmallFile, 8);
-
-        int timeoutMilliseconds_thirdBigFile = timeoutMilliseconds_UltraPerformaceTest * 2;
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +4 ), timeoutMilliseconds_thirdBigFile, numberVMsExpected_InBigFile);
-
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 1), timeoutMilliseconds_secondSmallFile, numberVMsExpected_InBigFile);
-        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 3), timeoutMilliseconds_secondSmallFile, numberVMsExpected_InBigFile);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 4), timeoutMilliseconds_secondSmallFile, 8);
 
         camelContext.stop();
     }
