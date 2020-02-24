@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -57,7 +56,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
     }
 
     private VMWorkloadInventoryModel createVMWorkloadInventoryModel(Map vmStructMap) {
-        LocalDateTime init = LocalDateTime.now();
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();
         model.setProvider(readValueFromExpandedEnvVarPath(PROVIDERPATH, vmStructMap));
 
