@@ -973,6 +973,94 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         assertThat(answer.getHeaders().get("Content-Disposition").get(0)).isEqualToIgnoringCase("attachment; filename=\"cloudforms-export-v1_0_0.json\"");
 
         camelContext.stop();
-        }
-
     }
+
+    @Test
+    public void xmlRouteBuilder_RestPayloadDownloadLink_AnalysisIdGiven_ShouldReturnPayloadLinkURL() throws Exception {
+        //Given
+        camelContext.getRouteDefinition("get-s3-payload-link").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                weaveById("aws-s3-get-download-link").replace()
+                        .setHeader("CamelAwsS3DownloadLink", constant("https://myDownloadLink.s3.com"));
+            }
+        });
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("report-payload-link");
+        camelContext.startRoute("get-s3-payload-link");
+
+        AnalysisModel analysisModel = new AnalysisModel();
+        analysisModel.setId(1L);
+        analysisModel.setPayloadName("cloudforms-export-v1_0_0.json");
+        analysisModel.setPayloadStorageId("cddd46f6-a8c4-4be0-98d8-ea7c466cb4a2");
+        doReturn(analysisModel).when(analysisService).findByOwnerAndId(any(), any());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> answer = restTemplate.exchange(camel_context + "report/" + analysisModel.getId() +"/payload-link", HttpMethod.GET, entity, String.class);
+
+        //Then
+        assertThat(answer.getBody()).isEqualTo("{\"filename\":\"cloudforms-export-v1_0_0.json\",\"downloadLink\":\"https://myDownloadLink.s3.com\"}");
+
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestPayloadDownloadLink_UnexistingAnalysisIdGiven_ShouldReturnNotFoundError() throws Exception {
+        //Given
+
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("report-payload-link");
+        camelContext.startRoute("get-s3-payload-link");
+
+        doReturn(null).when(analysisService).findByOwnerAndId(any(), any());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> answer = restTemplate.exchange(camel_context + "report/1/payload-link", HttpMethod.GET, entity, String.class);
+
+        //Then
+        assertThat(answer.getStatusCodeValue()).isEqualTo(404);
+
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestPayloadDownloadLink_AnalysisWithoutPayloadStorageIdGiven_ShouldReturnEmptyPayloadLinkURL() throws Exception {
+        //Given
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("report-payload-link");
+        camelContext.startRoute("get-s3-payload-link");
+
+        AnalysisModel analysisModel = new AnalysisModel();
+        analysisModel.setId(1L);
+        analysisModel.setPayloadName("cloudforms-export-v1_0_0.json");
+        analysisModel.setPayloadStorageId(null);
+        doReturn(analysisModel).when(analysisService).findByOwnerAndId(any(), any());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> answer = restTemplate.exchange(camel_context + "report/" + analysisModel.getId() +"/payload-link", HttpMethod.GET, entity, String.class);
+
+        //Then
+        assertThat(answer.getBody()).isEqualTo("{\"filename\":\"cloudforms-export-v1_0_0.json\",\"downloadLink\":null}");
+
+        camelContext.stop();
+    }
+
+}
