@@ -528,8 +528,8 @@ public class EndToEndTest {
         int timeoutMilliseconds_thirdBigFile = timeoutMilliseconds_UltraPerformaceTest * 2;
         callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum +4 ), timeoutMilliseconds_thirdBigFile, numberVMsExpected_InBigFile);
 
-        assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 1) == numberVMsExpected_InBigFile);
-        assertThat(getWorkloadSummaryReportModelResponseVMs(analysisNum + 3) == numberVMsExpected_InBigFile);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 1), timeoutMilliseconds_secondSmallFile, numberVMsExpected_InBigFile);
+        callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 3), timeoutMilliseconds_secondSmallFile, numberVMsExpected_InBigFile);
 
         camelContext.stop();
     }
