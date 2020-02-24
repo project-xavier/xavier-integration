@@ -886,7 +886,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     }
 
     @Test
-    public void xmlRouteBuilder_RestPayloadDownloadLink_AnalysisWithoutPaylodStorageIdGiven_ShouldReturnEmptyPayloadLinkURL() throws Exception {
+    public void xmlRouteBuilder_RestPayloadDownloadLink_AnalysisWithoutPayloadStorageIdGiven_ShouldReturnEmptyPayloadLinkURL() throws Exception {
         //Given
 
         //When
