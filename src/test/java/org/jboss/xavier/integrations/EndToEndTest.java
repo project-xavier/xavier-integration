@@ -160,7 +160,7 @@ public class EndToEndTest {
     @Value("${minio.host}") // Set in the Initializer
     private String minio_host;
 
-    @Value("${test.timeout.ultraperformance:900000}") // 15 minutes
+    @Value("${test.timeout.ultraperformance:1200000}") // 20 minutes
     private int timeoutMilliseconds_UltraPerformaceTest;
 
     @Value("${test.timeout.smallfilesummaryreport:10000}") // 10 seconds
