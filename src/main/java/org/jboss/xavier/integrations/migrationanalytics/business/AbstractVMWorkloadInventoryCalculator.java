@@ -2,6 +2,7 @@ package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.DocumentContext;
 import lombok.extern.slf4j.Slf4j;
+import org.jboss.xavier.integrations.migrationanalytics.business.issuehandling.AnalysisIssuesHandler;
 import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -19,7 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class AbstractVMWorkloadInventoryCalculator {
+public abstract class AbstractVMWorkloadInventoryCalculator {
 
     public static final String VMPATH = "vmworkloadinventory.vmPath";
     public static final String CLUSTERPATH = "vmworkloadinventory.clusterPath";
@@ -55,6 +56,9 @@ public class AbstractVMWorkloadInventoryCalculator {
     @Inject
     protected ManifestVersionService manifestVersionService;
 
+    @Inject
+    protected AnalysisIssuesHandler analysisIssuesHandler;
+
     protected DocumentContext jsonParsed;
     protected String manifestVersion;
     protected Date scanRunDate;
@@ -66,7 +70,7 @@ public class AbstractVMWorkloadInventoryCalculator {
             List<List<Map>> value = jsonParsed.read(expandParamsInPath);
             value.stream().flatMap(Collection::stream).collect(Collectors.toList()).forEach(e-> files.put((String) e.get(keyfield), (String) e.get(valuefield)));
         } catch (Exception e) {
-            e.printStackTrace();
+            analysisIssuesHandler.record(vmStructMap.get("_analysisId").toString(), "VM", vmStructMap.get("name").toString(), expandParamsInPath, e.getMessage());
         }
         return files;
     }
@@ -88,7 +92,7 @@ public class AbstractVMWorkloadInventoryCalculator {
             }
         } catch (Exception e) {
             value = null;
-            log.warn("Exception reading value from JSON", e);
+            analysisIssuesHandler.record(vmStructMap.get("_analysisId").toString(), "VM", vmStructMap.get("name").toString(), expandParamsInPath, e.getMessage());
         }
         return (T) value;
     }
@@ -98,13 +102,18 @@ public class AbstractVMWorkloadInventoryCalculator {
     }
 
     protected <T> List<T> readListValuesFromExpandedEnvVarPath(String envVarPath, Map vmStructMap) {
-        String expandParamsInPath = getExpandedPath(envVarPath, vmStructMap);
+        String pathWithExpandedParams = getExpandedPath(envVarPath, vmStructMap);
 
-        Object value = jsonParsed.read(expandParamsInPath);
-        if (value instanceof Collection) {
-            return new ArrayList<>((List<T>) value);
-        } else {
-            return Collections.singletonList((T) value);
+        try {
+            Object value = jsonParsed.read(pathWithExpandedParams);
+            if (value instanceof Collection) {
+                return new ArrayList<>((List<T>) value);
+            } else {
+                return Collections.singletonList((T) value);
+            }
+        } catch (Exception e) {
+            analysisIssuesHandler.record(vmStructMap.get("_analysisId").toString(), "VM", vmStructMap.get("name").toString(), pathWithExpandedParams, e.getMessage());
+            return Collections.emptyList();
         }
     }
 
@@ -118,7 +127,7 @@ public class AbstractVMWorkloadInventoryCalculator {
         Matcher m = p.matcher(path);
         while (m.find() && vmStructMap != null) {
             String key = m.group().substring(1, m.group().length() - 1);
-            String value = vmStructMap.containsKey(key) ? vmStructMap.get(key).toString() : "";
+            String value = (vmStructMap.containsKey(key) && vmStructMap.get(key) != null) ? vmStructMap.get(key).toString() : "";
             path = path.replace(m.group(), value);
         }
 

@@ -1,8 +1,8 @@
 package org.jboss.xavier.integrations;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -18,6 +18,7 @@ import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
@@ -76,13 +77,13 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
@@ -95,7 +96,6 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @ActiveProfiles("test")
 public class EndToEndTest {
     private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
-
 
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
@@ -329,6 +329,12 @@ public class EndToEndTest {
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
     }
 
+    private List<String> getS3Objects(String bucket) {
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucket).withMaxKeys(2);
+
+        return amazonS3.listObjectsV2(req).getObjectSummaries().stream().map(e -> e.getKey()).collect(Collectors.toList());
+    }
+
     @Test
     public void end2endTest() throws Exception {
         Thread.sleep(2000);
@@ -340,7 +346,7 @@ public class EndToEndTest {
             @Override
             public void configure() {
                 weaveById("set-s3-key")
-                        .replace().process(e -> e.getIn().setHeader(S3Constants.KEY, "S3KEY123"));
+                        .replace().process(e -> e.getIn().setHeader(S3Constants.KEY, "S3KEY123" + UUID.randomUUID().toString()));
             }
         });
 
@@ -369,7 +375,9 @@ public class EndToEndTest {
         assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
 
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz"), String.class);
+        int analysisNum = 1;
+        logger.info("+++++++  Regular Test ++++++");
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz", "application/zip"), String.class);
 
         // then
         await()
@@ -382,9 +390,8 @@ public class EndToEndTest {
             });
 
         // Check S3
-        S3Object s3object = amazonS3.getObject(bucket, "S3KEY123");
-        assertThat(s3object.getObjectContent()).isNotNull();
-        assertThatExceptionOfType(AmazonS3Exception.class).isThrownBy(() -> amazonS3.getObject(bucket, "NONEXISTINGFILE"));
+        assertThat(getS3Objects(bucket).stream().allMatch(e -> e.startsWith("S3KEY123"))).isTrue();
+        assertThat(getS3Objects(bucket).size()).isEqualTo(1);
 
         // Check DB for initialCostSavingsReport with concrete values
         InitialSavingsEstimationReportModel initialCostSavingsReportDB = initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 1L);
@@ -392,13 +399,13 @@ public class EndToEndTest {
         assertThat(initialCostSavingsReportDB.getSourceCostsModel().getYear1Server() == 42);
 
         // Call initialCostSavingsReport
-        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/1/initial-saving-estimation", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
+        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
 
         // Call workloadInventoryReport
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/1/workload-inventory?size=100", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
 
         // Call workloadSummaryReport
-        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/1/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
 
         // Checks on Initial Savings Report
         InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
@@ -415,8 +422,9 @@ public class EndToEndTest {
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getOsName).distinct().count()).isEqualTo(4);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("CentOS 7 (64-bit)")).count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getComplexity).distinct().count()).isEqualTo(3);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(1);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(3);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(0);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unsupported")).count()).isEqualTo(1);
+            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(4);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getRecommendedTargetsIMS().contains("OSP")).count()).isEqualTo(11);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
@@ -426,10 +434,10 @@ public class EndToEndTest {
         // Checks on Workload Summary Report
         WorkloadSummaryReportModel workloadSummaryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
 
-        assertThat(workloadSummaryReport_Expected)
+        assertThat(workloadSummaryReport.getBody())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*",  ".*report.*", ".*workloadsDetectedOSTypeModels.*", ".*scanRunModels.*")
-                .isEqualTo(workloadSummaryReport.getBody());
+                .isEqualTo(workloadSummaryReport_Expected);
 
         // WLSR.ScanRunModels
         TreeSet<ScanRunModel> wks_scanrunmodel_expected = getWks_scanrunmodel(workloadSummaryReport_Expected.getScanRunModels());
@@ -445,17 +453,95 @@ public class EndToEndTest {
         });
 
         // Performance test
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz"), String.class);
+        logger.info("+++++++  Performance Test ++++++");
+        final String workloadsummaryreport_performance = String.format("/api/xavier/report/%d/workload-summary", ++analysisNum);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz", "application/zip"), String.class);
         await()
             .atMost(timeoutMilliseconds_PerformaceTest, TimeUnit.MILLISECONDS)
             .with().pollInterval(Duration.FIVE_HUNDRED_MILLISECONDS)
             .until(() -> {
-                ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + "/api/xavier/report/2/workload-summary", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceTest = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_performance, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
                 return (workloadSummaryReport_PerformanceTest != null &&
                         workloadSummaryReport_PerformanceTest.getStatusCodeValue() == 200 &&
                         workloadSummaryReport_PerformanceTest.getBody() != null &&
                         workloadSummaryReport_PerformanceTest.getBody().getSummaryModels() != null);
-             });
+            });
+
+        // Test with a file with VM without Host
+        logger.info("+++++++  Test with a file with VM without Host ++++++");
+        final String workloadsummaryreport_vmwithouthost = String.format("/api/xavier/report/%d/workload-summary", ++analysisNum);
+
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_without_host.json", "application/json"), String.class);
+        await()
+                .atMost(timeoutMilliseconds_InitialCostSavingsReport, TimeUnit.MILLISECONDS)
+                .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+                .until(() -> {
+                    ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_file_vm_without_host = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_vmwithouthost, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                    boolean reportReady = workloadSummaryReport_file_vm_without_host != null &&
+                            workloadSummaryReport_file_vm_without_host.getStatusCodeValue() == 200 &&
+                            workloadSummaryReport_file_vm_without_host.getBody() != null &&
+                            workloadSummaryReport_file_vm_without_host.getBody().getSummaryModels() != null;
+                    if (reportReady) {
+                        assertThat(workloadSummaryReport_file_vm_without_host.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum()).isEqualTo(8);
+                    }
+                    return reportReady;
+                });
+        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_vm_without_host = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().size()).isEqualTo(8);
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(2);
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(6);
+
+        // Test with a file with Host without Cluster
+        logger.info("+++++++  Test with a file with Host without Cluster ++++++");
+        final String workloadsummaryreport_hostwithoutcluster = String.format("/api/xavier/report/%d/workload-summary", ++analysisNum);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-host_without_cluster.json", "application/json"), String.class);
+        await()
+                .atMost(timeoutMilliseconds_InitialCostSavingsReport, TimeUnit.MILLISECONDS)
+                .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+                .until(() -> {
+                    ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_hostwithoutcluster = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_hostwithoutcluster, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                    boolean reportReady = workloadSummaryReport_hostwithoutcluster != null &&
+                            workloadSummaryReport_hostwithoutcluster.getStatusCodeValue() == 200 &&
+                            workloadSummaryReport_hostwithoutcluster.getBody() != null &&
+                            workloadSummaryReport_hostwithoutcluster.getBody().getSummaryModels() != null;
+                    if (reportReady) {
+                        assertThat(workloadSummaryReport_hostwithoutcluster.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum()).isEqualTo(8);
+                    }
+                    return reportReady;
+                });
+        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_host_without_cluster = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        // Total VMs
+        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getContent().size()).isEqualTo(8);
+        // Wrong VMs
+        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getContent().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(3);
+        // Right VMs
+        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getContent().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(5);
+
+        // Test with a file with Wrong CPU cores per socket
+        logger.info("+++++++  Test with a file with Wrong CPU cores per socket ++++++");
+        final String workloadsummaryreport_wrongcpucorespersocket = String.format("/api/xavier/report/%d/workload-summary", ++analysisNum);
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-wrong_cpu_cores_per_socket.json", "application/json"), String.class);
+        await()
+                .atMost(timeoutMilliseconds_InitialCostSavingsReport, TimeUnit.MILLISECONDS)
+                .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+                .until(() -> {
+                    ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport_PerformanceMissingAttributes = new RestTemplate().exchange("http://localhost:" + serverPort + workloadsummaryreport_wrongcpucorespersocket, HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+                    boolean reportReady = workloadSummaryReport_PerformanceMissingAttributes != null &&
+                            workloadSummaryReport_PerformanceMissingAttributes.getStatusCodeValue() == 200 &&
+                            workloadSummaryReport_PerformanceMissingAttributes.getBody() != null &&
+                            workloadSummaryReport_PerformanceMissingAttributes.getBody().getSummaryModels() != null;
+                    if (reportReady) {
+                        assertThat(workloadSummaryReport_PerformanceMissingAttributes.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum()).isEqualTo(5);
+                    }
+                    return reportReady;
+                });
+        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport_wrong_cpu_cores = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
+        assertThat(initialCostSavingsReport_wrong_cpu_cores.getBody().getEnvironmentModel().getHypervisors()).isEqualTo(2);
+
+        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_wrong_cpu_cores = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
+        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(5);
+        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().size()).isEqualTo(5);
 
         // Testing the duplication of Rows depending on the type of the Kafka consumer
         long duplicatedRows = camelStopKafkaReconnectnumberOfDuplicatedRowsInReports("&autoOffsetReset=latest", "latestOffsetConsumer");
@@ -514,7 +600,7 @@ public class EndToEndTest {
     }
 
     @NotNull
-    private HttpEntity<MultiValueMap<String, Object>> getRequestEntityForUploadRESTCall(String filename) throws IOException {
+    private HttpEntity<MultiValueMap<String, Object>> getRequestEntityForUploadRESTCall(String filename, String content_type_header) throws IOException {
         // Headers
         HttpHeaders headers = getHttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -525,7 +611,7 @@ public class EndToEndTest {
         // File Body part
         LinkedMultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
         fileMap.add(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=filex; filename=" + filename);
-        fileMap.add("Content-type", "application/zip");
+        fileMap.add("Content-type", content_type_header);
         body.add("file", new HttpEntity<>(IOUtils.resourceToByteArray(filename, EndToEndTest.class.getClassLoader()), fileMap));
 
         // params Body parts
@@ -545,8 +631,14 @@ public class EndToEndTest {
     private HttpHeaders getHttpHeaders() {
         // Headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("x-rh-insights-request-id", "2544925e825b4f3f9418c88556541776");
-        headers.set("x-rh-identity", "eyJlbnRpdGxlbWVudHMiOnsiaW5zaWdodHMiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJvcGVuc2hpZnQiOnsiaXNfZW50aXRsZWQiOnRydWV9LCJzbWFydF9tYW5hZ2VtZW50Ijp7ImlzX2VudGl0bGVkIjpmYWxzZX0sImh5YnJpZF9jbG91ZCI6eyJpc19lbnRpdGxlZCI6dHJ1ZX19LCJpZGVudGl0eSI6eyJpbnRlcm5hbCI6eyJhdXRoX3RpbWUiOjAsImF1dGhfdHlwZSI6Imp3dC1hdXRoIiwib3JnX2lkIjoiNjM0MDA1NiIsICJmaWxlbmFtZSI6ImNsb3VkZm9ybXMtZXhwb3J0LXYxXzBfMC1tdWx0aXBsZS1maWxlcy50YXIuZ3oiLCJvcmlnaW4iOiJ4YXZpZXIiLCJjdXN0b21lcmlkIjoiQ0lEODg4IiwgImFuYWx5c2lzSWQiOiIxIn0sImFjY291bnRfbnVtYmVyIjoiMTQ2MDI5MCIsICJ1c2VyIjp7ImZpcnN0X25hbWUiOiJVc2VyIiwiaXNfYWN0aXZlIjp0cnVlLCJpc19pbnRlcm5hbCI6dHJ1ZSwibGFzdF9uYW1lIjoiRHVteSIsImxvY2FsZSI6ImVuX1VTIiwiaXNfb3JnX2FkbWluIjpmYWxzZSwidXNlcm5hbWUiOiJkdW1teUByZWRoYXQuY29tIiwiZW1haWwiOiJkdW1teStxYUByZWRoYXQuY29tIn0sInR5cGUiOiJVc2VyIn19");
+        headers.set("x-rh-insights-request-id", UUID.randomUUID().toString());
+        String rhIdentityJson = "{\"entitlements\":{\"insights\":{\"is_entitled\":true},\"openshift\":{\"is_entitled\":true},\"smart_management\":{\"is_entitled\":false},\"hybrid_cloud\":{\"is_entitled\":true}}," +
+                "\"identity\":{\"internal\":{\"auth_time\":0,\"auth_type\":\"jwt-auth\",\"org_id\":\"6340056\", " +
+                //"\"filename\":\"" + filename + "\"," +
+                "\"origin\":\"xavier\",\"customerid\":\"CID888\"}," +
+                // \"analysisId\":\"" + analysisId + "\"}," +
+                "\"account_number\":\"1460290\", \"user\":{\"first_name\":\"User\",\"is_active\":true,\"is_internal\":true,\"last_name\":\"Dumy\",\"locale\":\"en_US\",\"is_org_admin\":false,\"username\":\"dummy@redhat.com\",\"email\":\"dummy+qa@redhat.com\"},\"type\":\"User\"}}";
+        headers.set("x-rh-identity", Base64.encodeAsString(rhIdentityJson.getBytes()) );
         headers.set("username", "dummy@redhat.com");
         return headers;
     }
