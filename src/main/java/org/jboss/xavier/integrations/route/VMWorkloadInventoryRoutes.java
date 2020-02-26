@@ -28,16 +28,17 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
         super.configure();
 
         from("direct:calculate-vmworkloadinventory").routeId("calculate-vmworkloadinventory")
+            .setHeader("KieSessionId", constant("WorkloadInventoryKSession0"))
             .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
             .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
+                .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
                 .to("direct:vm-workload-inventory")
             .end()
             .process(exchange -> analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
                     Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString())));
 
         from ("direct:vm-workload-inventory").routeId("extract-vmworkloadinventory")
-            .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
-            .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", \"WorkloadInventoryKSession0\")")
+            .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", ${header.KieSessionId})")
             .to("direct:decisionserver").id("workload-decisionserver")
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
 
@@ -52,6 +53,33 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     .filter(workloadInventoryReportModel -> vmNamesWithSharedDisk.contains(workloadInventoryReportModel.getVmName()))
                     .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
                 workloadInventoryReportService.saveAll(workloadInventoryReportModelsToUpdate);
-            });
+
+                exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
+            })
+            .to("direct:reevaluate-workload-inventory-reports");
+
+        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
+                .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
+                .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
+                    .process(exchange -> {
+                        WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
+                        exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
+                    })
+                    .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
+                .end()
+                .process(exchange -> {
+                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
+
+                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
+                            .map(element -> {
+                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
+                                dbWir.setComplexity(element.getComplexity());
+                                return dbWir;
+                            })
+                            .collect(Collectors.toList());
+
+                    workloadInventoryReportService.saveAll(updatedWir);
+                    exchange.getIn().setBody(updatedWir);
+                });
     }
 }
