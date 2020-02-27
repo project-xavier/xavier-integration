@@ -69,6 +69,9 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 .log("Given result ${body} then start update database")
                 .process(exchange -> {
                     List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
+                    System.out.println("Result from Kie server " + kieWir);
+                    System.out.println("Result from Kie server.size() " + kieWir.size());
+
 
                     List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
                             .map(element -> {
