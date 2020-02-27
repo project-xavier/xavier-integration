@@ -40,9 +40,28 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString())));
 
         from ("direct:vm-workload-inventory").routeId("extract-vmworkloadinventory")
+            .log("direct:vm-workload-inventory working with ${header.KieSessionId} and ${body}")
             .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", ${header.KieSessionId})")
             .to("direct:decisionserver").id("workload-decisionserver")
-            .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
+            .process(exchange -> {
+                Object body = exchange.getIn().getBody();
+                System.out.println("direct:decisionserver response " + body);
+                System.out.println("direct:decisionserver response " + body.getClass());
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                String bodyString = objectMapper.writeValueAsString(body);
+                System.out.println(bodyString);
+            })
+            .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel")
+            .process(exchange -> {
+                Object body = exchange.getIn().getBody();
+                System.out.println("direct:decisionserver response after transform" + body);
+                System.out.println("direct:decisionserver response after transform" + body.getClass());
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                String bodyString = objectMapper.writeValueAsString(body);
+                System.out.println(bodyString);
+            });
 
         from("direct:flags-shared-disks").routeId("flags-shared-disks")
             .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
