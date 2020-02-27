@@ -1,8 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
@@ -33,35 +31,33 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .bean("VMWorkloadInventoryCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
-                .log("Body being send to direct:vm-workload-inventory for the first time is ${body}")
                 .to("direct:vm-workload-inventory")
             .end()
             .process(exchange -> analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
                     Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString())));
 
         from ("direct:vm-workload-inventory").routeId("extract-vmworkloadinventory")
-            .log("direct:vm-workload-inventory working with ${header.KieSessionId} and ${body}")
+            .process(exchange -> {
+                Object body = exchange.getIn().getBody();
+                System.out.println("Request to Decision server body=" + body);
+                System.out.println("Request to Decision server class=" + body.getClass());
+
+                ObjectMapper mapper = new ObjectMapper();
+                String bodyString = mapper.writeValueAsString(body);
+                System.out.println("Request to Decision server bodyJson=" + bodyString);
+            })
             .transform().method("decisionServerHelper", "generateCommands(${body}, \"GetWorkloadInventoryReports\", ${header.KieSessionId})")
             .to("direct:decisionserver").id("workload-decisionserver")
             .process(exchange -> {
                 Object body = exchange.getIn().getBody();
-                System.out.println("direct:decisionserver response " + body);
-                System.out.println("direct:decisionserver response " + body.getClass());
+                System.out.println("Response from Decision server body=" + body);
+                System.out.println("Response from Decision server class=" + body.getClass());
 
-                ObjectMapper objectMapper = new ObjectMapper();
-                String bodyString = objectMapper.writeValueAsString(body);
-                System.out.println(bodyString);
+                ObjectMapper mapper = new ObjectMapper();
+                String bodyString = mapper.writeValueAsString(body);
+                System.out.println("Response from Decision server bodyJson=" + bodyString);
             })
-            .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel")
-            .process(exchange -> {
-                Object body = exchange.getIn().getBody();
-                System.out.println("direct:decisionserver response after transform" + body);
-                System.out.println("direct:decisionserver response after transform" + body.getClass());
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                String bodyString = objectMapper.writeValueAsString(body);
-                System.out.println(bodyString);
-            });
+            .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
 
         from("direct:flags-shared-disks").routeId("flags-shared-disks")
             .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
@@ -75,55 +71,26 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
                 workloadInventoryReportService.saveAll(workloadInventoryReportModelsToUpdate);
 
-                List<WorkloadInventoryReportModel> collect = workloadInventoryReportModelsToUpdate.stream().map(f -> workloadInventoryReportService.findOneById(f.getId())).collect(Collectors.toList());
-
-//                exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
-                exchange.getIn().setBody(collect);
+                exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
             })
             .to("direct:reevaluate-workload-inventory-reports");
 
         from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
-                .process(exchange -> {
-                    Object body = exchange.getIn().getBody();
-                    System.out.println("direct:reevaluate-workload-inventory-reports using " + body.getClass());
-
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    String bodyString = objectMapper.writeValueAsString(body);
-                    System.out.println(bodyString);
-                })
                 .log("Start configuring second time call to KieServer with body ${body}")
                 .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
-                    .log("Start WIR process: ${body}")
-                    .process(exchange -> {
-                        Object body = exchange.getIn().getBody();
-                        System.out.println("Start WIR process: " + body.getClass());
-
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        String bodyString = objectMapper.writeValueAsString(body);
-                        System.out.println(bodyString);
-                    })
                     .process(exchange -> {
                         WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                         exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
                     })
-                    .log("Body being send to direct:vm-workload-inventory for the second time is ${body}")
                     .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
-                    .log("Finished WIR process: ${body}")
                 .end()
-                .log("Given result ${body} then start update database")
                 .process(exchange -> {
                     List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
-                    System.out.println("Result from Kie server " + kieWir);
-                    System.out.println("Result from Kie server.size() " + kieWir.size());
-
 
                     List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
                             .map(element -> {
                                 WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
-
-                                System.out.println("Updating WorkloadInventoryReportModel["+ dbWir.getId() + "] with complexity " + dbWir.getComplexity() + " =>" + element.getComplexity() );
-
                                 dbWir.setComplexity(element.getComplexity());
                                 return dbWir;
                             })
