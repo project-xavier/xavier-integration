@@ -1,5 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
@@ -53,7 +55,10 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
                 workloadInventoryReportService.saveAll(workloadInventoryReportModelsToUpdate);
 
-                exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
+                List<WorkloadInventoryReportModel> collect = workloadInventoryReportModelsToUpdate.stream().map(f -> workloadInventoryReportService.findOneById(f.getId())).collect(Collectors.toList());
+
+//                exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
+                exchange.getIn().setBody(collect);
             })
             .to("direct:reevaluate-workload-inventory-reports");
 
