@@ -79,6 +79,15 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
                     .to("direct:vm-workload-inventory")
                 .end()
+                .process(exchange -> {
+                    Object body = exchange.getIn().getBody();
+                    System.out.println("WorkloadInventoryReportModelsToUpdate body=" + body);
+                    System.out.println("WorkloadInventoryReportModelsToUpdate class=" + body.getClass());
+
+                    ObjectMapper mapper = new ObjectMapper();
+                    String bodyString = mapper.writeValueAsString(body);
+                    System.out.println("WorkloadInventoryReportModelsToUpdate bodyJson=" + bodyString);
+                })
                 .process(exchange -> workloadInventoryReportService.saveAll(exchange.getIn().getBody(List.class)));
 
 //        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
