@@ -60,44 +60,50 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
 
         from("direct:flags-shared-disks").routeId("flags-shared-disks")
-            .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
-            .process(exchange -> {
-                Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
-                List<WorkloadInventoryReportModel> workloadInventoryReportModels = workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId(
-                        exchange.getIn().getHeader(USERNAME, String.class),
-                        Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString()));
-                List<WorkloadInventoryReportModel> workloadInventoryReportModelsToUpdate = workloadInventoryReportModels.stream()
-                    .filter(workloadInventoryReportModel -> vmNamesWithSharedDisk.contains(workloadInventoryReportModel.getVmName()))
-                    .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
-                workloadInventoryReportService.saveAll(workloadInventoryReportModelsToUpdate);
-
-                exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
-            })
-            .to("direct:reevaluate-workload-inventory-reports");
-
-        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
-                .log("Start configuring second time call to KieServer with body ${body}")
-                .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
+                .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
+                .process(exchange -> {
+                    Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
+                    List<WorkloadInventoryReportModel> workloadInventoryReportModels = workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId(
+                            exchange.getIn().getHeader(USERNAME, String.class),
+                            Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString()));
+                    List<WorkloadInventoryReportModel> workloadInventoryReportModelsToUpdate = workloadInventoryReportModels.stream()
+                            .filter(workloadInventoryReportModel -> vmNamesWithSharedDisk.contains(workloadInventoryReportModel.getVmName()))
+                            .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
+                    exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
+                })
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                     .process(exchange -> {
                         WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                         exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
                     })
-                    .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
+                    .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
+                    .to("direct:vm-workload-inventory")
                 .end()
-                .process(exchange -> {
-                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
+                .process(exchange -> workloadInventoryReportService.saveAll(exchange.getIn().getBody(List.class)));
 
-                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
-                            .map(element -> {
-                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
-                                dbWir.setComplexity(element.getComplexity());
-                                return dbWir;
-                            })
-                            .collect(Collectors.toList());
-
-                    workloadInventoryReportService.saveAll(updatedWir);
-                    exchange.getIn().setBody(updatedWir);
-                });
+//        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
+//                .log("Start configuring second time call to KieServer with body ${body}")
+//                .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
+//                .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
+//                    .process(exchange -> {
+//                        WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
+//                        exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
+//                    })
+//                    .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
+//                .end()
+//                .process(exchange -> {
+//                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
+//
+//                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
+//                            .map(element -> {
+//                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
+//                                dbWir.setComplexity(element.getComplexity());
+//                                return dbWir;
+//                            })
+//                            .collect(Collectors.toList());
+//
+//                    workloadInventoryReportService.saveAll(updatedWir);
+//                    exchange.getIn().setBody(updatedWir);
+//                });
     }
 }
