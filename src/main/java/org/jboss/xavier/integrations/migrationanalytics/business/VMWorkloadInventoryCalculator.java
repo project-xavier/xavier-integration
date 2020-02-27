@@ -21,19 +21,31 @@ import java.util.stream.Collectors;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCalculator implements Calculator<Collection<VMWorkloadInventoryModel>> {
-
     @Override
     public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
+
         manifestVersion = getManifestVersion(cloudFormsJson);
         jsonParsed = JsonPath.parse(cloudFormsJson);
         scanRunDate = getScanRunDate();
 
         List<Map> vmList = readListValuesFromExpandedEnvVarPath(VMPATH, null);
 
-        return vmList.stream().map(e -> {
-            e.put("_analysisId", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString());
-            return e;
-        }).map(this::createVMWorkloadInventoryModel).collect(Collectors.toList());
+        List<VMWorkloadInventoryModel> vmWorkloadInventoryModels = vmList.stream()
+                .peek(e -> {
+                    e.put("_analysisId", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString());
+                    e.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, e));
+                    e.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, e));
+                })
+                .peek(e -> {
+                    if (log.isDebugEnabled()) {
+                        log.debug("------- Treating Analysis {} VM :{} from {} : ", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.indexOf(e), vmList.size());
+                    }
+                })
+                .map(this::createVMWorkloadInventoryModel)
+                .collect(Collectors.toList());
+        log.info(" Instance AnalysisID {} VMs parsed {} vs VMs calculated {}", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString(), vmList.size(), vmWorkloadInventoryModels.size());
+
+        return vmWorkloadInventoryModels;
     }
 
     private Date getScanRunDate() {
@@ -51,8 +63,6 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         VMWorkloadInventoryModel model = new VMWorkloadInventoryModel();
         model.setProvider(readValueFromExpandedEnvVarPath(PROVIDERPATH, vmStructMap));
 
-        vmStructMap.put("vmEmsCluster", readValueFromExpandedEnvVarPath(VMEMSCLUSTERPATH, vmStructMap));
-        vmStructMap.put("ems_cluster_id", readValueFromExpandedEnvVarPath(EMSCLUSTERIDPATH, vmStructMap));
         model.setDatacenter(readValueFromExpandedEnvVarPath(DATACENTERPATH, vmStructMap));
 
         model.setCluster(readValueFromExpandedEnvVarPath(CLUSTERPATH, vmStructMap));
