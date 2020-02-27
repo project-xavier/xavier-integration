@@ -57,6 +57,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .to("direct:reevaluate-workload-inventory-reports");
 
         from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
+                .log("Start configuring second time call to KieServer")
                 .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                     .process(exchange -> {
@@ -65,6 +66,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     })
                     .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
                 .end()
+                .log("Given result ${body} then start update database")
                 .process(exchange -> {
                     List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
 
