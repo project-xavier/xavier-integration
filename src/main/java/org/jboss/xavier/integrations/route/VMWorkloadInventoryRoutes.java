@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
@@ -63,10 +64,26 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .to("direct:reevaluate-workload-inventory-reports");
 
         from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
+                .process(exchange -> {
+                    Object body = exchange.getIn().getBody();
+                    System.out.println("direct:reevaluate-workload-inventory-reports using " + body.getClass());
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String bodyString = objectMapper.writeValueAsString(body);
+                    System.out.println(bodyString);
+                })
                 .log("Start configuring second time call to KieServer with body ${body}")
                 .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                     .log("Start WIR process: ${body}")
+                    .process(exchange -> {
+                        Object body = exchange.getIn().getBody();
+                        System.out.println("Start WIR process: " + body.getClass());
+
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        String bodyString = objectMapper.writeValueAsString(body);
+                        System.out.println(bodyString);
+                    })
                     .process(exchange -> {
                         WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                         exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
