@@ -22,4 +22,5 @@ public class TestConfigurationS3 {
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3_host, "us-east-1"))
                 .build();
     }
+
 }

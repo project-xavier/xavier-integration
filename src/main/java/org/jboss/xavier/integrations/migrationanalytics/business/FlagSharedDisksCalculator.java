@@ -2,6 +2,7 @@ package org.jboss.xavier.integrations.migrationanalytics.business;
 
 import com.jayway.jsonpath.JsonPath;
 import org.jboss.xavier.integrations.migrationanalytics.business.versioning.ManifestVersionService;
+import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -31,19 +32,23 @@ public class FlagSharedDisksCalculator extends AbstractVMWorkloadInventoryCalcul
         final Map<String, Set<String>> fileNamesInVms = new HashMap<>();
         String deviceTypeProperty = manifestVersionService.getPropertyWithFallbackVersion(manifestVersion,"vmworkloadinventory.vmDisksDeviceTypeProperty");
         String fileNameProperty = manifestVersionService.getPropertyWithFallbackVersion(manifestVersion, "vmworkloadinventory.vmDisksFileNameProperty");
-        vms.stream().forEach(vm -> {
-            String vmName = readValueFromExpandedEnvVarPath(VMNAMEPATH, vm);
-            List<Map<String, String>> disks = readListValuesFromExpandedEnvVarPath(VMDISKSPATH, vm);
-            disks.stream()
-                .filter(disk -> disk.getOrDefault(deviceTypeProperty, "").equals("disk"))
-                .map(disk -> disk.getOrDefault(fileNameProperty, ""))
-                .filter(fileName -> fileName != null && !fileName.isEmpty())
-                .forEach(fileName -> {
-                    Set<String> vmsAssociatedWithFilename = fileNamesInVms.getOrDefault(fileName, new HashSet<>());
-                    vmsAssociatedWithFilename.add(vmName);
-                    fileNamesInVms.put(fileName, vmsAssociatedWithFilename);
-                });
-        });
+        vms.stream()
+            .peek(e -> {
+                e.put("_analysisId", headers.get(RouteBuilderExceptionHandler.ANALYSIS_ID).toString());
+            })
+            .forEach(vm -> {
+                String vmName = readValueFromExpandedEnvVarPath(VMNAMEPATH, vm);
+                List<Map<String, String>> disks = readListValuesFromExpandedEnvVarPath(VMDISKSPATH, vm);
+                disks.stream()
+                    .filter(disk -> disk.getOrDefault(deviceTypeProperty, "").equals("disk"))
+                    .map(disk -> disk.getOrDefault(fileNameProperty, ""))
+                    .filter(fileName -> fileName != null && !fileName.isEmpty())
+                    .forEach(fileName -> {
+                        Set<String> vmsAssociatedWithFilename = fileNamesInVms.getOrDefault(fileName, new HashSet<>());
+                        vmsAssociatedWithFilename.add(vmName);
+                        fileNamesInVms.put(fileName, vmsAssociatedWithFilename);
+                    });
+            });
         final Set<String> vmNamesWithSharedDisk = new HashSet();
         fileNamesInVms.values().stream().filter(set -> set.size() > 1).forEach(set -> vmNamesWithSharedDisk.addAll(set));
         return vmNamesWithSharedDisk;
