@@ -71,6 +71,9 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
                             .map(element -> {
                                 WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
+
+                                System.out.println("Updating WorkloadInventoryReportModel["+ dbWir.getId() + "] with complexity " + dbWir.getComplexity() + " =>" + element.getComplexity() );
+
                                 dbWir.setComplexity(element.getComplexity());
                                 return dbWir;
                             })
