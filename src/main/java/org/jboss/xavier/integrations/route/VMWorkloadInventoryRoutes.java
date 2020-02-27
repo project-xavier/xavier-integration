@@ -30,6 +30,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .bean("VMWorkloadInventoryCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
+                .log("Body being send to direct:vm-workload-inventory for the first time is ${body}")
                 .to("direct:vm-workload-inventory")
             .end()
             .process(exchange -> analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
@@ -65,6 +66,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                         WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                         exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
                     })
+                    .log("Body being send to direct:vm-workload-inventory for the second time is ${body}")
                     .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
                     .log("Finished WIR process: ${body}")
                 .end()
