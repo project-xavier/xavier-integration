@@ -18,6 +18,15 @@ addons:
     token:
       secure: $SONAR_TOKEN
 
+env:
+  global:
+    - CAMEL_SPRINGBOOT_TRACING=false
+    - LOGGING_LEVEL_ROOT=info
+    - ANALYSIS_DATAINTEGRITY_LOG=false
+  jobs:
+    - TEST_PROFILE=unitTest CLASSES_TO_EXECUTE=*
+    - TEST_PROFILE=endToEnd CLASSES_TO_EXECUTE=Case1EndToEndIT
+    - TEST_PROFILE=endToEnd CLASSES_TO_EXECUTE=Case2EndToEndIT
 
 sudo: required
 
@@ -42,16 +51,11 @@ before_install:
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
   - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-jobs:
-  include:
-    - stage: Test
-      env:
-        - CAMEL_SPRINGBOOT_TRACING=false
-        - LOGGING_LEVEL_ROOT=info
-        - ANALYSIS_DATAINTEGRITY_LOG=false
-      script:
-        - mvn test -Pcoverage
-        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
-        - bash <(curl -s https://codecov.io/bash)
+
+script:
+  - mvn test -P $TEST_PROFILE -Dtest=$CLASSES_TO_EXECUTE
+#  - mvn test -Pcoverage
+#  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
+#  - bash <(curl -s https://codecov.io/bash)
 
 
