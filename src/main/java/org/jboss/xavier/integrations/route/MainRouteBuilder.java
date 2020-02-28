@@ -48,6 +48,9 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
+    @Value("${thread.concurrentConsumers:5}")
+    private int CONCURRENT_CONSUMERS;
+
     @Value("${insights.upload.host}")
     private String uploadHost;
 
@@ -129,9 +132,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .routeId("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
-                .to("direct:download-file");
+                .to("seda:download-file");
 
-        from("direct:download-file")
+        from("seda:download-file?concurrentConsumers=" + CONCURRENT_CONSUMERS).routeId("download-file")
                 .routeId("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)
