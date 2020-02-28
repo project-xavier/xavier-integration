@@ -21,6 +21,8 @@ import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentMapConver
 import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentSortedMapConverter;
 import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentSortedSetConverter;
 import com.thoughtworks.xstream.hibernate.converter.HibernateProxyConverter;
+import com.thoughtworks.xstream.hibernate.mapper.HibernateMapper;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 import org.apache.camel.dataformat.xstream.XStreamDataFormat;
 import org.apache.camel.spi.DataFormatFactory;
 import org.jboss.xavier.analytics.pojo.input.AbstractInputModel;
@@ -47,8 +49,10 @@ public class DecisionServerAutoConfiguration {
     @Bean(name = "xstream-dataformat")
     public XStreamDataFormat xStreamDataFormat() {
         XStream xstream = BatchExecutionHelper.newXStreamMarshaller();
+
         xstream.processAnnotations(AbstractInputModel.class);
         xstream.processAnnotations(WorkloadInventoryReportModel.class);
+
         // Use the "model" package instead of the one used on the kie server
         xstream.aliasPackage(MIGRATION_ANALYTICS_INPUT_MODELS_PACKAGE_NAME, UploadFormInputDataModel.class.getPackage().getName());
         xstream.aliasPackage(MIGRATION_ANALYTICS_INPUT_MODELS_PACKAGE_NAME + ".workload.inventory", VMWorkloadInventoryModel.class.getPackage().getName());
@@ -57,13 +61,17 @@ public class DecisionServerAutoConfiguration {
         xstream.aliasPackage(MIGRATION_ANALYTICS_OUTPUT_MODELS_PACKAGE_NAME + ".workload.inventory" , WorkloadInventoryReportModel.class.getPackage().getName());
         xstream.alias("response", org.kie.server.api.model.ServiceResponse.class);
 
-
-        xstream.registerConverter(new HibernateProxyConverter());
-        xstream.registerConverter(new HibernatePersistentCollectionConverter(xstream.getMapper()));
-        xstream.registerConverter(new HibernatePersistentMapConverter(xstream.getMapper()));
-        xstream.registerConverter(new HibernatePersistentSortedMapConverter(xstream.getMapper()));
-        xstream.registerConverter(new HibernatePersistentSortedSetConverter(xstream.getMapper()));
-
+        final XStream xstream1 = new XStream() {
+            protected MapperWrapper wrapMapper(final MapperWrapper next) {
+                return new HibernateMapper(next);
+            }
+        };
+        xstream1.registerConverter(new HibernateProxyConverter());
+        xstream1.registerConverter(new HibernatePersistentCollectionConverter(xstream.getMapper()));
+        xstream1.registerConverter(new HibernatePersistentMapConverter(xstream.getMapper()));
+        xstream1.registerConverter(new HibernatePersistentSortedMapConverter(xstream.getMapper()));
+        xstream1.registerConverter(new HibernatePersistentSortedSetConverter(xstream.getMapper()));
+        
         return new XStreamDataFormat(xstream);
     }
 
