@@ -43,6 +43,7 @@ public class DecisionServerAutoConfiguration {
     public XStreamDataFormat xStreamDataFormat() {
         XStream xstream = BatchExecutionHelper.newXStreamMarshaller();
         xstream.processAnnotations(AbstractInputModel.class);
+        xstream.processAnnotations(WorkloadInventoryReportModel.class);
         // Use the "model" package instead of the one used on the kie server
         xstream.aliasPackage(MIGRATION_ANALYTICS_INPUT_MODELS_PACKAGE_NAME, UploadFormInputDataModel.class.getPackage().getName());
         xstream.aliasPackage(MIGRATION_ANALYTICS_INPUT_MODELS_PACKAGE_NAME + ".workload.inventory", VMWorkloadInventoryModel.class.getPackage().getName());
