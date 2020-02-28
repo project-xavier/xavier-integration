@@ -152,6 +152,27 @@ public class WorkloadInventoryReportModel
 
     public WorkloadInventoryReportModel() {}
 
+    public WorkloadInventoryReportModel(WorkloadInventoryReportModel model) {
+        this.id = model.getId();
+        this.provider = model.getProvider();
+        this.datacenter = model.getDatacenter();
+        this.cluster = model.getCluster();
+        this.vmName = model.getVmName();
+        this.osName = model.getOsName();
+        this.osDescription = model.getOsDescription();
+        this.diskSpace = model.getDiskSpace();
+        this.cpuCores = model.getCpuCores();
+        this.workloads = new HashSet<>(model.getWorkloads());
+        this.complexity = model.getComplexity();
+        this.recommendedTargetsIMS = new HashSet<>(model.getRecommendedTargetsIMS());
+        this.flagsIMS = new HashSet<>(model.getFlagsIMS());
+        this.product = model.getProduct();
+        this.version = model.getVersion();
+        this.host_name = model.getHost_name();
+        this.creationDate = model.getCreationDate();
+        this.ssaEnabled = model.getSsaEnabled();
+    }
+
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }

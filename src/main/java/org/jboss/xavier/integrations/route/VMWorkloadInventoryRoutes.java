@@ -75,6 +75,8 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     .process(exchange -> {
                         WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                         exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
+
+                        exchange.getIn().setBody(new WorkloadInventoryReportModel(workloadInventoryReportModel));
                     })
                     .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
                     .to("direct:vm-workload-inventory")
