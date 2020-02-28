@@ -101,7 +101,6 @@ public class WorkloadInventoryReportModel
     @DataField(pos = 9, columnName = "CPU cores")
     private Integer cpuCores;
 
-    @XStreamOmitField
     @DataField(pos = 10, columnName = "Workload")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -116,7 +115,6 @@ public class WorkloadInventoryReportModel
     @Column(name = COMPLEXITY)
     private String complexity;
 
-    @XStreamOmitField
     @DataField(pos = 12, columnName = "Recommended targets")
     // with "IMS" suffix in case one day we will have
     // their "AMM" counterparts
@@ -129,7 +127,6 @@ public class WorkloadInventoryReportModel
     )
     private Set<String> recommendedTargetsIMS;
 
-    @XStreamOmitField
     @DataField(pos = 13, columnName = "Flags IMS")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(

@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.Hibernate;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
@@ -75,6 +76,10 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     .process(exchange -> {
                         WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                         exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
+
+                        // Remove the proxies from workloadInventoryReportModel to avoid errors in KieServer
+                        Hibernate.unproxy(workloadInventoryReportModel);
+                        exchange.getIn().setBody(workloadInventoryReportModel);
                     })
                     .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
                     .to("direct:vm-workload-inventory")
