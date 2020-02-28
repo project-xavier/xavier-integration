@@ -90,7 +90,21 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     String bodyString = mapper.writeValueAsString(body);
                     System.out.println("WorkloadInventoryReportModelsToUpdate bodyJson=" + bodyString);
                 })
-                .process(exchange -> workloadInventoryReportService.saveAll(exchange.getIn().getBody(List.class)));
+//                .process(exchange -> workloadInventoryReportService.saveAll(exchange.getIn().getBody(List.class)))
+                .process(exchange -> {
+                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
+
+                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
+                            .map(element -> {
+                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
+                                dbWir.setComplexity(element.getComplexity());
+                                return dbWir;
+                            })
+                            .collect(Collectors.toList());
+
+                    workloadInventoryReportService.saveAll(updatedWir);
+                    exchange.getIn().setBody(updatedWir);
+                });;
 
 //        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
 //                .log("Start configuring second time call to KieServer with body ${body}")
