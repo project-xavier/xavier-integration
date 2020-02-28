@@ -5,6 +5,7 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.jpa.service.FlagService;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
@@ -33,13 +34,22 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class XmlRoutes_RestReportTest extends XavierCamelTest {
@@ -49,7 +59,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @MockBean
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
 
-    @MockBean
+    @SpyBean
     private WorkloadInventoryReportService workloadInventoryReportService;
 
     @MockBean
@@ -521,11 +531,39 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     }
 
     @Test
-    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnFilteredCsv() throws Exception {
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnFilteredCsvUsingDefaultOrder() throws Exception {
         //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+
+
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
+
+        WorkloadInventoryReportModel wir1 = new WorkloadInventoryReportModel();
+        wir1.setProvider("ProviderB");
+        wir1.setDatacenter("DatacenterB");
+        wir1.setCluster("cc");
+        wir1.setVmName("aa");
+        workloadInventoryReportModels.add(wir1);
+
+        WorkloadInventoryReportModel wir2 = new WorkloadInventoryReportModel();
+        wir2.setProvider("ProviderB");
+        wir2.setDatacenter("DatacenterA");
+        wir2.setCluster("bb");
+        wir2.setVmName("bb");
+        workloadInventoryReportModels.add(wir2);
+
+        WorkloadInventoryReportModel wir3 = new WorkloadInventoryReportModel();
+        wir3.setProvider("ProviderA");
+        wir3.setDatacenter("cc");
+        wir3.setCluster("aa");
+        wir3.setVmName("cc");
+        workloadInventoryReportModels.add(wir3);
+
+        analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
+
+
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
-        variables.put("id", one);
+        variables.put("id", analysisModel.getId());
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
@@ -545,20 +583,55 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
-        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, sortBean, filterBean);
+        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", analysisModel.getId(), sortBean, filterBean);
         Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
         Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
         Assert.assertNull(response.getHeaders().get("whatever"));
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
+
+        String body = response.getBody();
+        System.out.println("carlos");
+        System.out.println(body);
+        System.out.println("feria");
         camelContext.stop();
     }
 
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_FilterAndSortParamsGiven_ShouldCallFindByAnalysisIdAndReturnFilteredCsv() throws Exception {
         //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+
+
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
+
+        WorkloadInventoryReportModel wir1 = new WorkloadInventoryReportModel();
+        wir1.setProvider("cc");
+        wir1.setDatacenter("aa");
+        wir1.setCluster("cc");
+        wir1.setVmName("aa");
+        workloadInventoryReportModels.add(wir1);
+
+        WorkloadInventoryReportModel wir2 = new WorkloadInventoryReportModel();
+        wir2.setProvider("bb");
+        wir2.setDatacenter("bb");
+        wir2.setCluster("bb");
+        wir2.setVmName("bb");
+        workloadInventoryReportModels.add(wir2);
+
+        WorkloadInventoryReportModel wir3 = new WorkloadInventoryReportModel();
+        wir3.setProvider("aa");
+        wir3.setDatacenter("cc");
+        wir3.setCluster("aa");
+        wir3.setVmName("cc");
+        workloadInventoryReportModels.add(wir3);
+
+        analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
+
+
+
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
+        Long one = analysisModel.getId();
         variables.put("id", one);
 
         String orderBy = "workload";
