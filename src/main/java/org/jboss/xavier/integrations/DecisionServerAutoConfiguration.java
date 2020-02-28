@@ -16,6 +16,13 @@
 package org.jboss.xavier.integrations;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentCollectionConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentMapConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentSortedMapConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentSortedSetConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernateProxyConverter;
+import com.thoughtworks.xstream.hibernate.mapper.HibernateMapper;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 import org.apache.camel.dataformat.xstream.XStreamDataFormat;
 import org.apache.camel.spi.DataFormatFactory;
 import org.jboss.xavier.analytics.pojo.input.AbstractInputModel;
@@ -43,6 +50,7 @@ public class DecisionServerAutoConfiguration {
     public XStreamDataFormat xStreamDataFormat() {
         XStream xstream = BatchExecutionHelper.newXStreamMarshaller();
         xstream.processAnnotations(AbstractInputModel.class);
+        xstream.processAnnotations(WorkloadInventoryReportModel.class);
         // Use the "model" package instead of the one used on the kie server
         xstream.aliasPackage(MIGRATION_ANALYTICS_INPUT_MODELS_PACKAGE_NAME, UploadFormInputDataModel.class.getPackage().getName());
         xstream.aliasPackage(MIGRATION_ANALYTICS_INPUT_MODELS_PACKAGE_NAME + ".workload.inventory", VMWorkloadInventoryModel.class.getPackage().getName());
