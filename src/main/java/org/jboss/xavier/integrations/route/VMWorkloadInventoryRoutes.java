@@ -78,7 +78,9 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                         exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
 
                         // Remove the proxies from workloadInventoryReportModel to avoid errors in KieServer
-                        Hibernate.unproxy(workloadInventoryReportModel);
+                        Hibernate.unproxy(workloadInventoryReportModel.getWorkloads());
+                        Hibernate.unproxy(workloadInventoryReportModel.getFlagsIMS());
+                        Hibernate.unproxy(workloadInventoryReportModel.getRecommendedTargetsIMS());
                         exchange.getIn().setBody(workloadInventoryReportModel);
                     })
                     .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
