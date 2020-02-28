@@ -129,6 +129,7 @@ public class WorkloadInventoryReportModel
     )
     private Set<String> recommendedTargetsIMS;
 
+    @XStreamOmitField
     @DataField(pos = 13, columnName = "Flags IMS")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
