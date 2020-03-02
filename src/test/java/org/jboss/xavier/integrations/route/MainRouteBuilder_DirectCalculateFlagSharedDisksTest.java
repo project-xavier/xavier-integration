@@ -70,11 +70,15 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
         //When
         camelContext.start();
         camelContext.startRoute("flags-shared-disks");
+        camelContext.startRoute("reevaluate-workload-inventory-reports");
         String body = IOUtils.resourceToString(fileName, StandardCharsets.UTF_8, this.getClass().getClassLoader());
 
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:flags-shared-disks", body, headers);
+        Exchange result = camelContext.createProducerTemplate().send("direct:flags-shared-disks", exchange -> {
+            exchange.getIn().setBody(body);
+            exchange.getIn().setHeaders(headers);
+        });
 
-        verify(workloadInventoryReportService).saveAll(workloadInventoryReportModels);
+        assertThat(workloadInventoryReportModels).isEqualTo(result.getIn().getBody());
 
         camelContext.stop();
     }
@@ -123,7 +127,12 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
         camelContext.createProducerTemplate().sendBodyAndHeaders("direct:flags-shared-disks", body, headers);
 
         //Then
-        verify(workloadInventoryReportService).saveAll(workloadInventoryReportModels);
+        Exchange result = camelContext.createProducerTemplate().send("direct:flags-shared-disks", exchange -> {
+            exchange.getIn().setBody(body);
+            exchange.getIn().setHeaders(headers);
+        });
+
+        assertThat(workloadInventoryReportModels).isEqualTo(result.getIn().getBody());
 
         camelContext.stop();
     }

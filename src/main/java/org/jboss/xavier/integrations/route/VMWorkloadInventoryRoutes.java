@@ -1,6 +1,5 @@
 package org.jboss.xavier.integrations.route;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
@@ -53,20 +52,17 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                             .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
                     exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
                 })
+                .to("direct:reevaluate-workload-inventory-reports");
+
+        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
-                    .process(exchange -> {
-                        WorkloadInventoryReportModel wir = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
-                        exchange.getIn().setHeader(ANALYSIS_ID, wir.getAnalysis().getId());
-                    })
-                    .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
-                    .to("direct:vm-workload-inventory")
-                .end()
                 .process(exchange -> {
-                    Object body = exchange.getIn().getBody();
-                    ObjectMapper mapper = new ObjectMapper();
-                    String bodyString = mapper.writeValueAsString(body);
-                    System.out.println("DecisionServer response bodyJson=" + bodyString);
+                    WorkloadInventoryReportModel wir = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
+                    exchange.getIn().setHeader(ANALYSIS_ID, wir.getAnalysis().getId());
                 })
+                    .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
+                    .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
+                .end()
                 .process(exchange -> {
                     List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
                     List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
