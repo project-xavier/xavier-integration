@@ -27,6 +27,12 @@ services:
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
 
+env:
+  global:
+    - CAMEL_SPRINGBOOT_TRACING=false
+    - LOGGING_LEVEL_ROOT=info
+    - ANALYSIS_DATAINTEGRITY_LOG=false
+
 jobs:
   include:
     - stage: Test
@@ -35,10 +41,6 @@ jobs:
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
     - stage: Test
-      env:
-        - CAMEL_SPRINGBOOT_TRACING=false
-        - LOGGING_LEVEL_ROOT=info
-        - ANALYSIS_DATAINTEGRITY_LOG=false
       # Fix for https://travis-ci.community/t/problematic-docker-compose-version-1-23-1/5362/3
       before_install:
         - docker-compose --version
