@@ -68,21 +68,21 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     String bodyString = mapper.writeValueAsString(body);
                     System.out.println("DecisionServer response bodyJson=" + bodyString);
                 })
-//                .process(exchange -> workloadInventoryReportService.saveAll(exchange.getIn().getBody(List.class)));
-                .process(exchange -> {
-                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
-
-                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
-                            .map(element -> {
-                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
-                                dbWir.setComplexity(element.getComplexity());
-                                dbWir.setFlagsIMS(element.getFlagsIMS());
-                                return dbWir;
-                            })
-                            .collect(Collectors.toList());
-
-                    workloadInventoryReportService.saveAll(updatedWir);
-                    exchange.getIn().setBody(updatedWir);
-                });
+                .process(exchange -> workloadInventoryReportService.saveAll(exchange.getIn().getBody(List.class)));
+//                .process(exchange -> {
+//                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
+//
+//                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
+//                            .map(element -> {
+//                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
+//                                dbWir.setComplexity(element.getComplexity());
+//                                dbWir.setFlagsIMS(element.getFlagsIMS());
+//                                return dbWir;
+//                            })
+//                            .collect(Collectors.toList());
+//
+//                    workloadInventoryReportService.saveAll(updatedWir);
+//                    exchange.getIn().setBody(updatedWir);
+//                });
     }
 }
