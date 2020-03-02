@@ -124,15 +124,13 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
         camelContext.startRoute("flags-shared-disks");
         String body = IOUtils.resourceToString(fileName, StandardCharsets.UTF_8, this.getClass().getClassLoader());
 
-        camelContext.createProducerTemplate().sendBodyAndHeaders("direct:flags-shared-disks", body, headers);
-
         //Then
         Exchange result = camelContext.createProducerTemplate().send("direct:flags-shared-disks", exchange -> {
             exchange.getIn().setBody(body);
             exchange.getIn().setHeaders(headers);
         });
 
-        assertThat(workloadInventoryReportModels).isEqualTo(result.getIn().getBody());
+        assertThat(result.getIn().getBody()).isEqualTo(workloadInventoryReportModels);
 
         camelContext.stop();
     }
