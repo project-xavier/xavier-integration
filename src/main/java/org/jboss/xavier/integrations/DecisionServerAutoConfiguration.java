@@ -16,6 +16,13 @@
 package org.jboss.xavier.integrations;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentCollectionConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentMapConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentSortedMapConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernatePersistentSortedSetConverter;
+import com.thoughtworks.xstream.hibernate.converter.HibernateProxyConverter;
+import com.thoughtworks.xstream.hibernate.mapper.HibernateMapper;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 import org.apache.camel.dataformat.xstream.XStreamDataFormat;
 import org.apache.camel.spi.DataFormatFactory;
 import org.jboss.xavier.analytics.pojo.input.AbstractInputModel;
@@ -42,6 +49,13 @@ public class DecisionServerAutoConfiguration {
     @Bean(name = "xstream-dataformat")
     public XStreamDataFormat xStreamDataFormat() {
         XStream xstream = BatchExecutionHelper.newXStreamMarshaller();
+
+        xstream.registerConverter(new HibernateProxyConverter());
+        xstream.registerConverter(new HibernatePersistentCollectionConverter(xstream.getMapper()));
+        xstream.registerConverter(new HibernatePersistentMapConverter(xstream.getMapper()));
+        xstream.registerConverter(new HibernatePersistentSortedMapConverter(xstream.getMapper()));
+        xstream.registerConverter(new HibernatePersistentSortedSetConverter(xstream.getMapper()));
+
         xstream.processAnnotations(AbstractInputModel.class);
         xstream.processAnnotations(WorkloadInventoryReportModel.class);
         // Use the "model" package instead of the one used on the kie server
