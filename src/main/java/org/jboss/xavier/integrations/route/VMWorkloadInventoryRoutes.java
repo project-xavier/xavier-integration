@@ -84,30 +84,5 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     workloadInventoryReportService.saveAll(updatedWir);
                     exchange.getIn().setBody(updatedWir);
                 });
-
-//        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
-//                .log("Start configuring second time call to KieServer with body ${body}")
-//                .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
-//                .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
-//                    .process(exchange -> {
-//                        WorkloadInventoryReportModel workloadInventoryReportModel = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
-//                        exchange.getIn().setHeader(ANALYSIS_ID, workloadInventoryReportModel.getAnalysis().getId());
-//                    })
-//                    .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
-//                .end()
-//                .process(exchange -> {
-//                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
-//
-//                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
-//                            .map(element -> {
-//                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
-//                                dbWir.setComplexity(element.getComplexity());
-//                                return dbWir;
-//                            })
-//                            .collect(Collectors.toList());
-//
-//                    workloadInventoryReportService.saveAll(updatedWir);
-//                    exchange.getIn().setBody(updatedWir);
-//                });
     }
 }

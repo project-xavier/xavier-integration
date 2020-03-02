@@ -198,7 +198,7 @@
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream-hibernate</artifactId>
-            <version>1.4.6</version>
+            <version>1.4.10</version>
         </dependency>
 
 
