@@ -62,7 +62,7 @@
         "memory": 2147483648,
         "cpuCores": 1,
         "workloads": [],
-        "complexity": "Medium",
+        "complexity": "Hard",
         "recommendedTargetsIMS": [
           "RHV",
           "RHEL",
@@ -89,7 +89,7 @@
         "memory": 2147483648,
         "cpuCores": 1,
         "workloads": [],
-        "complexity": "Medium",
+        "complexity": "Hard",
         "recommendedTargetsIMS": [
           "RHV",
           "RHEL",
