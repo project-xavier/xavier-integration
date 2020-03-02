@@ -78,7 +78,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
             exchange.getIn().setHeaders(headers);
         });
 
-        assertThat(workloadInventoryReportModels).isEqualTo(result.getIn().getBody());
+        assertThat(result.getIn().getBody()).isEqualTo(workloadInventoryReportModels);
 
         camelContext.stop();
     }
