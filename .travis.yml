@@ -18,6 +18,15 @@ addons:
     token:
       secure: $SONAR_TOKEN
 
+env:
+#  global:
+#    - CAMEL_SPRINGBOOT_TRACING=false
+#    - LOGGING_LEVEL_ROOT=info
+#    - ANALYSIS_DATAINTEGRITY_LOG=false
+  jobs:
+    - TEST_PROFILE=unitTest MAVEN_PARAMS=
+    - TEST_PROFILE=endToEnd MAVEN_PARAMS='-Dtest=Case1EndToEndIT'
+    - TEST_PROFILE=endToEnd MAVEN_PARAMS='-Dtest=Case2EndToEndIT'
 
 sudo: required
 
@@ -27,37 +36,10 @@ services:
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
 
-env:
-  global:
-    - CAMEL_SPRINGBOOT_TRACING=false
-    - LOGGING_LEVEL_ROOT=info
-    - ANALYSIS_DATAINTEGRITY_LOG=false
+script:
+  - mvn test -P $TEST_PROFILE $MAVEN_PARAMS
+#  - mvn test -Pcoverage
+#  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
+#  - bash <(curl -s https://codecov.io/bash)
 
-jobs:
-  include:
-    - stage: Test
-      script:
-        - mvn test -Pcoverage
-        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
-        - bash <(curl -s https://codecov.io/bash)
-    - stage: Test
-      # Fix for https://travis-ci.community/t/problematic-docker-compose-version-1-23-1/5362/3
-      before_install:
-        - docker-compose --version
-        - docker info
-        - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-        - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-        - sudo apt-get update
-        - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-        - sudo rm /usr/local/bin/docker-compose
-        - curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-Linux-x86_64 > docker-compose
-        - chmod +x docker-compose
-        - sudo mv docker-compose /usr/local/bin
-        - docker-compose --version
-        - docker info
-      script:
-        - mvn test -PendToEnd
-    - stage: Release
-      script:
-        - echo Releasing
 
