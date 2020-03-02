@@ -437,7 +437,7 @@ public class Case1EndToEndIT {
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
         });
 
-        WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel[].class);
+        WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, Case1EndToEndIT.class.getClassLoader()), WorkloadInventoryReportModel[].class);
         assertThat(workloadInventoryReport.getBody().getContent().toArray())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
