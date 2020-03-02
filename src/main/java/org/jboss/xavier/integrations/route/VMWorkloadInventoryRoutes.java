@@ -57,7 +57,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     .process(exchange -> {
                         WorkloadInventoryReportModel wir = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                         exchange.getIn().setHeader(ANALYSIS_ID, wir.getAnalysis().getId());
-//                        exchange.getIn().setBody(new WorkloadInventoryReportModel(wir));
                     })
                     .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
                     .to("direct:vm-workload-inventory")
@@ -68,21 +67,17 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     String bodyString = mapper.writeValueAsString(body);
                     System.out.println("DecisionServer response bodyJson=" + bodyString);
                 })
-                .process(exchange -> workloadInventoryReportService.saveAll(exchange.getIn().getBody(List.class)));
-//                .process(exchange -> {
-//                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
-//
-//                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
-//                            .map(element -> {
-//                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
-//                                dbWir.setComplexity(element.getComplexity());
-//                                dbWir.setFlagsIMS(element.getFlagsIMS());
-//                                return dbWir;
-//                            })
-//                            .collect(Collectors.toList());
-//
-//                    workloadInventoryReportService.saveAll(updatedWir);
-//                    exchange.getIn().setBody(updatedWir);
-//                });
+                .process(exchange -> {
+                    List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
+                    List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
+                            .map(element -> {
+                                WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
+                                dbWir.setComplexity(element.getComplexity());
+                                dbWir.setFlagsIMS(element.getFlagsIMS());
+                                return dbWir;
+                            }).collect(Collectors.toList());
+                    workloadInventoryReportService.saveAll(updatedWir);
+                    exchange.getIn().setBody(updatedWir);
+                });
     }
 }
