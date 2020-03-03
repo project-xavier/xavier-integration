@@ -288,6 +288,12 @@
                     </choice>
                 </route>
             </get>
+            <get uri="/{id}/payload-link">
+                <route id="report-payload-link">
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <to uri="direct:get-s3-payload-link"/>
+                </route>
+            </get>
         </rest>
 
         <rest path="/user">

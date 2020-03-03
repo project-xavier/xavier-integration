@@ -2,8 +2,6 @@ package org.jboss.xavier.integrations.route;
 
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
-import org.jboss.xavier.integrations.migrationanalytics.business.FlagSharedDisksCalculator;
-import org.jboss.xavier.integrations.migrationanalytics.business.VMWorkloadInventoryCalculator;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -28,7 +26,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
         super.configure();
 
         from("direct:calculate-vmworkloadinventory").routeId("calculate-vmworkloadinventory")
-            .transform().method(VMWorkloadInventoryCalculator.class, "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
+            .bean("VMWorkloadInventoryCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .to("direct:vm-workload-inventory")
             .end()
@@ -42,7 +40,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
 
         from("direct:flags-shared-disks").routeId("flags-shared-disks")
-            .transform().method(FlagSharedDisksCalculator.class, "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})")
+            .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .process(exchange -> {
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
                 List<WorkloadInventoryReportModel> workloadInventoryReportModels = workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId(

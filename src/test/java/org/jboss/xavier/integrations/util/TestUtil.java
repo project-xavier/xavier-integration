@@ -18,6 +18,7 @@ public class TestUtil
     public static void startUsernameRoutes(CamelContext camelContext) throws Exception
     {
         camelContext.startRoute("request-forbidden");
+        camelContext.startRoute("request-notfound");
         camelContext.startRoute("add-username-header");
         camelContext.startRoute("check-authenticated-request");
         camelContext.startRoute("fetch-rbac-user-access");

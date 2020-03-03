@@ -24,7 +24,7 @@
       "id": 410,
       "total": 14,
       "rhv": 13,
-      "rhel": 0,
+      "rhel": 4,
       "osp": 11
     },
     "workloadsDetectedOSTypeModels": [
