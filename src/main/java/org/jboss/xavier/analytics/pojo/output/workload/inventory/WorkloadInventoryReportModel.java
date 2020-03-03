@@ -1,6 +1,7 @@
 package org.jboss.xavier.analytics.pojo.output.workload.inventory;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 import org.apache.camel.dataformat.bindy.annotation.FormatFactories;
@@ -70,6 +71,7 @@ public class WorkloadInventoryReportModel
     )
     private Long id;
 
+    @XStreamOmitField
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = ANALYSIS_ID_COLUMN)
     @JsonBackReference

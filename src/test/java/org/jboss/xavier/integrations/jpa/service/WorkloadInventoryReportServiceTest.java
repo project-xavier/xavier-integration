@@ -18,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -85,6 +84,25 @@ public class WorkloadInventoryReportServiceTest {
 
         result = reportService.findByAnalysisOwnerAndAnalysisId("whatever", analysisModel.getId());
         assertThat(result.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void workloadInventoryReportService_findOneByOwnerAndId_ShouldReturnCorrectWorkloadInventoryReportModel() {
+        // Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+
+        WorkloadInventoryReportModel reportModel = new WorkloadInventoryReportModel();
+        analysisService.addWorkloadInventoryReportModels(Collections.singletonList(reportModel), analysisModel.getId());
+
+        Long reportModelId = 1L;
+
+        // When
+        WorkloadInventoryReportModel workloadInventoryReportModel1 = reportService.findOneByOwnerAndId("someuser", reportModelId);
+        WorkloadInventoryReportModel workloadInventoryReportModel2 = reportService.findOneByOwnerAndId(analysisModel.getOwner(), reportModelId);
+
+        // Then
+        assertThat(workloadInventoryReportModel1).isNull();
+        assertThat(workloadInventoryReportModel2).isNotNull();
     }
 
     @Test

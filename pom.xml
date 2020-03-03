@@ -195,6 +195,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Later versions might cause the exception: com.thoughtworks.xstream.mapper.CannotResolveClassException: isTempSession-->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream-hibernate</artifactId>
+            <version>1.4.10</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.hsqldb</groupId>
