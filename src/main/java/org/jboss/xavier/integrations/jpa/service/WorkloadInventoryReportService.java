@@ -73,7 +73,7 @@ public class WorkloadInventoryReportService
     }
 
     public WorkloadInventoryReportModel findOneByOwnerAndId(String owner, Long id) {
-        return reportRepository.findByAnalysis_OwnerAndId(owner, id);
+        return reportRepository.findByAnalysisOwnerAndId(owner, id);
     }
 
     public WorkloadInventoryReportFiltersModel findAvailableFiltersByAnalysisId(Long analysisId) {
