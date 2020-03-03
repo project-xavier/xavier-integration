@@ -154,7 +154,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
         workloadInventoryReportModels.add(workloadInventoryReportModel1);
 
 
-        when(workloadInventoryReportService.findOneById(wirId)).thenReturn(workloadInventoryReportModel1);
+        when(workloadInventoryReportService.findOneByOwnerAndId(analysisModel.getOwner(), wirId)).thenReturn(workloadInventoryReportModel1);
 
 
         camelContext.getRouteDefinition("extract-vmworkloadinventory").adviceWith(camelContext, new AdviceWithRouteBuilder() {
@@ -186,6 +186,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
 
         Exchange result = camelContext.createProducerTemplate().send("direct:reevaluate-workload-inventory-reports", exchange -> {
             exchange.getIn().setBody(workloadInventoryReportModels);
+            exchange.getIn().setHeader(RouteBuilderExceptionHandler.USERNAME, analysisModel.getOwner());
         });
 
         //Then

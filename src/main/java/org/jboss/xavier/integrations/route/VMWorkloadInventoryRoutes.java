@@ -64,10 +64,11 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
             .end()
             .process(exchange -> {
+                String username = exchange.getIn().getHeader(USERNAME, String.class);
                 List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
                 List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
                         .map(element -> {
-                            WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneById(element.getId());
+                            WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneByOwnerAndId(username, element.getId());
                             dbWir.setComplexity(element.getComplexity());
                             dbWir.setFlagsIMS(element.getFlagsIMS());
                             return dbWir;

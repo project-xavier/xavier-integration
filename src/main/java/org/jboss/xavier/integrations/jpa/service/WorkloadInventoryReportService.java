@@ -72,8 +72,8 @@ public class WorkloadInventoryReportService
         return reportRepository.findAll(specification, pageable);
     }
 
-    public WorkloadInventoryReportModel findOneById(Long id) {
-        return reportRepository.findOne(id);
+    public WorkloadInventoryReportModel findOneByOwnerAndId(String owner, Long id) {
+        return reportRepository.findByAnalysis_OwnerAndId(owner, id);
     }
 
     public WorkloadInventoryReportFiltersModel findAvailableFiltersByAnalysisId(Long analysisId) {
