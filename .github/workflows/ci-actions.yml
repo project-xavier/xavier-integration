@@ -14,7 +14,7 @@ on:
 env:
   # Workaround testsuite locale issue
   LANG: en_US.UTF-8
-  JVM_TEST_MAVEN_OPTS: "-e -B --settings configuration/settings.xml"
+  JVM_TEST_MAVEN_OPTS: "-e -B -P !fuse-fabric8-docker --settings configuration/settings.xml"
 jobs:
   build-jdk8:
     name: "JDK 8 Build"
