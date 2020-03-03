@@ -56,7 +56,7 @@ jobs:
           restore-only: ${{ github.event_name == 'pull_request' }}
       - name: Build
         run: |
-          mvn -e -B -DskipTests=true -DskipDocs --settings configuration/settings.xml clean install
+          mvn -e -B -DskipTests=true -DskipDocs -P !fuse-fabric8-docker --settings configuration/settings.xml clean install
       - name: Tar Maven Repo
         shell: bash
         run: tar -czvf maven-repo.tgz -C ~ .m2/repository
