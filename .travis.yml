@@ -15,8 +15,7 @@ jdk:
 addons:
   sonarcloud:
     organization: project-xavier
-    token:
-      secure: $SONAR_TOKEN
+    token: $SONAR_TOKEN
 
 
 sudo: required
