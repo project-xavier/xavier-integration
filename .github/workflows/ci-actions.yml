@@ -108,13 +108,15 @@ jobs:
           name: test-reports-linux-jvm${{matrix.java-version}}
           path: 'test-reports.tgz'
 
-  windows-jdk8-jvm-tests:
-    name: Windows JDK 8 JVM Tests
+  linux-jdk8-jvm-end2end-tests:
+    name: JDK 8 JVM ${{matrix.class-name}} Test
     needs: build-jdk8
-    runs-on: windows-latest
     timeout-minutes: 120
-    env:
-      MAVEN_OPTS: -Xmx1408m
+    strategy:
+      fail-fast: ${{ github.repository == 'project-xavier/xavier-integration' }}
+      matrix:
+        class-name: [Case1EndToEndIT, Case2EndToEndIT]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -132,17 +134,14 @@ jobs:
         shell: bash
         run: tar -xzvf maven-repo.tgz -C ~
       - name: Build with Maven
-        shell: bash
-        run: mvn -B --settings configuration/settings.xml install
+        run: eval mvn $JVM_TEST_MAVEN_OPTS -Dtest=${{ matrix.class-name }} test
       - name: Prepare failure archive (if maven failed)
         if: failure()
         shell: bash
-        run: |
-          # Disambiguate windows find from cygwin find
-          /usr/bin/find . -name '*-reports' -type d | tar -czvf test-reports.tgz -T -
+        run: find . -name '*-reports' -type d | tar -czvf test-reports.tgz -T -
       - name: Upload failure Archive (if maven failed)
         uses: actions/upload-artifact@v1
         if: failure()
         with:
-          name: test-reports-windows-jdk8-jvm
+          name: test-reports-linux-jvm-${{matrix.class-name}}
           path: 'test-reports.tgz'
