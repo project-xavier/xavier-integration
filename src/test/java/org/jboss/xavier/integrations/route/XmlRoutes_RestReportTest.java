@@ -687,10 +687,25 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_FilterAndSortParamsGiven_ShouldCallFindByAnalysisId_usingRightParams_AndReturnEmptyFilteredCsv() throws Exception {
         //Given
-        Long one = 1L;
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
+
+        WorkloadInventoryReportModel wir1 = new WorkloadInventoryReportModel();
+        wir1.setProvider("my provider1");
+        wir1.setDatacenter("my datacenter1");
+        workloadInventoryReportModels.add(wir1);
+
+        WorkloadInventoryReportModel wir2 = new WorkloadInventoryReportModel();
+        wir2.setProvider("my provider2");
+        wir2.setDatacenter("my datacenter2");
+        workloadInventoryReportModels.add(wir2);
+
+        analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
+
 
         Map<String, Object> variables = new HashMap<>();
-        variables.put("id", one);
+        variables.put("id", analysisModel.getId());
 
         String orderBy = "provider";
         variables.put("orderBy", orderBy);
@@ -792,10 +807,14 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         filterBean.setFlagsIMS(new HashSet<>(Arrays.asList(flag1, flag2)));
         filterBean.setComplexities(new HashSet<>(Arrays.asList(complexity1, complexity2)));
 
-        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, sortBean, filterBean);
+        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId(analysisModel.getOwner(), analysisModel.getId(), sortBean, filterBean); // check right params are use
         Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
         Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
         assertThat(response).isNotNull();
+        assertThat(response.getBody()).isNotNull();
+
+        String[] rows = response.getBody().split("\n");
+        assertThat(rows.length).isEqualTo(1);
         assertThat(response.getBody()).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
         camelContext.stop();
     }
