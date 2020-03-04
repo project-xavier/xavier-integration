@@ -85,8 +85,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             model.setHasRdmDisk(hasRdmDisk);
         }
 
-        List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
-        model.setDiskSpace(diskSpaceList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum());
+        model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap, Integer.class));
 
@@ -103,5 +102,17 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
 
         return model;
+    }
+
+    private Long getDiskSpaceList(Map vmStructMap) {
+        // If the VM.used_disk_storage is present use it, if not use VM.DISK[*].size_on_disk
+        String usedDiskStoragePath = getExpandedPath(USEDDISKSTORAGEPATH, vmStructMap);
+        Number used_disk_storage = (Number) vmStructMap.get(usedDiskStoragePath);
+        if (used_disk_storage != null) {
+            return used_disk_storage.longValue();
+        } else {
+            List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(HARDWAREDISKSIZEPATH, vmStructMap);
+            return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
+        }
     }
 }

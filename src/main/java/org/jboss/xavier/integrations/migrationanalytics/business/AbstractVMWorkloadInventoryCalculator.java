@@ -36,7 +36,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
     public static final String NICSPATH = "vmworkloadinventory.nicsPath";
     public static final String PRODUCTNAMEPATH = "vmworkloadinventory.productNamePath";
     public static final String PRODUCTNAME_FALLBACKPATH = "vmworkloadinventory.productNameFallbackPath";
-    public static final String DISKSIZEPATH = "vmworkloadinventory.diskSizePath";
+    public static final String HARDWAREDISKSIZEPATH = "vmworkloadinventory.hardwareDisksPath";
     public static final String EMSCLUSTERIDPATH = "vmworkloadinventory.emsClusterIdPath";
     public static final String VMEMSCLUSTERPATH = "vmworkloadinventory.vmEmsClusterPath";
     public static final String VMDISKSFILENAMESPATH = "vmworkloadinventory.vmDiskFileNamesPath";
@@ -49,6 +49,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
     public static final String HOSTNAMEPATH = "vmworkloadinventory.hostNamePath";
     public static final String VMDISKSPATH = "vmworkloadinventory.vmDisksPath";
     public static final String DATACOLLECTEDON = "datacollectedon" ;
+    public static final String USEDDISKSTORAGEPATH = "vmworkloadinventory.usedDiskSpacePath";
 
     @Autowired
     protected Environment env;
