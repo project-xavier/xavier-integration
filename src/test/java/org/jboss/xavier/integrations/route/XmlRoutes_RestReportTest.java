@@ -588,15 +588,20 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
         Assert.assertNull(response.getHeaders().get("whatever"));
         assertThat(response).isNotNull();
-        assertThat(response.getBody()).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
+        assertThat(response.getBody()).isNotNull();
 
-//        Expected CSV result
-//        ProviderA | DatacenterC | ClusterA | VmNameC
-//        ProviderB | DatacenterA | ClusterB | VmNameA
-//        ProviderB | DatacenterB | ClusterB | VmNameB
-        assertThat(response.getBody()).contains("ProviderA,DatacenterC,ClusterA,VmNameC");
-        assertThat(response.getBody()).contains("ProviderB,DatacenterA,ClusterB,VmNameA");
-        assertThat(response.getBody()).contains("ProviderB,DatacenterB,ClusterB,VmNameB");
+
+        String[] rows = response.getBody().split("\n");
+
+//      Expected CSV result
+//      ProviderA | DatacenterC | ClusterA | VmNameC
+//      ProviderB | DatacenterA | ClusterB | VmNameA
+//      ProviderB | DatacenterB | ClusterB | VmNameB
+
+        assertThat(rows[0]).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
+        assertThat(rows[1]).contains("ProviderA,DatacenterC,ClusterA,VmNameC");
+        assertThat(rows[2]).contains("ProviderB,DatacenterA,ClusterB,VmNameA");
+        assertThat(rows[3]).contains("ProviderB,DatacenterB,ClusterB,VmNameB");
         camelContext.stop();
     }
 
@@ -668,6 +673,11 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
         Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
         assertThat(response).isNotNull();
+        assertThat(response.getBody()).isNotNull();
+
+        String[] rows = response.getBody().split("\n");
+        assertThat(rows.length).isEqualTo(3);
+
         assertThat(response.getBody()).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
         assertThat(response.getBody()).contains("my providerA,my datacenter2");
         assertThat(response.getBody()).contains("my providerB,my datacenter1");
