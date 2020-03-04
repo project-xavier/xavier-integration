@@ -913,6 +913,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-payload-link");
         camelContext.startRoute("get-s3-payload-link");
