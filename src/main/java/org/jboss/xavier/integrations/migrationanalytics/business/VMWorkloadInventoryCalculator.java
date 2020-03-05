@@ -106,13 +106,17 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
     private Long getDiskSpaceList(Map vmStructMap) {
         // If the VM.used_disk_storage is present use it, if not use VM.DISK[*].size_on_disk
-        String usedDiskStoragePath = getExpandedPath(USEDDISKSTORAGEPATH, vmStructMap);
-        Number used_disk_storage = (Number) vmStructMap.get(usedDiskStoragePath);
-        if (used_disk_storage != null) {
-            return used_disk_storage.longValue();
-        } else {
-            List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(HARDWAREDISKSIZEPATH, vmStructMap);
-            return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
+        try {
+            String usedDiskStoragePath = getExpandedPath(USEDDISKSTORAGEPATH, vmStructMap);
+            Number used_disk_storage = (Number) vmStructMap.get(usedDiskStoragePath);
+            if (used_disk_storage != null) {
+                return used_disk_storage.longValue();
+            }
+        } catch (Exception e) {
+            // In versions previous to 1_0_0 it will fail because there is no such property
         }
+
+        List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
+        return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
     }
 }
