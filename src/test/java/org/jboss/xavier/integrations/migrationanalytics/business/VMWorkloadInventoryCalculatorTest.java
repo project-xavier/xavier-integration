@@ -182,4 +182,22 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db"))
                 .findFirst().get().getCluster()).isNull();
     }
+
+    @Test
+    public void calculate_jsonV1_0_0_GivenWithCoresEquals0_ShouldReturn0CpuCores() throws IOException {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
+        cloudFormsJson = cloudFormsJson.replace("\"cpu_cores_per_socket\": 1,\n                    \"cpu_total_cores\": 4,",
+                                           "\"cpu_cores_per_socket\": 0,\n                    \"cpu_total_cores\": 4,");
+
+        Map<String, Object> headers = new HashMap<>();
+        Long analysisId = 30L;
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(8);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana"))
+                .findFirst().get().getCpuCores())
+                .isEqualTo(0);
+    }
 }
