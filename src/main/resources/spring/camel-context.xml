@@ -301,10 +301,11 @@
             <get uri="/" outType="org.jboss.xavier.integrations.route.model.user.User">
                 <description>Get session user info</description>
                 <route id="get-user-info">
+                    <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>user</constant></setHeader>
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
                     <to uri="direct:check-rbac-permissions" />
-
+                    <!-- RBAC check end-->
                     <bean ref="userService" method="findUser(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}})" />
                 </route>
             </get>

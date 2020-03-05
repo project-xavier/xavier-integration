@@ -22,7 +22,6 @@ public class RBACRouteBuilder extends RouteBuilder {
     private static final String RBAC_X_RH_IDENTITY = "x-rh-identity";
     private static final String RBAC_X_RH_IDENTITY_DECODED = "rbacXRhIdentityDecoded";
     private static final String RBAC_IS_ORG_ADMIN = "rbacIsOrgAdmin";
-    private static final String RBAC_TMP_BODY = "rbacTmpBody";
     public static final String RBAC_USER_ACCESS = "rbacUserAccess";
 
     public static final String RBAC_ENDPOINT_RESOURCE_NAME = "rbacEndpointResourceName";
@@ -71,15 +70,17 @@ public class RBACRouteBuilder extends RouteBuilder {
                 .choice()
                     .when(exchange -> exchange.getIn().getHeader(RBAC_IS_ORG_ADMIN, Boolean.class))
                         .setHeader(RBAC_USER_ACCESS, constant(null))
+                    .endChoice()
                     .otherwise()
-                        .setHeader(RBAC_TMP_BODY, body())
+                        .enrich("direct:fetch-rbac-user-access", (oldExchange, newExchange) -> {
+                            List<Acl> acls = newExchange.getIn().getBody(List.class);
+                            Map<String, Map<String, List<String>>> accessForUser = RBACService.getAccessForUser(acls);
 
-                        .to("direct:fetch-rbac-user-access")
-                        .bean(RBACService.class, "getAccessForUser")
-
-                        .setHeader(RBAC_USER_ACCESS, body())
-                        .setBody(exchange -> exchange.getIn().getHeader(RBAC_TMP_BODY))
-                .endChoice();
+                            oldExchange.getIn().setHeader(RBAC_USER_ACCESS, accessForUser);
+                            return oldExchange;
+                        })
+                    .endChoice()
+                .end();
 
         from("direct:fetch-rbac-user-access")
                 .routeId("fetch-rbac-user-access")
