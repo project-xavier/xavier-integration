@@ -72,7 +72,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
@@ -80,6 +79,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -552,7 +552,7 @@ public class EndToEndTest {
     }
 
     private Integer callSummaryReportAndCheckVMs(final String reportUrl, int timeoutMilliseconds) {
-        List<Integer> numberVMsReceived = new ArrayList<>();
+        AtomicInteger numberVMsReceived = new AtomicInteger(0);
         await()
                 .atMost(timeoutMilliseconds, TimeUnit.MILLISECONDS)
                 .with().pollInterval(Duration.ONE_SECOND)
@@ -564,11 +564,11 @@ public class EndToEndTest {
                             workloadSummaryReport_stress_checkVMs.getBody() != null &&
                             workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels() != null );
                     if (success) {
-                       numberVMsReceived.add(workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum());
+                       numberVMsReceived.set(workloadSummaryReport_stress_checkVMs.getBody().getSummaryModels().stream().mapToInt(SummaryModel::getVms).sum());
                     }
                     return success;
                 });
-        return numberVMsReceived.get(0);
+        return numberVMsReceived.intValue();
     }
 
     @NotNull
