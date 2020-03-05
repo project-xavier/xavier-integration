@@ -184,9 +184,10 @@ public class VMWorkloadInventoryCalculatorTest {
     }
 
     @Test
-    public void calculate_jsonV1_0_0_GivenWithCoresEquals0_ShouldReturn0CpuCores() throws IOException, ParseException {
+    public void calculate_jsonV1_0_0_GivenWithCoresEquals0_ShouldReturn0CpuCores() throws IOException {
         String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
-        cloudFormsJson = cloudFormsJson.replace("\"cpu_total_cores\": 4,", "\"cpu_total_cores\": 0,");
+        cloudFormsJson = cloudFormsJson.replace("\"cpu_cores_per_socket\": 1,\n                    \"cpu_total_cores\": 4,",
+                                           "\"cpu_cores_per_socket\": 0,\n                    \"cpu_total_cores\": 4,");
 
         Map<String, Object> headers = new HashMap<>();
         Long analysisId = 30L;
