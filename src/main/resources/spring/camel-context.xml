@@ -128,11 +128,11 @@
                 <route id="reports-get-all">
                     <choice>
                         <when>
-                            <simple>${header.filterText} == null</simple>
-                            <bean ref="analysisService" method="findAllByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.page}, ${header.size})" />
+                            <simple>${header.filterText} == null || ${header.filterText} == ''</simple>
+                            <bean ref="analysisService" method="findAllAnalysisSummaryByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.page}, ${header.size})" />
                         </when>
                         <otherwise>
-                            <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.page}, ${header.size})" />
+                            <bean ref="analysisService" method="findAnalysisSummaryByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.page}, ${header.size})" />
                         </otherwise>
                     </choice>
                 </route>
@@ -140,13 +140,13 @@
             <get uri="/{id}">
                 <description>Get the details of a report</description>
                 <route id="report-get-details">
-                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
+                    <bean ref="analysisService" method="findAnalysisSummaryByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                 </route>
             </get>
             <delete uri="/{id}">
                 <description>Delete a report</description>
                 <route id="report-delete">
-                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})"/>
+                    <bean ref="analysisService" method="findAnalysisSummaryByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})"/>
                     <choice>
                         <when>
                             <simple>${body} != null</simple>
@@ -208,7 +208,7 @@
                 <description>Get available filters</description>
                 <route id="workload-inventory-report-available-filters">
                     <!-- if the user is the owner of the analysis then it's fine to get the filters -->
-                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})"/>
+                    <bean ref="analysisService" method="findAnalysisSummaryByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})"/>
                     <choice>
                         <when>
                             <simple>${body} != null</simple>

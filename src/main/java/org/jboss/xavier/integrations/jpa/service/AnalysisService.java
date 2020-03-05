@@ -5,6 +5,7 @@ import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
+import org.jboss.xavier.integrations.jpa.projection.AnalysisSummary;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,11 @@ public class AnalysisService
     public AnalysisModel findByOwnerAndId(String owner, Long id)
     {
         return analysisRepository.findByOwnerAndId(owner, id);
+    }
+
+    public AnalysisSummary findAnalysisSummaryByOwnerAndId(String owner, Long id)
+    {
+        return analysisRepository.findAnalysisSummaryByOwnerAndId(owner, id);
     }
 
     public void deleteById(Long id)
@@ -96,6 +102,12 @@ public class AnalysisService
         return analysisRepository.findAllByOwner(owner, pageable);
     }
 
+    public Page<AnalysisSummary> findAllAnalysisSummaryByOwner(String owner, int page, int size)
+    {
+        Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
+        return analysisRepository.findAllAnalysisSummaryByOwner(owner, pageable);
+    }
+
     public Integer countByOwner(String owner)
     {
         return analysisRepository.countByOwner(owner);
@@ -105,6 +117,12 @@ public class AnalysisService
     {
         Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
         return analysisRepository.findByOwnerAndReportNameIgnoreCaseContaining(owner, filterText.trim(), pageable);
+    }
+
+    public Page<AnalysisSummary> findAnalysisSummaryByOwnerAndReportName(String owner, String filterText, int page, int size)
+    {
+        Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
+        return analysisRepository.findAnalysisSummaryByOwnerAndReportNameIgnoreCaseContaining(owner, filterText.trim(), pageable);
     }
 
     public void updateStatus(String status, Long id) {
