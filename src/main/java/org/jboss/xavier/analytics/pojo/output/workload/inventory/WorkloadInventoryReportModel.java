@@ -33,27 +33,32 @@ import java.util.Set;
 @Table(
         indexes = {
                 @Index(name = "WorkloadInventoryReportModel_" +
-                        WorkloadInventoryReportModel.ANALYSIS_ID + "_index",
-                        columnList = WorkloadInventoryReportModel.ANALYSIS_ID, unique = false),
+                        WorkloadInventoryReportModel.ANALYSIS_ID_COLUMN + "_index",
+                        columnList = WorkloadInventoryReportModel.ANALYSIS_ID_COLUMN, unique = false),
                 @Index(name = "WorkloadInventoryReportModel_" +
-                        WorkloadInventoryReportModel.VM_NAME + "_index",
-                        columnList = WorkloadInventoryReportModel.VM_NAME, unique = false),
+                        WorkloadInventoryReportModel.VM_NAME_COLUMN + "_index",
+                        columnList = WorkloadInventoryReportModel.VM_NAME_COLUMN, unique = false),
                 @Index(name = "WorkloadInventoryReportModel_" +
-                        WorkloadInventoryReportModel.OS_NAME + "_index",
-                        columnList = WorkloadInventoryReportModel.OS_NAME, unique = false),
+                        WorkloadInventoryReportModel.OS_NAME_COLUMN + "_index",
+                        columnList = WorkloadInventoryReportModel.OS_NAME_COLUMN, unique = false),
                 @Index(name = "WorkloadInventoryReportModel_" +
-                        WorkloadInventoryReportModel.COMPLEXITY + "_index",
-                        columnList = WorkloadInventoryReportModel.COMPLEXITY, unique = false)
+                        WorkloadInventoryReportModel.COMPLEXITY_COLUMN + "_index",
+                        columnList = WorkloadInventoryReportModel.COMPLEXITY_COLUMN, unique = false)
         }
 )
 public class WorkloadInventoryReportModel
 {
     static final long serialVersionUID = 1L;
 
-    static final String ANALYSIS_ID = "analysis_id";
-    static final String VM_NAME = "vm_name";
-    static final String OS_NAME = "os_name";
-    static final String COMPLEXITY = "complexity";
+    static final String ANALYSIS_ID_COLUMN = "analysis_id";
+    static final String VM_NAME_COLUMN = "vm_name";
+    static final String OS_NAME_COLUMN = "os_name";
+    static final String COMPLEXITY_COLUMN = "complexity";
+
+    public static final String PROVIDER_FIELD = "provider";
+    public static final String DATACENTER_FIELD = "datacenter";
+    public static final String CLUSTER_FIELD = "cluster";
+    public static final String VM_NAME_FIELD = "vmName";
 
     @Id
     @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO, generator = "WORKLOADINVENTORYREPORTMODEL_ID_GENERATOR")
@@ -68,7 +73,7 @@ public class WorkloadInventoryReportModel
 
     @XStreamOmitField
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = ANALYSIS_ID)
+    @JoinColumn(name = ANALYSIS_ID_COLUMN)
     @JsonBackReference
     private AnalysisModel analysis;
 
@@ -82,11 +87,11 @@ public class WorkloadInventoryReportModel
     private String cluster;
 
     @DataField(pos = 4 , columnName = "VM name")
-    @Column(name = VM_NAME)
+    @Column(name = VM_NAME_COLUMN)
     private String vmName;
 
     @DataField(pos = 5, columnName = "OS type")
-    @Column(name = OS_NAME)
+    @Column(name = OS_NAME_COLUMN)
     private String osName;
 
     @DataField(pos = 6, columnName = "Operating system description")
@@ -112,7 +117,7 @@ public class WorkloadInventoryReportModel
     private Set<String> workloads;
 
     @DataField(pos = 11, columnName = "Effort")
-    @Column(name = COMPLEXITY)
+    @Column(name = COMPLEXITY_COLUMN)
     private String complexity;
 
     @DataField(pos = 12, columnName = "Recommended targets")
