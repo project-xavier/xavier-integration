@@ -4,12 +4,10 @@ import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
-import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -85,5 +82,24 @@ public class WorkloadInventoryReportServiceTest {
 
         result = reportService.findByAnalysisOwnerAndAnalysisId("whatever", analysisModel.getId());
         assertThat(result.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void workloadInventoryReportService_findOneByOwnerAndId_ShouldReturnCorrectWorkloadInventoryReportModel() {
+        // Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+
+        WorkloadInventoryReportModel reportModel = new WorkloadInventoryReportModel();
+        analysisService.addWorkloadInventoryReportModels(Collections.singletonList(reportModel), analysisModel.getId());
+
+        Long reportModelId = 1L;
+
+        // When
+        WorkloadInventoryReportModel workloadInventoryReportModel1 = reportService.findOneByOwnerAndId("someuser", reportModelId);
+        WorkloadInventoryReportModel workloadInventoryReportModel2 = reportService.findOneByOwnerAndId(analysisModel.getOwner(), reportModelId);
+
+        // Then
+        assertThat(workloadInventoryReportModel1).isNull();
+        assertThat(workloadInventoryReportModel2).isNotNull();
     }
 }

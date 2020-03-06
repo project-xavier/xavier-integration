@@ -72,6 +72,10 @@ public class WorkloadInventoryReportService
         return reportRepository.findAll(specification, pageable);
     }
 
+    public WorkloadInventoryReportModel findOneByOwnerAndId(String owner, Long id) {
+        return reportRepository.findByAnalysisOwnerAndId(owner, id);
+    }
+
     public WorkloadInventoryReportFiltersModel findAvailableFiltersByAnalysisId(Long analysisId) {
         WorkloadInventoryReportFiltersModel filters = new WorkloadInventoryReportFiltersModel();
         filters.setProviders(reportRepository.findAllDistinctProvidersByAnalysisId(analysisId));

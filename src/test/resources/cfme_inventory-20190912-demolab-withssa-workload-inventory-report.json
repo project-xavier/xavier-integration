@@ -1,7 +1,6 @@
-{
-    "content": [
+[
       {
-        "id": 24768,
+        "id": 48036,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -25,7 +24,7 @@
         "ssaEnabled": true
       },
       {
-        "id": 24767,
+        "id": 48035,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -52,7 +51,7 @@
         "ssaEnabled": true
       },
       {
-        "id": 24766,
+        "id": 48034,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -63,10 +62,10 @@
         "memory": 2147483648,
         "cpuCores": 1,
         "workloads": [],
-        "complexity": "Medium",
+        "complexity": "Hard",
         "recommendedTargetsIMS": [
           "RHV",
-          "Convert2RHEL",
+          "RHEL",
           "OSP"
         ],
         "flagsIMS": [
@@ -79,7 +78,7 @@
         "ssaEnabled": false
       },
       {
-        "id": 24765,
+        "id": 48033,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -90,10 +89,10 @@
         "memory": 2147483648,
         "cpuCores": 1,
         "workloads": [],
-        "complexity": "Medium",
+        "complexity": "Hard",
         "recommendedTargetsIMS": [
           "RHV",
-          "Convert2RHEL",
+          "RHEL",
           "OSP"
         ],
         "flagsIMS": [
@@ -106,7 +105,7 @@
         "ssaEnabled": false
       },
       {
-        "id": 24764,
+        "id": 48032,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -132,7 +131,7 @@
         "ssaEnabled": true
       },
       {
-        "id": 24763,
+        "id": 48031,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -148,7 +147,7 @@
         "complexity": "Medium",
         "recommendedTargetsIMS": [
           "RHV",
-          "Convert2RHEL",
+          "RHEL",
           "OSP"
         ],
         "flagsIMS": [],
@@ -159,7 +158,7 @@
         "ssaEnabled": true
       },
       {
-        "id": 24762,
+        "id": 48030,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -185,7 +184,7 @@
         "ssaEnabled": true
       },
       {
-        "id": 24761,
+        "id": 48029,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -209,7 +208,7 @@
         "ssaEnabled": true
       },
       {
-        "id": 24760,
+        "id": 48028,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -236,7 +235,7 @@
         "ssaEnabled": true
       },
       {
-        "id": 24759,
+        "id": 48027,
         "provider": "vSphere",
         "datacenter": "Datacenter",
         "cluster": "VMCluster",
@@ -260,23 +259,107 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": true
-      }
-    ],
-    "last": false,
-    "totalPages": 2,
-    "totalElements": 14,
-    "first": true,
-    "sort": [
+      },
       {
-        "direction": "DESC",
-        "property": "id",
-        "ignoreCase": false,
-        "nullHandling": "NATIVE",
-        "ascending": false,
-        "descending": true
+        "id": 48026,
+        "provider": "vSphere",
+        "datacenter": "Datacenter",
+        "cluster": "VMCluster",
+        "vmName": "tomcat",
+        "osName": "Linux",
+        "osDescription": "CentOS Linux release 7.6.1810 (Core) ",
+        "diskSpace": 2159235072,
+        "memory": 2147483648,
+        "cpuCores": 1,
+        "workloads": [
+          "Tomcat"
+        ],
+        "complexity": "Medium",
+        "recommendedTargetsIMS": [
+          "RHV",
+          "RHEL",
+          "OSP"
+        ],
+        "flagsIMS": [],
+        "product": "VMware vCenter",
+        "version": "6.7.2",
+        "host_name": "host-47",
+        "creationDate": 1568305947979,
+        "ssaEnabled": true
+      },
+      {
+        "id": 48025,
+        "provider": "vSphere",
+        "datacenter": "Datacenter",
+        "cluster": "VMCluster",
+        "vmName": "hana",
+        "osName": "Linux",
+        "osDescription": "Red Hat Enterprise Linux Server release 7.6 (Maipo)",
+        "diskSpace": 17860726784,
+        "memory": 17179869184,
+        "cpuCores": 4,
+        "workloads": [
+          "SAP HANA"
+        ],
+        "complexity": "Easy",
+        "recommendedTargetsIMS": [
+          "RHV",
+          "OSP"
+        ],
+        "flagsIMS": [],
+        "product": "VMware vCenter",
+        "version": "6.7.2",
+        "host_name": "host-47",
+        "creationDate": 1568305947979,
+        "ssaEnabled": true
+      },
+      {
+        "id": 48024,
+        "provider": "vSphere",
+        "datacenter": "Datacenter",
+        "cluster": "VMCluster",
+        "vmName": "websphere",
+        "osName": "Linux",
+        "osDescription": "Red Hat Enterprise Linux Server release 7.7 (Maipo)",
+        "diskSpace": 9332674560,
+        "memory": 2147483648,
+        "cpuCores": 1,
+        "workloads": [
+          "IBM Websphere App Server"
+        ],
+        "complexity": "Easy",
+        "recommendedTargetsIMS": [
+          "RHV",
+          "OSP"
+        ],
+        "flagsIMS": [],
+        "product": "VMware vCenter",
+        "version": "6.7.2",
+        "host_name": "host-47",
+        "creationDate": 1568305947979,
+        "ssaEnabled": true
+      },
+      {
+        "id": 48023,
+        "provider": "vSphere",
+        "datacenter": "Datacenter",
+        "cluster": "VMCluster",
+        "vmName": "freebsd",
+        "osName": "FreeBSD 12 or later versions (64-bit)",
+        "osDescription": "FreeBSD 12 or later versions (64-bit)",
+        "diskSpace": 0,
+        "memory": 1073741824,
+        "cpuCores": 1,
+        "workloads": [],
+        "complexity": "Unsupported",
+        "recommendedTargetsIMS": [
+          "None"
+        ],
+        "flagsIMS": [],
+        "product": "VMware vCenter",
+        "version": "6.7.2",
+        "host_name": "host-31",
+        "creationDate": 1568305947979,
+        "ssaEnabled": false
       }
-    ],
-    "numberOfElements": 10,
-    "size": 10,
-    "number": 0
-  }
+]

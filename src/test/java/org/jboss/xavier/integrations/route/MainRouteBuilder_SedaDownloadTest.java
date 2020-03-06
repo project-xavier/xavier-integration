@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @MockEndpointsAndSkip("http.*|direct:unzip-file")
-public class MainRouteBuilder_DirectDownloadTest extends XavierCamelTest {
+public class MainRouteBuilder_SedaDownloadTest extends XavierCamelTest {
     @Autowired
     MainRouteBuilder mainRouteBuilder;
 
@@ -50,6 +50,7 @@ public class MainRouteBuilder_DirectDownloadTest extends XavierCamelTest {
                 weaveByToUri("http.*").after()
                         .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
                         .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"));
+                replaceFromWith("direct:download-file");
             }
         });
         camelContext.getRouteDefinition("store-in-s3").adviceWith(camelContext, new AdviceWithRouteBuilder() {
@@ -98,6 +99,7 @@ public class MainRouteBuilder_DirectDownloadTest extends XavierCamelTest {
             @Override
             public void configure() {
                 weaveByToUri("http4:.*").after().setHeader(Exchange.HTTP_RESPONSE_CODE, simple("400"));
+                replaceFromWith("direct:download-file");
             }
         });
 

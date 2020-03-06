@@ -18,6 +18,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.jboss.xavier.analytics.pojo.PayloadDownloadLinkModel;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.UserService;
@@ -47,6 +48,9 @@ import static org.apache.camel.builder.PredicateBuilder.not;
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
+    @Value("${thread.concurrentConsumers:5}")
+    private int CONCURRENT_CONSUMERS;
+
     @Value("${insights.upload.host}")
     private String uploadHost;
 
@@ -64,6 +68,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     @Value("${camel.springboot.tracing}")
     private boolean tracingEnabled;
+
+    @Value("${s3.download.link.expiration}")
+    private String s3DownloadLinkExpiration;
 
     @Inject
     private UserService userService;
@@ -145,9 +152,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .routeId("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
-                .to("direct:download-file");
+                .to("seda:download-file");
 
-        from("direct:download-file")
+        from("seda:download-file?concurrentConsumers=" + CONCURRENT_CONSUMERS).routeId("download-file")
                 .routeId("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)
@@ -177,6 +184,49 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client&deleteAfterWrite=false").id("s3-call")
                 .process(exchange -> analysisService.updatePayloadStorageId(exchange.getIn().getHeader(S3Constants.KEY, String.class),
                         Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
+
+        from("direct:get-s3-payload-link").routeId("get-s3-payload-link")
+                .choice()
+                    .when(bodyAs(AnalysisModel.class).isNull())
+                        .to("direct:request-notfound")
+                    .endChoice()
+                .end()
+                .process(exchange -> {
+                    AnalysisModel analysisModel = exchange.getIn().getBody(AnalysisModel.class);
+
+                    String payloadName = analysisModel.getPayloadName();
+                    String payloadStorageId = analysisModel.getPayloadStorageId();
+
+                    if (payloadStorageId != null && payloadStorageId.trim().isEmpty()) {
+                        payloadStorageId = null;
+                    }
+
+                    exchange.getIn().setHeader("AnalysisPayloadName", payloadName);
+                    exchange.getIn().setHeader("AnalysisPayloadStorageId", payloadStorageId);
+                })
+                .choice()
+                    .when(header("AnalysisPayloadStorageId").isNull())
+                        .process(exchange -> {
+                            String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
+
+                            PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, null);
+                            exchange.getIn().setBody(payloadDownloadLinkModel);
+                        })
+                    .endChoice()
+                    .otherwise()
+                        .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
+                        .setHeader("CamelAwsS3DownloadLinkExpiration", constant(s3DownloadLinkExpiration))
+                        .setHeader("CamelAwsS3Operation", constant("downloadLink"))
+                        .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client").id("aws-s3-get-download-link")
+                        .process(exchange -> {
+                            String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
+                            String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
+
+                            PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
+                            exchange.getIn().setBody(payloadDownloadLinkModel);
+                        })
+                    .endChoice()
+                .end();
 
         from("direct:unzip-file")
                 .routeId("unzip-file")
@@ -246,6 +296,10 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         from("direct:request-forbidden")
                 .routeId("request-forbidden")
                 .process(httpError403());
+
+        from("direct:request-notfound")
+                .routeId("request-notfound")
+                .process(httpError404());
     }
 
     private Exchange calculateICSAggregated(Exchange old, Exchange neu) {
@@ -284,6 +338,14 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
           exchange.getIn().setBody("Forbidden");
           exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpServletResponse.SC_FORBIDDEN);
           exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
+        };
+    }
+
+    private Processor httpError404() {
+        return exchange -> {
+            exchange.getIn().setBody("Not found");
+            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpServletResponse.SC_NOT_FOUND);
+            exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
         };
     }
 
