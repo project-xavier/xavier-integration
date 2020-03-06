@@ -87,7 +87,7 @@ public class WorkloadInventoryReportServiceTest {
     @Test
     public void workloadInventoryReportService_findOneByOwnerAndId_ShouldReturnCorrectWorkloadInventoryReportModel() {
         // Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
 
         WorkloadInventoryReportModel reportModel = new WorkloadInventoryReportModel();
         analysisService.addWorkloadInventoryReportModels(Collections.singletonList(reportModel), analysisModel.getId());
