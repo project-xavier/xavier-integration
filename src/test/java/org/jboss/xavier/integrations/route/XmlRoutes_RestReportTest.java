@@ -584,6 +584,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
@@ -668,6 +669,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
@@ -798,6 +800,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
