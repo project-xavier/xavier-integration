@@ -41,4 +41,12 @@ public class SortBean {
     public int hashCode() {
         return Objects.hash(orderBy, orderAsc);
     }
+
+    @Override
+    public String toString() {
+        return "SortBean{" +
+                "orderBy=" + orderBy +
+                ", orderAsc=" + orderAsc +
+                '}';
+    }
 }

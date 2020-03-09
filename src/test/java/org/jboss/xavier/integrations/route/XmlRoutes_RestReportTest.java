@@ -5,6 +5,7 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.jpa.service.FlagService;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
@@ -33,13 +34,22 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class XmlRoutes_RestReportTest extends XavierCamelTest {
@@ -49,7 +59,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @MockBean
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
 
-    @MockBean
+    @SpyBean
     private WorkloadInventoryReportService workloadInventoryReportService;
 
     @MockBean
@@ -258,7 +268,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(page, size);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
@@ -290,7 +300,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
@@ -425,7 +435,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", false);
+        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
         filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));
         filterBean.setClusters(new HashSet<>(Arrays.asList(cluster1, cluster2)));
@@ -529,6 +539,295 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
         Assert.assertNull(response.getHeaders().get("whatever"));
         assertThat(response).isNotNull();
+        assertThat(response.getBody()).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnFilteredCsvUsingDefaultOrder() throws Exception {
+        //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+
+
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
+
+        WorkloadInventoryReportModel wir1 = new WorkloadInventoryReportModel();
+        wir1.setProvider("ProviderB");
+        wir1.setDatacenter("DatacenterB");
+        wir1.setCluster("ClusterB");
+        wir1.setVmName("VmNameB");
+        workloadInventoryReportModels.add(wir1);
+
+        WorkloadInventoryReportModel wir2 = new WorkloadInventoryReportModel();
+        wir2.setProvider("ProviderB");
+        wir2.setDatacenter("DatacenterA");
+        wir2.setCluster("ClusterB");
+        wir2.setVmName("VmNameA");
+        workloadInventoryReportModels.add(wir2);
+
+        WorkloadInventoryReportModel wir3 = new WorkloadInventoryReportModel();
+        wir3.setProvider("ProviderA");
+        wir3.setDatacenter("DatacenterC");
+        wir3.setCluster("ClusterA");
+        wir3.setVmName("VmNameC");
+        workloadInventoryReportModels.add(wir3);
+
+        analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
+
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("id", analysisModel.getId());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
+        camelContext.startRoute("filtered-workload-inventory-report-get-details-as-csv");
+        camelContext.startRoute("workload-inventory-report-model-to-csv");
+
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv", HttpMethod.GET, entity, String.class, variables);
+
+        //Then
+        SortBean sortBean = new SortBean(null, true);
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
+
+        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId(analysisModel.getOwner(), analysisModel.getId(), sortBean, filterBean);
+        Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
+        Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
+        Assert.assertNull(response.getHeaders().get("whatever"));
+        assertThat(response).isNotNull();
+        assertThat(response.getBody()).isNotNull();
+
+
+        String[] rows = response.getBody().split("\n");
+
+//      Expected CSV result
+//      ProviderA | DatacenterC | ClusterA | VmNameC
+//      ProviderB | DatacenterA | ClusterB | VmNameA
+//      ProviderB | DatacenterB | ClusterB | VmNameB
+
+        assertThat(rows[0]).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
+        assertThat(rows[1]).contains("ProviderA,DatacenterC,ClusterA,VmNameC");
+        assertThat(rows[2]).contains("ProviderB,DatacenterA,ClusterB,VmNameA");
+        assertThat(rows[3]).contains("ProviderB,DatacenterB,ClusterB,VmNameB");
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnFilteredCsv() throws Exception {
+        //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
+
+        WorkloadInventoryReportModel wir1 = new WorkloadInventoryReportModel();
+        wir1.setProvider("my providerB");
+        wir1.setDatacenter("my datacenter1");
+        workloadInventoryReportModels.add(wir1);
+
+        WorkloadInventoryReportModel wir2 = new WorkloadInventoryReportModel();
+        wir2.setProvider("my providerA");
+        wir2.setDatacenter("my datacenter2");
+        workloadInventoryReportModels.add(wir2);
+
+        WorkloadInventoryReportModel wir3 = new WorkloadInventoryReportModel();
+        wir3.setProvider("provider");
+        wir3.setDatacenter("datacenter");
+        workloadInventoryReportModels.add(wir3);
+
+        analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
+
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("id", analysisModel.getId());
+
+        String orderBy = "provider";
+        variables.put("orderBy", orderBy);
+        Boolean orderAsc = true;
+        variables.put("orderAsc", orderAsc);
+
+        String datacenter1 = "my datacenter1";
+        variables.put("datacenter1", datacenter1);
+        String datacenter2 = "my datacenter2";
+        variables.put("datacenter2", datacenter2);
+
+        StringBuilder sb = new StringBuilder("")
+                .append("orderBy={orderBy}&")
+                .append("orderAsc={orderAsc}&")
+                .append("datacenter={datacenter1}&")
+                .append("datacenter={datacenter2}");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
+        camelContext.startRoute("filtered-workload-inventory-report-get-details-as-csv");
+        camelContext.startRoute("workload-inventory-report-model-to-csv");
+
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv?" + sb.toString(), HttpMethod.GET, entity, String.class, variables);
+
+        //Then
+        SortBean sortBean = new SortBean(orderBy, orderAsc);
+
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
+        filterBean.setDatacenters(new HashSet<>(Arrays.asList(datacenter1, datacenter2)));
+
+        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId(analysisModel.getOwner(), analysisModel.getId(), sortBean, filterBean);
+        Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
+        Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
+        assertThat(response).isNotNull();
+        assertThat(response.getBody()).isNotNull();
+
+        String[] rows = response.getBody().split("\n");
+        assertThat(rows.length).isEqualTo(3);
+
+        assertThat(response.getBody()).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
+        assertThat(response.getBody()).contains("my providerA,my datacenter2");
+        assertThat(response.getBody()).contains("my providerB,my datacenter1");
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_FilterAndSortParamsGiven_ShouldCallFindByAnalysisId_usingRightParams_AndReturnEmptyFilteredCsv() throws Exception {
+        //Given
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+
+        List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
+
+        WorkloadInventoryReportModel wir1 = new WorkloadInventoryReportModel();
+        wir1.setProvider("my provider1");
+        wir1.setDatacenter("my datacenter1");
+        workloadInventoryReportModels.add(wir1);
+
+        WorkloadInventoryReportModel wir2 = new WorkloadInventoryReportModel();
+        wir2.setProvider("my provider2");
+        wir2.setDatacenter("my datacenter2");
+        workloadInventoryReportModels.add(wir2);
+
+        analysisService.addWorkloadInventoryReportModels(workloadInventoryReportModels, analysisModel.getId());
+
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("id", analysisModel.getId());
+
+        String orderBy = "provider";
+        variables.put("orderBy", orderBy);
+        Boolean orderAsc = true;
+        variables.put("orderAsc", orderAsc);
+
+        String provider1 = "my provider1";
+        variables.put("provider1", provider1);
+        String provider2 = "my provider2";
+        variables.put("provider2", provider2);
+
+        String cluster1 = "my cluster1";
+        variables.put("cluster1", cluster1);
+        String cluster2 = "my cluster2";
+        variables.put("cluster2", cluster2);
+
+        String datacenter1 = "my datacenter1";
+        variables.put("datacenter1", datacenter1);
+        String datacenter2 = "my datacenter2";
+        variables.put("datacenter2", datacenter2);
+
+        String vmName1 = "my vmName1";
+        variables.put("vmName1", vmName1);
+        String vmName2 = "my vmName2";
+        variables.put("vmName2", vmName2);
+
+        String osName1 = "my osName1";
+        variables.put("osName1", osName1);
+        String osName2 = "my osName2";
+        variables.put("osName2", osName2);
+
+        String workload1 = "my workload1";
+        variables.put("workload1", workload1);
+        String workload2 = "my workload2";
+        variables.put("workload2", workload2);
+
+        String recommendedTarget1 = "my recommendedTarget1";
+        variables.put("recommendedTarget1", recommendedTarget1);
+        String recommendedTarget2 = "my recommendedTarget2";
+        variables.put("recommendedTarget2", recommendedTarget2);
+
+        String flag1 = "my flag1";
+        variables.put("flag1", flag1);
+        String flag2 = "my flag2";
+        variables.put("flag2", flag2);
+
+        String complexity1 = "my complexity1";
+        variables.put("complexity1", complexity1);
+        String complexity2 = "my complexity2";
+        variables.put("complexity2", complexity2);
+
+        StringBuilder sb = new StringBuilder("")
+                .append("orderBy={orderBy}&")
+                .append("orderAsc={orderAsc}&")
+                .append("provider={provider1}&")
+                .append("provider={provider2}&")
+                .append("cluster={cluster1}&")
+                .append("cluster={cluster2}&")
+                .append("datacenter={datacenter1}&")
+                .append("datacenter={datacenter2}&")
+                .append("vmName={vmName1}&")
+                .append("vmName={vmName2}&")
+                .append("osName={osName1}&")
+                .append("osName={osName2}&")
+                .append("workload={workload1}&")
+                .append("workload={workload2}&")
+                .append("recommendedTargetIMS={recommendedTarget1}&")
+                .append("recommendedTargetIMS={recommendedTarget2}&")
+                .append("flagIMS={flag1}&")
+                .append("flagIMS={flag2}&")
+                .append("complexity={complexity1}&")
+                .append("complexity={complexity2}");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
+        camelContext.startRoute("filtered-workload-inventory-report-get-details-as-csv");
+        camelContext.startRoute("workload-inventory-report-model-to-csv");
+
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv?" + sb.toString(), HttpMethod.GET, entity, String.class, variables);
+
+        //Then
+        SortBean sortBean = new SortBean(orderBy, orderAsc);
+
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
+        filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));
+        filterBean.setClusters(new HashSet<>(Arrays.asList(cluster1, cluster2)));
+        filterBean.setDatacenters(new HashSet<>(Arrays.asList(datacenter1, datacenter2)));;
+        filterBean.setVmNames(new HashSet<>(Arrays.asList(vmName1, vmName2)));;
+        filterBean.setOsNames(new HashSet<>(Arrays.asList(osName1, osName2)));;
+        filterBean.setWorkloads(new HashSet<>(Arrays.asList(workload1, workload2)));
+        filterBean.setRecommendedTargetsIMS(new HashSet<>(Arrays.asList(recommendedTarget1, recommendedTarget2)));
+        filterBean.setFlagsIMS(new HashSet<>(Arrays.asList(flag1, flag2)));
+        filterBean.setComplexities(new HashSet<>(Arrays.asList(complexity1, complexity2)));
+
+        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId(analysisModel.getOwner(), analysisModel.getId(), sortBean, filterBean); // check right params are use
+        Assert.assertTrue(response.getHeaders().get("Content-Type").contains("text/csv"));
+        Assert.assertTrue(response.getHeaders().get("Content-Disposition").contains("attachment;filename=workloadInventory_1.csv"));
+        assertThat(response).isNotNull();
+        assertThat(response.getBody()).isNotNull();
+
+        String[] rows = response.getBody().split("\n");
+        assertThat(rows.length).isEqualTo(1);
         assertThat(response.getBody()).contains("Provider,Datacenter,Cluster,VM name,OS type,Operating system description,Disk space,Memory,CPU cores,Workload,Effort,Recommended targets,Flags IMS,Product,Version,HostName");
         camelContext.stop();
     }

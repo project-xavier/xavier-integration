@@ -29,8 +29,8 @@ public class ParamsCalculator implements Calculator<UploadFormInputDataModel> {
     public Integer calculateHypervisors(Map valuesMap, String cpuTotalCoresPath, String cpuCoresPerSocketPath, String analysisId) {
         Integer cputotalcores = getMapValueAvoidClassCastException(valuesMap, cpuTotalCoresPath, Integer.class);
         Integer cpucorespersocket = getMapValueAvoidClassCastException(valuesMap, cpuCoresPerSocketPath, Integer.class);
-        if (cputotalcores != null && cpucorespersocket != null && cpucorespersocket > 0) {
-            return (int) Math.ceil(cputotalcores / (cpucorespersocket * 2.0));
+        if (cputotalcores != null && cpucorespersocket != null ) {
+            return (int) ((cpucorespersocket > 0) ? Math.ceil(cputotalcores / (cpucorespersocket * 2.0)) : 0);
         } else {
             analysisIssuesHandler.record(analysisId, "HOST", valuesMap.get("name").toString(), cpuCoresPerSocketPath, "Invalid values to calculate Hypervisors number");
             return null;
