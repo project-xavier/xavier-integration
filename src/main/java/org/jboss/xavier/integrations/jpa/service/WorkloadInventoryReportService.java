@@ -16,7 +16,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.function.Function;
 
 @Component
 public class WorkloadInventoryReportService
@@ -24,29 +23,49 @@ public class WorkloadInventoryReportService
     @Autowired
     WorkloadInventoryReportRepository reportRepository;
 
-    public static final Function<String, String> mapToSupportedSortField = value -> {
-        // Result should contain the name of the @Entity field
-        String result = "id";
-        if (value == null) {
-            return result;
+    public static Sort getWorkloadInventoryReportModelSort(SortBean sortBean) {
+        // Direction
+        Sort.Direction direction;
+        if (sortBean.isOrderAsc() != null) {
+            direction = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
+        } else {
+            direction = Sort.Direction.ASC;
         }
 
-        switch (value) {
-            case "vmName":
-                result = "vmName";
-                break;
-            case "osName":
-                result = "osName";
-                break;
-            case "complexity":
-                result = "complexity";
-                break;
+        // Sort
+        Sort sort;
+        if (sortBean.getOrderBy() != null) {
+            sort = new Sort(direction, sortBean.getOrderBy());
+        } else {
+            // Default sort
+            sort = new Sort(direction,
+                    WorkloadInventoryReportModel.PROVIDER_FIELD,
+                    WorkloadInventoryReportModel.DATACENTER_FIELD,
+                    WorkloadInventoryReportModel.CLUSTER_FIELD,
+                    WorkloadInventoryReportModel.VM_NAME_FIELD
+            );
         }
-        return result;
-    };
+
+        return sort;
+    }
 
     public List<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(String analysisOwner, Long analysisId) {
         return reportRepository.findByAnalysisOwnerAndAnalysisId(analysisOwner, analysisId);
+    }
+
+    public List<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
+            String analysisOwner,
+            Long analysisId,
+            SortBean sortBean,
+            WorkloadInventoryFilterBean filterBean
+    ) {
+        // Sort
+        Sort sort = getWorkloadInventoryReportModelSort(sortBean);
+
+        // Filtering
+        Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);
+
+        return reportRepository.findAll(specification, sort);
     }
 
     public Page<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
@@ -57,9 +76,7 @@ public class WorkloadInventoryReportService
             WorkloadInventoryFilterBean filterBean
     ) {
         // Sort
-        Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
-        String orderBy = mapToSupportedSortField.apply(sortBean.getOrderBy());
-        Sort sort = new Sort(sortDirection, orderBy);
+        Sort sort = getWorkloadInventoryReportModelSort(sortBean);
 
         // Pagination
         int page = pageBean.getPage();
