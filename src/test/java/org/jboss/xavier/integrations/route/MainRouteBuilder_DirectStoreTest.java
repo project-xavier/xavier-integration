@@ -4,8 +4,9 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
-
+@Ignore
 @MockEndpointsAndSkip("direct:insights|file:*|direct:analysis-model")
 public class MainRouteBuilder_DirectStoreTest extends XavierCamelTest {
     @EndpointInject(uri = "mock:direct:insights")

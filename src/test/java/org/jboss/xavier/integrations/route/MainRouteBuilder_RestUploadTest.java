@@ -5,6 +5,7 @@ import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+@Ignore
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @MockEndpointsAndSkip("direct:upload")
 public class MainRouteBuilder_RestUploadTest extends XavierCamelTest {
@@ -38,7 +39,7 @@ public class MainRouteBuilder_RestUploadTest extends XavierCamelTest {
     public void setup() {
         camel_context = camel_context.substring(0, camel_context.indexOf("*"));
     }
-   
+
     @Test
     public void mainRouteBuilder_routeRestUpload_ContentGiven_ShouldUpload() throws Exception {
         //Given

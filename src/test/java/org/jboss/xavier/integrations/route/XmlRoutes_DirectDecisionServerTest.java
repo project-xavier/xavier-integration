@@ -7,10 +7,11 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.integrations.DecisionServerHelper;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.api.command.BatchExecutionCommand;
 import org.springframework.beans.factory.annotation.Autowired;
-
+@Ignore
 @MockEndpointsAndSkip("http:*")
 public class XmlRoutes_DirectDecisionServerTest extends XavierCamelTest {
 

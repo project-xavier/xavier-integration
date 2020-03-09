@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+@Ignore
 @MockEndpointsAndSkip("direct:store")
 public class MainRouteBuilder_GetRHIdentity extends XavierCamelTest {
     @Inject

@@ -6,10 +6,11 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
-
+@Ignore
 @MockEndpointsAndSkip("kafka:*|seda:download-file")
 public class MainRouteBuilder_KafkaTest extends XavierCamelTest {
 

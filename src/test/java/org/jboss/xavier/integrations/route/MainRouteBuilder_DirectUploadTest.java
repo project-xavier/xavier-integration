@@ -5,6 +5,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+@Ignore
 @MockEndpointsAndSkip("direct:store")
 public class MainRouteBuilder_DirectUploadTest extends XavierCamelTest {
     @EndpointInject(uri = "mock:direct:store")

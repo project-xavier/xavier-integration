@@ -2,6 +2,7 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.Exchange;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -12,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+@Ignore
 public class ToBeanRouter_DirectWorkloadInventoryFilterBeanTest extends XavierCamelTest {
 
     @Test

@@ -10,6 +10,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,7 +21,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+@Ignore
 @MockEndpointsAndSkip("http.*|direct:unzip-file")
 public class MainRouteBuilder_SedaDownloadTest extends XavierCamelTest {
     @Autowired

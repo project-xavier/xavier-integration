@@ -4,6 +4,7 @@ import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.jpa.service.FlagAssessmentService;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,7 @@ import org.springframework.http.HttpMethod;
 
 import static org.mockito.Mockito.verify;
 
-
+@Ignore
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class XmlRoutes_RestMappingTest extends XavierCamelTest {
     @Autowired

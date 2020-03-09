@@ -3,6 +3,7 @@ package org.jboss.xavier.integrations.jpa.service;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.jboss.xavier.Application;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +15,7 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-
+@Ignore
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @SpringBootTest(classes = {Application.class})
@@ -44,7 +45,7 @@ public class UserServiceTest {
         ReflectionTestUtils.setField(userService, "authorizedAdminUsers", new String[0]);
         assertThat(userService.isUserAllowedToAdministratorResources("myUsername")).isEqualTo(false);
     }
-    
+
     @Test
     public void userService_AuthorizedUsersGiven_ShouldReturnAllowedOrNot() {
         assertThat(userService.isUserAllowedToAdministratorResources("admin1")).isEqualTo(true);
