@@ -65,6 +65,7 @@ jobs:
       - name: Codecov metrics
         uses: codecov/codecov-action@v1
         with:
+          file: ./target/site/jacoco/jacoco.xml
           fail_ci_if_error: false
       - name: Prepare failure archive (if maven failed)
         if: failure()
