@@ -2,14 +2,13 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.Exchange;
 import org.jboss.xavier.integrations.route.model.SortBean;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-@Ignore
+
 public class ToBeanRouter_DirectToSortBeanTest extends XavierCamelTest {
 
     @Test

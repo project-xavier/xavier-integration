@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import javax.inject.Inject;
 import java.util.UUID;
-@Ignore
+
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @UseAdviceWith // Disables automatic start of Camel context

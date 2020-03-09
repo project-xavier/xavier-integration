@@ -9,7 +9,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,7 +20,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 @MockEndpointsAndSkip("http4:{{insights.upload.host}}/api/ingress/v1/upload")
 public class MainRouteBuilder_DirectInsightsTest extends XavierCamelTest {
     @EndpointInject(uri = "mock:http4:{{insights.upload.host}}/api/ingress/v1/upload")

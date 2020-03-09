@@ -19,7 +19,6 @@ import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +50,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-@Ignore
+
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Autowired

@@ -6,7 +6,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.MockEndpointsAndSkip;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -16,7 +15,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-@Ignore
+
 @MockEndpointsAndSkip("direct:insights|file:*")
 public class MainRouteBuilder_DirectStoreAnalysisModelTest extends XavierCamelTest {
 

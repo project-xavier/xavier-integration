@@ -8,7 +8,6 @@ import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -17,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-@Ignore
+
 @MockEndpointsAndSkip("direct:decisionserver")
 public class MainRouteBuilder_DirectWorkloadInventoryTest extends XavierCamelTest {
     @Inject

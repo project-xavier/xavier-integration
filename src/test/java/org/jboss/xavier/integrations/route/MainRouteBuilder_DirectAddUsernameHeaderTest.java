@@ -1,7 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.Exchange;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Base64;
@@ -9,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-@Ignore
+
 public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTest {
 
     @Test

@@ -7,7 +7,6 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.AnalysisService;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -20,7 +19,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 @MockEndpointsAndSkip("direct:vm-workload-inventory")
 public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest extends XavierCamelTest {
     @Inject
