@@ -63,7 +63,7 @@ jobs:
       - name: Build with Maven
         run: eval mvn $JVM_TEST_MAVEN_OPTS -Dtest=${{ matrix.class-name }} test
       - name: Codecov metrics
-        run: bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@v1
       - name: Prepare failure archive (if maven failed)
         if: failure()
         shell: bash
