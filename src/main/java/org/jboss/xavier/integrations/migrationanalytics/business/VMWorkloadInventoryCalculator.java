@@ -114,6 +114,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             }
         } catch (Exception e) {
             // In versions previous to 1_0_0 it will fail because there is no such property
+            log.warn("Using an old version of payload. Calculating size with sum of vm.hardware.disks.size_on_disk");
         }
 
         List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
