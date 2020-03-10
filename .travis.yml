@@ -52,5 +52,12 @@ jobs:
         - mvn test -Pcoverage
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
+    - stage: EndToEnd Test
+      env:
+        - CAMEL_SPRINGBOOT_TRACING=false
+        - LOGGING_LEVEL_ROOT=info
+        - ANALYSIS_DATAINTEGRITY_LOG=false
+      script:
+        - mvn test -PendToEnd
 
 
