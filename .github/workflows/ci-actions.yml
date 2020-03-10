@@ -11,6 +11,8 @@ on:
     types: [assigned, opened, synchronize, reopened, ready_for_review, edited]
     paths-ignore:
       - 'README.md'
+  schedule:
+    - cron:  '0 0 * * *'
 env:
   JVM_TEST_MAVEN_OPTS: "-e -B -P !fuse-fabric8-docker --settings configuration/settings.xml"
 
