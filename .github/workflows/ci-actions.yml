@@ -41,16 +41,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Codecov metrics
         uses: codecov/codecov-action@v1
-      - name: Prepare failure archive (if maven failed)
-        if: failure()
-        shell: bash
-        run: find . -name '*-reports' -type d | tar -czvf test-reports.tgz -T -
-      - name: Upload failure Archive (if maven failed)
-        uses: actions/upload-artifact@v1
-        if: failure()
-        with:
-          name: test-reports-linux-jvm8
-          path: 'test-reports.tgz'
 
   linux-jdk8-jvm-end2end-tests:
     name: JDK 8 JVM ${{matrix.class-name}} Test
@@ -70,13 +60,3 @@ jobs:
           java-version: openjdk8
       - name: Build with Maven
         run: eval mvn $JVM_TEST_MAVEN_OPTS -P endToEnd -Dtest=${{ matrix.class-name }} test
-      - name: Prepare failure archive (if maven failed)
-        if: failure()
-        shell: bash
-        run: find . -name '*-reports' -type d | tar -czvf test-reports.tgz -T -
-      - name: Upload failure Archive (if maven failed)
-        uses: actions/upload-artifact@v1
-        if: failure()
-        with:
-          name: test-reports-linux-jvm-${{matrix.class-name}}
-          path: 'test-reports.tgz'
