@@ -2,6 +2,25 @@ package org.jboss.xavier.integrations.rbac;
 
 import java.util.List;
 
+/**
+ * Access Control List (ACL) define permissions and resource definitions that a user has inside a
+ * specific application. It is defined in the field 'data' of {@link RbacResponse}. E.g.:
+ *
+ * Having:
+ * {
+ *    "permission":"migration-analytics:myResource:read",
+ *    "resourceDefinitions":[
+ *       {
+ *          "attributeFilter":{
+ *             "key":"migration-analytics.rh.account",
+ *             "operation":"equal",
+ *             "value":"123456"
+ *          }
+ *       }
+ *    ]
+ * }
+ *
+ */
 public class Acl {
     private String permission;
     private List<ResourceDefinition> resourceDefinitions;

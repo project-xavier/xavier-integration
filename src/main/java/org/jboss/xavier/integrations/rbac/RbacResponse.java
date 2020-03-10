@@ -2,6 +2,28 @@ package org.jboss.xavier.integrations.rbac;
 
 import java.util.List;
 
+/**
+ * Represents the Http response body of the RBAC server when '/access' endpoint is invoked. E.g.
+ * {
+ *   "meta": {
+ *     "count": 1,
+ *     "limit": 10,
+ *     "offset": 0
+ *   },
+ *   "links": {
+ *     "first": "/api/rbac/v1/access/?application=migration-analytics&limit=10&offset=0",
+ *     "next": null,
+ *     "previous": null,
+ *     "last": "/api/rbac/v1/access/?application=migration-analytics&limit=10&offset=0"
+ *   },
+ *   "data": [
+ *     {
+ *       "permission": "migration-analytics:*:*",
+ *       "resourceDefinitions": []
+ *     }
+ *   ]
+ * }
+ */
 public class RbacResponse {
     private Meta meta;
     private Links links;
