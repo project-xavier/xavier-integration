@@ -1,27 +1,21 @@
 package org.jboss.xavier.integrations.rbac;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http4.HttpMethods;
+import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 @Component
 public class RBACRouteBuilder extends RouteBuilder {
 
-    private static final String RBAC_X_RH_IDENTITY = "x-rh-identity";
-    private static final String RBAC_X_RH_IDENTITY_DECODED = "rbacXRhIdentityDecoded";
-    private static final String RBAC_IS_ORG_ADMIN = "rbacIsOrgAdmin";
     public static final String RBAC_USER_ACCESS = "rbacUserAccess";
 
     public static final String RBAC_ENDPOINT_RESOURCE_NAME = "rbacEndpointResourceName";
@@ -41,34 +35,12 @@ public class RBACRouteBuilder extends RouteBuilder {
                 .routeId("fetch-and-process-rbac-user-access")
 
                 .choice()
-                    .when(exchange -> exchange.getIn().getHeader(RBAC_X_RH_IDENTITY) == null)
+                    .when(exchange -> exchange.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY) == null)
                         .to("direct:request-forbidden")
                 .end()
 
-                .process(exchange -> {
-                    // save decoded x-rh-identity JsonNode as header
-                    String xRHIdentity = exchange.getIn().getHeader(RBAC_X_RH_IDENTITY, String.class);
-                    JsonNode xRHIdentityDecodedJsonNode;
-                    try {
-                        xRHIdentityDecodedJsonNode = new ObjectMapper().reader().readTree(
-                                new String(
-                                        Base64.getDecoder().decode(xRHIdentity)
-                                )
-                        );
-                    } catch (IOException e) {
-                        Logger.getLogger(this.getClass().getName()).warning("Unable to read " + RBAC_X_RH_IDENTITY);
-                        throw new IllegalStateException("Could not read header " + RBAC_X_RH_IDENTITY);
-                    }
-                    exchange.getIn().setHeader(RBAC_X_RH_IDENTITY_DECODED, xRHIdentityDecodedJsonNode);
-                })
-                .process(exchange -> {
-                    // isOrgAdmin
-                    JsonNode xRHIdentity = exchange.getIn().getHeader(RBAC_X_RH_IDENTITY_DECODED, JsonNode.class);
-                    JsonNode isOrgAdmin = xRHIdentity.get("identity").get("user").get("is_org_admin");
-                    exchange.getIn().setHeader(RBAC_IS_ORG_ADMIN, isOrgAdmin.booleanValue());
-                })
                 .choice()
-                    .when(exchange -> exchange.getIn().getHeader(RBAC_IS_ORG_ADMIN, Boolean.class))
+                    .when(exchange -> exchange.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_IS_ORG_ADMIN, Boolean.class))
                         .setHeader(RBAC_USER_ACCESS, constant(null))
                     .endChoice()
                     .otherwise()

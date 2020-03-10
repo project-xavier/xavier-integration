@@ -24,6 +24,7 @@ import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.UserService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
+import org.jboss.xavier.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import static org.apache.camel.builder.PredicateBuilder.not;
 
@@ -76,6 +76,21 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     private UserService userService;
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
+
+    public static Processor xRhIdentityHeaderProcessor = exchange -> {
+        String xRhIdentityEncoded = exchange.getIn().getHeader(X_RH_IDENTITY, String.class);
+        if (xRhIdentityEncoded != null) {
+            String xRhIdentityDecoded = new String(Base64.getDecoder().decode(xRhIdentityEncoded));
+            JsonNode xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
+
+            String username = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "username").textValue();
+            Boolean isOrgAdmin = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "is_org_admin").booleanValue();
+
+            exchange.getIn().setHeader(USERNAME, username);
+            exchange.getIn().setHeader(X_RH_IDENTITY_JSON_NODE, xRhIdentityJsonNode);
+            exchange.getIn().setHeader(X_RH_IDENTITY_IS_ORG_ADMIN, isOrgAdmin);
+        }
+    };
 
     public void configure() throws Exception {
         super.configure();
@@ -139,7 +154,8 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
-                .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
+                .setHeader(X_RH_IDENTITY, simple("${body.b64_identity}"))
+                .process(xRhIdentityHeaderProcessor)
                 .setBody(constant(""))
                 .to("http4:oldhost").id("toOldHost")
                 .choice()
@@ -253,7 +269,10 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .routeId("check-authenticated-request")
                 .to("direct:add-username-header")
                 .choice()
-                    .when(header(USERNAME).isEqualTo(""))
+                    .when(exchange -> {
+                        String username = exchange.getIn().getHeader(USERNAME, String.class);
+                        return username == null || username.trim().isEmpty();
+                    })
                     .to("direct:request-forbidden");
 
         from("direct:check-authorized-request")
@@ -267,10 +286,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
         from("direct:add-username-header")
                 .routeId("add-username-header")
-                .process(exchange ->  {
-                    String userName = this.getUserNameFromRHIdentity(exchange.getIn().getHeader("x-rh-identity", String.class));
-                    exchange.getIn().setHeader(USERNAME, userName);
-                });
+                .process(xRhIdentityHeaderProcessor);
 
         from("direct:request-forbidden")
                 .routeId("request-forbidden")
@@ -364,19 +380,6 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         internalNode.put(ANALYSIS_ID, analysisId);
 
         return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
-    }
-
-    public String getUserNameFromRHIdentity(String x_rh_identity_base64) {
-        String result = "";
-        try {
-            JsonNode node = new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
-            JsonNode usernameNode = node.get("identity").get("user").get("username");
-            result = usernameNode.textValue();
-        } catch (Exception e) {
-            Logger.getLogger(this.getClass().getName()).warning("Unable to retrieve the 'username' field from cookies due to the following exception. Hence 'username' value set to '" + result + "'.");
-            e.printStackTrace();
-        }
-        return result;
     }
 
     private Predicate isZippedFile(String extension) {
