@@ -31,7 +31,7 @@ jobs:
       - name: Build with Maven
         if: github.event_name == 'pull_request'
         run: |
-          if ${{ github.event_name == 'pull_request' }}; then eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage; else eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage,sonar fi
+          if ${{ github.event_name == 'pull_request' }}; then eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage; else eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage,sonar; fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
         with:
           java-version: openjdk8
       - name: Build with Maven
-        run: eval mvn $JVM_TEST_MAVEN_OPTS -Dtest=${{ matrix.class-name }} test
+        run: eval mvn $JVM_TEST_MAVEN_OPTS -P endToEnd -Dtest=${{ matrix.class-name }} test
       - name: Prepare failure archive (if maven failed)
         if: failure()
         shell: bash

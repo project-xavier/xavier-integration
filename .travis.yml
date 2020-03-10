@@ -12,33 +12,27 @@ notifications:
     on_failure: always
 jdk:
   - openjdk8
-addons:
-  sonarcloud:
-    organization: project-xavier
-    token: $SONAR_TOKEN
-
-env:
-#  global:
-#    - CAMEL_SPRINGBOOT_TRACING=false
-#    - LOGGING_LEVEL_ROOT=info
-#    - ANALYSIS_DATAINTEGRITY_LOG=false
-  jobs:
-    - TEST_PROFILE=unitTest MAVEN_PARAMS=
-    - TEST_PROFILE=endToEnd MAVEN_PARAMS='-Dtest=Case1EndToEndIT'
-    - TEST_PROFILE=endToEnd MAVEN_PARAMS='-Dtest=Case2EndToEndIT'
-
-sudo: required
 
 services:
   - docker
 
+env:
+  global:
+    - CAMEL_SPRINGBOOT_TRACING=false
+    - LOGGING_LEVEL_ROOT=info
+    - ANALYSIS_DATAINTEGRITY_LOG=false
+
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
 
-script:
-  - mvn test -P $TEST_PROFILE $MAVEN_PARAMS
-#  - mvn test -Pcoverage
-#  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
-#  - bash <(curl -s https://codecov.io/bash)
+jobs:
+  include:
+    - stage: Test
+      script:
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then mvn test -P coverage,sonar; else mvn test -P coverage; fi'
+        - bash <(curl -s https://codecov.io/bash)
+    - stage: Test
+      script:
+        - mvn test -PendToEnd
 
 
