@@ -19,7 +19,7 @@ public class RBACRouteBuilder extends RouteBuilder {
     public static final String RBAC_ENDPOINT_RESOURCE_NAME = "rbacEndpointResourceName";
     public static final String RBAC_ENDPOINT_RESOURCE_PERMISSION = "rbacEndpointResourcePermission";
 
-    public static final String RBAC_NEX_LINK = "rbacNextLink";
+    public static final String RBAC_NEXT_LINK = "rbacNextLink";
     public static final String RBAC_USER_ACCESS = "rbacUserAccess";
 
     @Value("${insights.rbac.host}")
@@ -58,14 +58,14 @@ public class RBACRouteBuilder extends RouteBuilder {
         from("direct:fetch-rbac-user-access")
                 .routeId("fetch-rbac-user-access")
                 .setHeader(RBAC_USER_ACCESS, ArrayList::new)
-                .setHeader(RBAC_NEX_LINK, constant(""))
-                .loopDoWhile(exchange -> exchange.getIn().getHeader(RBAC_NEX_LINK) != null)
+                .setHeader(RBAC_NEXT_LINK, constant(""))
+                .loopDoWhile(exchange -> exchange.getIn().getHeader(RBAC_NEXT_LINK) != null)
                     .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
                     .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
                     .setHeader(Exchange.HTTP_PATH, constant(rbacPath))
                     .process(exchange -> {
                         String httpQuery;
-                        String nextLink = exchange.getIn().getHeader(RBAC_NEX_LINK, String.class);
+                        String nextLink = exchange.getIn().getHeader(RBAC_NEXT_LINK, String.class);
                         int queryParamsIndex = nextLink.indexOf('?');
                         if (queryParamsIndex != -1) {
                             httpQuery = nextLink.substring(queryParamsIndex + 1);
@@ -80,7 +80,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                     .choice()
                         .when(exchange -> exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class) != 200)
                             .log("Invalid user access response responseCode:${header.CamelHttpResponseCode} responseText:${header.CamelHttpResponseText}")
-                            .setHeader(RBAC_NEX_LINK, () -> null)
+                            .setHeader(RBAC_NEXT_LINK, () -> null)
                         .otherwise()
                             .convertBodyTo(String.class)
                             .process(exchange -> {
@@ -91,7 +91,7 @@ public class RBACRouteBuilder extends RouteBuilder {
 
                                 // Pagination
                                 RbacResponse.Links links = rbacResponse.getLinks();
-                                exchange.getIn().setHeader(RBAC_NEX_LINK, links.getNext());
+                                exchange.getIn().setHeader(RBAC_NEXT_LINK, links.getNext());
                             })
                     .end()
                 .end()
