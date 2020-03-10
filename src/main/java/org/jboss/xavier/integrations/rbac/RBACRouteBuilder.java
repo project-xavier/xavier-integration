@@ -84,8 +84,8 @@ public class RBACRouteBuilder extends RouteBuilder {
 
         from("direct:fetch-rbac-user-access")
                 .routeId("fetch-rbac-user-access")
-                .setHeader("access", ArrayList::new)
-                .setHeader("nextLink", () -> "")
+                .setHeader("access", constant(new ArrayList<>()))
+                .setHeader("nextLink", constant(""))
                 .loopDoWhile(exchange -> exchange.getIn().getHeader("nextLink") != null)
                     .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
                     .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
@@ -93,7 +93,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                     .process(exchange -> {
                         String httpQuery;
                         String nextLink = exchange.getIn().getHeader("nextLink", String.class);
-                        int queryParamsIndex = nextLink.indexOf("?");
+                        int queryParamsIndex = nextLink.indexOf('?');
                         if (queryParamsIndex != -1) {
                             httpQuery = nextLink.substring(queryParamsIndex + 1);
                         } else {
