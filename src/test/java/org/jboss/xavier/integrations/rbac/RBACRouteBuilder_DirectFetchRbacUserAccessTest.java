@@ -104,7 +104,7 @@ public class RBACRouteBuilder_DirectFetchRbacUserAccessTest extends XavierCamelT
                 weaveById("fetch-rbac-user-access-endpoint").replace()
                         .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
                         .setBody(exchange -> {
-                            String nextLink = exchange.getIn().getHeader("nextLink", String.class);
+                            String nextLink = exchange.getIn().getHeader(RBACRouteBuilder.RBAC_NEX_LINK, String.class);
                             if (nextLink != null && nextLink.isEmpty()) {
                                 nextLink = "/api/rbac/v1/access/?application=my-application&limit=10&offset=10";
                             } else if (nextLink != null && !nextLink.isEmpty()) {
