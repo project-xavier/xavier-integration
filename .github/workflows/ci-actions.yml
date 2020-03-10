@@ -30,8 +30,10 @@ jobs:
           java-version: openjdk8
       - name: Build with Maven
         if: github.event_name == 'pull_request'
-        run: |
-          if ${{ github.event_name == 'pull_request' }}; then eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage; else eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage,sonar; fi
+        run: eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage
+      - name: Build with Maven
+        if: github.event_name != 'pull_request'
+        run: eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage,sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
