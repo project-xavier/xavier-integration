@@ -16,22 +16,26 @@ jdk:
 services:
   - docker
 
-env:
-  global:
-    - CAMEL_SPRINGBOOT_TRACING=false
-    - LOGGING_LEVEL_ROOT=info
-    - ANALYSIS_DATAINTEGRITY_LOG=false
-
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
 
 jobs:
   include:
     - stage: Test
+      env:
+        global:
+          - CAMEL_SPRINGBOOT_TRACING=false
+          - LOGGING_LEVEL_ROOT=info
+          - ANALYSIS_DATAINTEGRITY_LOG=false
       script:
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then mvn test -P coverage,sonar; else mvn test -P coverage; fi'
         - bash <(curl -s https://codecov.io/bash)
     - stage: Test
+      env:
+        global:
+          - CAMEL_SPRINGBOOT_TRACING=false
+          - LOGGING_LEVEL_ROOT=info
+          - ANALYSIS_DATAINTEGRITY_LOG=false
       script:
         - mvn test -PendToEnd
 
