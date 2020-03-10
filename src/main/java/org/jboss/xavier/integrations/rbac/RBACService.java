@@ -129,10 +129,7 @@ public class RBACService {
             List<String> resources = extractResourceDefinitions(resourceDefinitions);
             AclData aclData = new AclData(operation, resources);
 
-            if (!access.containsKey(resourceType)) {
-                access.put(resourceType, new ArrayList<>());
-            }
-            access.get(resourceType).add(aclData);
+            access.computeIfAbsent(resourceType, resource -> new ArrayList<>()).add(aclData);
         }
 
         if (access.isEmpty()) {
