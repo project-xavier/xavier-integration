@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RBACService {
+public class RBACUtils {
 
     public static final String WILDCARD = "*";
 

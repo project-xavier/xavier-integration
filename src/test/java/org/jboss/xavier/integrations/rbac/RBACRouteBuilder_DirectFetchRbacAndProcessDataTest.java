@@ -208,7 +208,7 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
                 List<String> userRbacAllowedResources = userRbacResourcesAccess.get(systemOperation);
                 assertThat(userRbacAllowedResources).isNotNull();
                 assertThat(userRbacAllowedResources.size()).isEqualTo(1);
-                assertThat(userRbacAllowedResources.get(0)).isEqualTo(RBACService.WILDCARD);
+                assertThat(userRbacAllowedResources.get(0)).isEqualTo(RBACUtils.WILDCARD);
             }
         }
 

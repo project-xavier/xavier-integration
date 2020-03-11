@@ -47,7 +47,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                     .otherwise()
                         .enrich("direct:fetch-rbac-user-access", (oldExchange, newExchange) -> {
                             List<Acl> acls = newExchange.getIn().getBody(List.class);
-                            Map<String, Map<String, List<String>>> accessForUser = RBACService.getAccessForUser(acls);
+                            Map<String, Map<String, List<String>>> accessForUser = RBACUtils.getAccessForUser(acls);
 
                             oldExchange.getIn().setHeader(RBAC_USER_ACCESS, accessForUser);
                             return oldExchange;

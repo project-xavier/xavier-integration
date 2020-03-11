@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * Utility class for storing a single operation and a list of individual resources assigned to the user.
- * It represents a partial result of processing an ACL and, for instance here {@link RBACService#processAcls(List)}.
+ * It represents a partial result of processing an ACL and, for instance here {@link RBACUtils#processAcls(List)}.
  *
  * E.g.:
  * Having {@link RbacResponse}:
