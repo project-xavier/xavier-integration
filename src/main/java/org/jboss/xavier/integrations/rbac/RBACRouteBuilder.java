@@ -47,7 +47,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                     .otherwise()
                         .enrich("direct:fetch-rbac-user-access", (oldExchange, newExchange) -> {
                             List<Acl> acls = newExchange.getIn().getBody(List.class);
-                            Map<String, Map<String, List<String>>> accessForUser = RBACUtils.getAccessForUser(acls);
+                            Map<String, List<String>> accessForUser = RBACUtils.getAccessForUser(acls);
 
                             oldExchange.getIn().setHeader(RBAC_USER_ACCESS, accessForUser);
                             return oldExchange;
@@ -102,18 +102,23 @@ public class RBACRouteBuilder extends RouteBuilder {
                 .choice()
                     .when(exchange -> {
                         @SuppressWarnings("unchecked")
-                        Map<String, Map<String, List<String>>> acl = (Map<String, Map<String, List<String>>>) exchange.getIn().getHeader(RBAC_USER_ACCESS);
-                        // Null means access to everything
-                        if (acl == null) {
+                        Map<String, List<String>> resourcePermissions = (Map<String, List<String>>) exchange.getIn().getHeader(RBAC_USER_ACCESS);
+
+                        // Null means access to everything (if isOrgAdmin then resourcePermissions will be null for instance)
+                        if (resourcePermissions == null) {
+                            return false;
+                        }
+
+                        // Fix the case when 'application:*:*'
+                        if (resourcePermissions.getOrDefault("*", Collections.emptyList()).contains("*")) {
                             return false;
                         }
 
                         String endpointResourceName = (String) exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_NAME);
                         String endpointResourcePermission = (String) exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_PERMISSION);
 
-                        Map<String, List<String>> resourceAcl = acl.getOrDefault(endpointResourceName, Collections.emptyMap());
-                        List<String> permissionAcl = resourceAcl.getOrDefault(endpointResourcePermission, Collections.emptyList());
-                        return permissionAcl.isEmpty();
+                        List<String> resourceOperations = resourcePermissions.getOrDefault(endpointResourceName, Collections.emptyList());
+                        return !resourceOperations.contains(endpointResourcePermission);
                     })
                     .to("direct:request-forbidden")
                 .endChoice();

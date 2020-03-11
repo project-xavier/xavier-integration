@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -149,7 +150,7 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
     }
 
     @Test
-    public void rbacRouteBuilder_direct_givenAsterixAcl_shouldReturnAllUserAccess() throws Exception {
+    public void rbacRouteBuilder_direct_givenAclList_shouldReturnAllUserAccess() throws Exception {
         //Given
         camelContext.getRouteDefinition("fetch-rbac-user-access").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
@@ -160,8 +161,9 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
                             RbacResponse rbacResponse = new RbacResponse(
                                     new RbacResponse.Meta(1, 10, 0),
                                     new RbacResponse.Links(null, null, null, null),
-                                    Collections.singletonList(
-                                            new Acl("my-application:*:*", new ArrayList<>())
+                                    Arrays.asList(
+                                            new Acl("my-application:*:*", new ArrayList<>()),
+                                            new Acl("my-application:resource1:operation1", new ArrayList<>())
                                     )
                             );
                             try {
@@ -190,27 +192,12 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
         //Then
         assertThat(exchange).isNotNull();
 
-        Map<String, Map<String, List<String>>> userRbacAccess = (Map) exchange.getIn().getHeader(RBACRouteBuilder.RBAC_USER_ACCESS);
+        Map<String, List<String>> userRbacAccess = (Map) exchange.getIn().getHeader(RBACRouteBuilder.RBAC_USER_ACCESS);
         assertThat(userRbacAccess).isNotNull();
+        assertThat(userRbacAccess.size()).isEqualTo(2);
 
-        // Check all the resources are assigned to user since user has my-application:*:* permissions
-        assertThat(userRbacAccess.size()).isEqualTo(ResourceTypes.RESOURCE_TYPES.size());
-        for (Map.Entry<String, List<String>> systemResourcesEntry : ResourceTypes.RESOURCE_TYPES.entrySet()) {
-            String systemResourceName = systemResourcesEntry.getKey();
-
-            Map<String, List<String>> userRbacResourcesAccess = userRbacAccess.get(systemResourceName);
-            assertThat(userRbacResourcesAccess).isNotNull();
-
-            List<String> systemResourceOperations = systemResourcesEntry.getValue();
-            for (String systemOperation : systemResourceOperations) {
-                assertThat(userRbacResourcesAccess.containsKey(systemOperation)).isTrue();
-
-                List<String> userRbacAllowedResources = userRbacResourcesAccess.get(systemOperation);
-                assertThat(userRbacAllowedResources).isNotNull();
-                assertThat(userRbacAllowedResources.size()).isEqualTo(1);
-                assertThat(userRbacAllowedResources.get(0)).isEqualTo(RBACUtils.WILDCARD);
-            }
-        }
+        assertThat(userRbacAccess.get("resource1")).hasSize(1);
+        assertThat(userRbacAccess.get("resource1")).containsAll(Collections.singletonList("operation1"));
 
         camelContext.stop();
     }
