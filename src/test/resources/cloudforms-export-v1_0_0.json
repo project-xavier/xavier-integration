@@ -374,6 +374,7 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-321",
                     "has_rdm_disk": false,
+                    "memory_hot_add_enabled":null,
                     "host": {
                         "ems_ref": "host-31"
                     },
@@ -1254,6 +1255,7 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-225",
                     "has_rdm_disk": false,
+                    "memory_hot_add_enabled": false,
                     "host": {
                         "ems_ref": "host-47"
                     },
@@ -2189,6 +2191,7 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-381",
                     "has_rdm_disk": false,
+                    "cpu_hot_add_enabled": true,
                     "host": {
                         "ems_ref": "host-47"
                     },
@@ -3099,6 +3102,7 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-361",
                     "has_rdm_disk": false,
+                    "cpu_hot_remove_enabled": false,
                     "host": {
                         "ems_ref": "host-47"
                     },
