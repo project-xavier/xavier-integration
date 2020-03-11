@@ -93,6 +93,9 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("CentOS 7 (64-bit)")).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("Red Hat Enterprise Linux Server release 7.6 (Maipo)")).count()).isEqualTo(6);
         assertThat(modelList.stream().filter(e -> e.getDiskSpace() == (17980588032L)).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getHasCpuHotAdd() != null).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getHasCpuHotRemove() != null).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getHasMemoryHotAdd() != null).count()).isEqualTo(1);
 
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
         expectedModel.setVmName("oracle_db");
@@ -113,6 +116,7 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setVersion("6.7.2");
         expectedModel.setProduct("VMware vCenter");
         expectedModel.setScanRunDate(new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse("2019-09-18T14:52:45.871Z"));
+        expectedModel.setHasCpuHotRemove(false);
 
         HashMap<String, String> files = new HashMap<>();
         files.put("/etc/GeoIP.conf","dummy content");
@@ -162,6 +166,7 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setVersion("6.7.2");
         expectedModel.setProduct("VMware vCenter");
         expectedModel.setScanRunDate(new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse("2019-09-18T14:52:45.871Z"));
+        expectedModel.setHasCpuHotRemove(false);
 
         // These are the params missing because of the replace above
         expectedModel.setCluster(null);

@@ -84,6 +84,9 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         if (hasRdmDisk != null) {
             model.setHasRdmDisk(hasRdmDisk);
         }
+        model.setHasCpuHotAdd(readValueFromExpandedEnvVarPath(CPUHOTADDENABLEDPATH, vmStructMap));
+        model.setHasMemoryHotAdd(readValueFromExpandedEnvVarPath(MEMORYHOTADDENABLEDPATH, vmStructMap));
+        model.setHasCpuHotRemove(readValueFromExpandedEnvVarPath(CPUHOTREMOVEENABLEDPATH, vmStructMap));
 
         List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
         model.setDiskSpace(diskSpaceList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum());

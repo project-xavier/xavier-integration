@@ -44,6 +44,10 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
     private Collection<String> systemServicesNames;
     private Map<String,String> files;
 
+    private Boolean hasMemoryHotAdd;
+    private Boolean hasCpuHotAdd;
+    private Boolean hasCpuHotRemove;
+
     public VMWorkloadInventoryModel()
     {
         this.systemServicesNames = new ArrayList<> ();
@@ -216,5 +220,29 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
 
     public void setScanRunDate(Date scanRunDate) {
         this.scanRunDate = scanRunDate;
+    }
+
+    public Boolean getHasMemoryHotAdd() {
+        return hasMemoryHotAdd;
+    }
+
+    public void setHasMemoryHotAdd(Boolean hasMemoryHotAdd) {
+        this.hasMemoryHotAdd = hasMemoryHotAdd;
+    }
+
+    public Boolean getHasCpuHotAdd() {
+        return hasCpuHotAdd;
+    }
+
+    public void setHasCpuHotAdd(Boolean hasCpuHotAdd) {
+        this.hasCpuHotAdd = hasCpuHotAdd;
+    }
+
+    public Boolean getHasCpuHotRemove() {
+        return hasCpuHotRemove;
+    }
+
+    public void setHasCpuHotRemove(Boolean hasCpuHotRemove) {
+        this.hasCpuHotRemove = hasCpuHotRemove;
     }
 }
