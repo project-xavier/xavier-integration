@@ -120,7 +120,7 @@ public class RBACService {
             // extract permission_data
             String[] permComponents = permission.split(":");
             if (permComponents.length != 3) {
-                throw new IllegalStateException("Invalid permission definition permission:" + permission);
+                throw new IllegalStateException("Invalid permission definition:" + permission);
             }
 
             String resourceType = permComponents[1];
