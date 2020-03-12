@@ -33,15 +33,6 @@ public class RBACRouteBuilder extends RouteBuilder {
     private String rbacApplicationName;
 
     private final BiPredicate<UserPermission, UserPermission> isRequestAllowed = (userPermission, requiredPermission) ->
-/*
-            Option 1
-            userPermission.equals(UserPermission.WILDCARD_PERMISSION) ||
-            userPermission.equals(UserPermission.buildWildcardAction(requiredPermission.getResource())) ||
-            userPermission.equals(UserPermission.buildWildcardResource(requiredPermission.getAction())) ||
-*/
-/*
-            Option 2
- */
             userPermission.equalsWildcardPermissions(requiredPermission) ||
             userPermission.equals(requiredPermission);
 

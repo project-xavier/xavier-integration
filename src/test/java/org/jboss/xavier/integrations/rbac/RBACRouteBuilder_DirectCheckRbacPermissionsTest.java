@@ -32,6 +32,7 @@ public class RBACRouteBuilder_DirectCheckRbacPermissionsTest extends XavierCamel
 
         //When
         camelContext.start();
+        camelContext.startRoute("request-forbidden");
         camelContext.startRoute("check-rbac-permissions");
 
         Exchange exchange = camelContext
@@ -54,8 +55,12 @@ public class RBACRouteBuilder_DirectCheckRbacPermissionsTest extends XavierCamel
         List<UserPermission> userPermissions = new ArrayList<>(1);
         userPermissions.add(new UserPermission("*", "*"));
 
+        String endpointResourceName = "applicationResource"; // Should be configured in the rest camel endpoint
+        String endpointPermission = "read"; // Should be configured in the rest camel endpoint
+
         //When
         camelContext.start();
+        camelContext.startRoute("request-forbidden");
         camelContext.startRoute("check-rbac-permissions");
 
         Exchange exchange = camelContext
@@ -63,6 +68,8 @@ public class RBACRouteBuilder_DirectCheckRbacPermissionsTest extends XavierCamel
                 .request("direct:check-rbac-permissions", exchange1 -> {
                     exchange1.getIn().setBody(previousExchangeBody);
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);
                 });
 
         //Then
@@ -125,6 +132,134 @@ public class RBACRouteBuilder_DirectCheckRbacPermissionsTest extends XavierCamel
                 .createProducerTemplate()
                 .request("direct:check-rbac-permissions", exchange1 -> {
                     exchange1.getIn().setBody("my body");
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);
+                });
+
+        //Then
+        assertThat(exchange).isNotNull();
+        assertThat(exchange.getIn().getBody()).isEqualTo("Forbidden");
+        camelContext.stop();
+    }
+
+    @Test
+    public void rbacRouteBuilder_direct_checkRbacPermissions_givenUserPermission_AsterixAndOperation_shouldAllowContinueProcess() throws Exception {
+        // User has access to all resources ('*') and
+        // Can only execute 'read' operations
+
+        //Given
+        String previousExchangeBody = "myBody"; // represents the body that were set before calling to direct:check-rbac-permissions
+
+        List<UserPermission> userPermissions = new ArrayList<>(1);
+        userPermissions.add(new UserPermission("*", "read"));
+
+        String endpointResourceName = "myResource"; // Should be configured in the rest camel endpoint
+        String endpointPermission = "read"; // Should be configured in the rest camel endpoint
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("request-forbidden");
+        camelContext.startRoute("check-rbac-permissions");
+
+        Exchange exchange = camelContext
+                .createProducerTemplate()
+                .request("direct:check-rbac-permissions", exchange1 -> {
+                    exchange1.getIn().setBody(previousExchangeBody);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);
+                });
+
+        //Then
+        assertThat(exchange).isNotNull();
+        assertThat(exchange.getIn().getBody()).isEqualTo(previousExchangeBody);
+        camelContext.stop();
+    }
+
+    @Test
+    public void rbacRouteBuilder_direct_checkRbacPermissions_givenUserPermission_AsterixAndOperation_shouldReturnForbidden() throws Exception {
+        // User has access to all resources ('*') and
+        // Can only execute 'read' operations
+
+        List<UserPermission> userPermissions = new ArrayList<>(1);
+        userPermissions.add(new UserPermission("*", "read"));
+
+        String endpointResourceName = "myResource"; // Should be configured in the rest camel endpoint
+        String endpointPermission = "write"; // Should be configured in the rest camel endpoint
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("request-forbidden");
+        camelContext.startRoute("check-rbac-permissions");
+
+        Exchange exchange = camelContext
+                .createProducerTemplate()
+                .request("direct:check-rbac-permissions", exchange1 -> {
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);
+                });
+
+        //Then
+        assertThat(exchange).isNotNull();
+        assertThat(exchange.getIn().getBody()).isEqualTo("Forbidden");
+        camelContext.stop();
+    }
+
+    @Test
+    public void rbacRouteBuilder_direct_checkRbacPermissions_givenUserPermission_ResourceAndAsterix_shouldAllowContinueProcess() throws Exception {
+        // User has access to all resources ('*') and
+        // Can only execute 'read' operations
+
+        //Given
+        String previousExchangeBody = "myBody"; // represents the body that were set before calling to direct:check-rbac-permissions
+
+        List<UserPermission> userPermissions = new ArrayList<>(1);
+        userPermissions.add(new UserPermission("applicationResource", "*"));
+
+        String endpointResourceName = "applicationResource"; // Should be configured in the rest camel endpoint
+        String endpointPermission = "read"; // Should be configured in the rest camel endpoint
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("request-forbidden");
+        camelContext.startRoute("check-rbac-permissions");
+
+        Exchange exchange = camelContext
+                .createProducerTemplate()
+                .request("direct:check-rbac-permissions", exchange1 -> {
+                    exchange1.getIn().setBody(previousExchangeBody);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);
+                });
+
+        //Then
+        assertThat(exchange).isNotNull();
+        assertThat(exchange.getIn().getBody()).isEqualTo(previousExchangeBody);
+        camelContext.stop();
+    }
+
+    @Test
+    public void rbacRouteBuilder_direct_checkRbacPermissions_givenUserPermission_ResourceAndAsterix_shouldReturnForbidden() throws Exception {
+        // User has access to all resources ('*') and
+        // Can only execute 'read' operations
+
+        List<UserPermission> userPermissions = new ArrayList<>(1);
+        userPermissions.add(new UserPermission("applicationResource", "*"));
+
+        String endpointResourceName = "otherApplicationResource"; // Should be configured in the rest camel endpoint
+        String endpointPermission = "read"; // Should be configured in the rest camel endpoint
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("request-forbidden");
+        camelContext.startRoute("check-rbac-permissions");
+
+        Exchange exchange = camelContext
+                .createProducerTemplate()
+                .request("direct:check-rbac-permissions", exchange1 -> {
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);

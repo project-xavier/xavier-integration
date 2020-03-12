@@ -45,19 +45,6 @@ public class UserPermission
         return new UserPermission(resource, WILDCARD);
     }
 
-/*
-    Option 1
-    public String getResource()
-    {
-        return resource;
-    }
-
-    public String getAction()
-    {
-        return action;
-    }
-*/
-
     public boolean equalsWildcardPermissions(UserPermission userPermission)
     {
         return userPermission.equals(UserPermission.WILDCARD_PERMISSION) ||
