@@ -143,9 +143,9 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
         //Then
         assertThat(exchange).isNotNull();
 
-        Map userAccess = (Map) exchange.getIn().getHeader(RBACRouteBuilder.RBAC_USER_ACCESS);
-        assertThat(userAccess).isNotNull();
-        assertThat(userAccess).isEmpty();
+        List<Acl> userPermissions = exchange.getIn().getHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, List.class);
+        assertThat(userPermissions).isNotNull();
+        assertThat(userPermissions).isEmpty();
         camelContext.stop();
     }
 
@@ -192,12 +192,11 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
         //Then
         assertThat(exchange).isNotNull();
 
-        Map<String, List<String>> userRbacAccess = (Map) exchange.getIn().getHeader(RBACRouteBuilder.RBAC_USER_ACCESS);
-        assertThat(userRbacAccess).isNotNull();
-        assertThat(userRbacAccess.size()).isEqualTo(2);
-
-        assertThat(userRbacAccess.get("resource1")).hasSize(1);
-        assertThat(userRbacAccess.get("resource1")).containsAll(Collections.singletonList("operation1"));
+        List<UserPermission> userPermissions = exchange.getIn().getHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, List.class);
+        assertThat(userPermissions).isNotNull();
+        assertThat(userPermissions).hasSize(2);
+        assertThat(userPermissions).containsOnlyOnce(new UserPermission("resource1","operation1"));
+        assertThat(userPermissions).containsOnlyOnce(new UserPermission("*","*"));
 
         camelContext.stop();
     }

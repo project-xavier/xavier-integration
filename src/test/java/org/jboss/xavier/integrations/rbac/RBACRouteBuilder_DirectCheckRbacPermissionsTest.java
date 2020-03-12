@@ -8,16 +8,13 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamelTest {
+public class RBACRouteBuilder_DirectCheckRbacPermissionsTest extends XavierCamelTest {
 
     @Value("${camel.component.servlet.mapping.context-path}")
     String camel_context;
@@ -31,7 +28,7 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
     public void rbacRouteBuilder_direct_checkRbacPermissions_givenNullRbacAccess_shouldAllowContinueProcess() throws Exception {
         //Given
         String previousExchangeBody = "myBody"; // represents the body that were set before calling to direct:check-rbac-permissions
-        Map<String, List<String>> userAccess = null;
+        List<Acl> userPermissions = null;
 
         //When
         camelContext.start();
@@ -41,7 +38,7 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
                 .createProducerTemplate()
                 .request("direct:check-rbac-permissions", exchange1 -> {
                     exchange1.getIn().setBody(previousExchangeBody);
-                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_ACCESS, userAccess);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
                 });
 
         //Then
@@ -54,8 +51,8 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
     public void rbacRouteBuilder_direct_checkRbacPermissions_givenAsterixAndAsterix_shouldAllowContinueProcess() throws Exception {
         //Given
         String previousExchangeBody = "myBody"; // represents the body that were set before calling to direct:check-rbac-permissions
-        Map<String, List<String>> userAccess = new HashMap<>();
-        userAccess.put("*", Collections.singletonList("*"));
+        List<UserPermission> userPermissions = new ArrayList<>(1);
+        userPermissions.add(new UserPermission("*", "*"));
 
         //When
         camelContext.start();
@@ -65,7 +62,7 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
                 .createProducerTemplate()
                 .request("direct:check-rbac-permissions", exchange1 -> {
                     exchange1.getIn().setBody(previousExchangeBody);
-                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_ACCESS, userAccess);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
                 });
 
         //Then
@@ -79,8 +76,9 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
         // User has access to 'myResource' but not to 'otherResource'
 
         //Given
-        Map<String, List<String>> userAccess = new HashMap<>();
-        userAccess.put("myResource", Arrays.asList("read", "write"));
+        List<UserPermission> userPermissions = new ArrayList<>(2);
+        userPermissions.add(new UserPermission("myResource", "read"));
+        userPermissions.add(new UserPermission("myResource", "write"));
 
         String endpointResourceName = "otherResource"; // Should be configured in the rest camel endpoint
         String endpointPermission = "read"; // Should be configured in the rest camel endpoint
@@ -94,7 +92,7 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
                 .createProducerTemplate()
                 .request("direct:check-rbac-permissions", exchange1 -> {
                     exchange1.getIn().setBody("my body");
-                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_ACCESS, userAccess);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);
                 });
@@ -111,8 +109,9 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
         // User has access to 'read' and 'write' but not to delete
 
         //Given
-        Map<String, List<String>> userAccess = new HashMap<>();
-        userAccess.put("myResource", Arrays.asList("read", "write"));
+        List<UserPermission> userPermissions = new ArrayList<>(2);
+        userPermissions.add(new UserPermission("myResource", "read"));
+        userPermissions.add(new UserPermission("myResource", "write"));
 
         String endpointResourceName = "myResource"; // Should be configured in the rest camel endpoint
         String endpointPermission = "delete"; // Should be configured in the rest camel endpoint
@@ -126,7 +125,7 @@ public class RBACRouteBuilder_DirectCHeckRbacPermissionsTest extends XavierCamel
                 .createProducerTemplate()
                 .request("direct:check-rbac-permissions", exchange1 -> {
                     exchange1.getIn().setBody("my body");
-                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_ACCESS, userAccess);
+                    exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_USER_PERMISSIONS, userPermissions);
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, endpointResourceName);
                     exchange1.getIn().setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, endpointPermission);
                 });

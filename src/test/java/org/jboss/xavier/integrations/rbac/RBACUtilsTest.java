@@ -5,14 +5,13 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RBACUtilsTest {
 
     @Test
-    public void getAccessForUser_givenAclDefinitions_shouldReturnMapOfResourcesAndOperations() {
+    public void getAccessForUser_givenAclDefinitions_shouldReturnListOfUserPermissions() {
         //Given
         List<Acl> acls = Arrays.asList(
                 new Acl("application-name:resource1:read", Collections.emptyList()),
@@ -22,17 +21,17 @@ public class RBACUtilsTest {
         );
 
         //When
-        Map<String, List<String>> access = RBACUtils.getAccessForUser(acls);
+        List<UserPermission> userPermissions = RBACUtils.generateUserPermissions(acls);
 
         //Then
-        assertThat(access).isNotNull();
-        assertThat(access.size()).isEqualTo(2);
+        assertThat(userPermissions).isNotNull();
+        assertThat(userPermissions).hasSize(4);
 
-        assertThat(access.get("resource1")).hasSize(2);
-        assertThat(access.get("resource1")).containsAll(Arrays.asList("read", "write"));
+        assertThat(userPermissions).containsOnlyOnce(new UserPermission("resource1", "read"));
+        assertThat(userPermissions).containsOnlyOnce(new UserPermission("resource1", "write"));
 
-        assertThat(access.get("resource2")).hasSize(2);
-        assertThat(access.get("resource2")).containsAll(Arrays.asList("read", "delete"));
+        assertThat(userPermissions).containsOnlyOnce(new UserPermission("resource2", "read"));
+        assertThat(userPermissions).containsOnlyOnce(new UserPermission("resource2", "delete"));
     }
 
 

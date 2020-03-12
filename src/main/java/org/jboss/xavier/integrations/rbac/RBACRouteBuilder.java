@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.function.BiPredicate;
 
 @Component
 public class RBACRouteBuilder extends RouteBuilder {
@@ -19,8 +19,9 @@ public class RBACRouteBuilder extends RouteBuilder {
     public static final String RBAC_ENDPOINT_RESOURCE_NAME = "rbacEndpointResourceName";
     public static final String RBAC_ENDPOINT_RESOURCE_PERMISSION = "rbacEndpointResourcePermission";
 
-    public static final String RBAC_NEXT_LINK = "rbacNextLink";
-    public static final String RBAC_USER_ACCESS = "rbacUserAccess";
+    protected static final String RBAC_NEXT_LINK = "rbacNextLink";
+    private static final String RBAC_USER_ACCESS = "rbacUserAccess";
+    protected static final String RBAC_USER_PERMISSIONS = "rbacUserPermissions";
 
     @Value("${insights.rbac.host}")
     private String rbacHost;
@@ -30,6 +31,19 @@ public class RBACRouteBuilder extends RouteBuilder {
 
     @Value("${insights.rbac.applicationName}")
     private String rbacApplicationName;
+
+    private final BiPredicate<UserPermission, UserPermission> isRequestAllowed = (userPermission, requiredPermission) ->
+/*
+            Option 1
+            userPermission.equals(UserPermission.WILDCARD_PERMISSION) ||
+            userPermission.equals(UserPermission.buildWildcardAction(requiredPermission.getResource())) ||
+            userPermission.equals(UserPermission.buildWildcardResource(requiredPermission.getAction())) ||
+*/
+/*
+            Option 2
+ */
+            userPermission.equalsWildcardPermissions(requiredPermission) ||
+            userPermission.equals(requiredPermission);
 
     public void configure() throws Exception {
         from("direct:fetch-and-process-rbac-user-access")
@@ -42,14 +56,13 @@ public class RBACRouteBuilder extends RouteBuilder {
 
                 .choice()
                     .when(exchange -> exchange.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_IS_ORG_ADMIN, Boolean.class))
-                        .setHeader(RBAC_USER_ACCESS, constant(null))
+                        .setHeader(RBAC_USER_PERMISSIONS, constant(Collections.singletonList(UserPermission.WILDCARD_PERMISSION)))
                     .endChoice()
                     .otherwise()
                         .enrich("direct:fetch-rbac-user-access", (oldExchange, newExchange) -> {
                             List<Acl> acls = newExchange.getIn().getBody(List.class);
-                            Map<String, List<String>> accessForUser = RBACUtils.getAccessForUser(acls);
-
-                            oldExchange.getIn().setHeader(RBAC_USER_ACCESS, accessForUser);
+                            List<UserPermission> userPermissions = RBACUtils.generateUserPermissions(acls);
+                            oldExchange.getIn().setHeader(RBAC_USER_PERMISSIONS, userPermissions);
                             return oldExchange;
                         })
                     .endChoice()
@@ -102,23 +115,13 @@ public class RBACRouteBuilder extends RouteBuilder {
                 .choice()
                     .when(exchange -> {
                         @SuppressWarnings("unchecked")
-                        Map<String, List<String>> resourcePermissions = (Map<String, List<String>>) exchange.getIn().getHeader(RBAC_USER_ACCESS);
-
-                        // Null means access to everything (if isOrgAdmin then resourcePermissions will be null for instance)
-                        if (resourcePermissions == null) {
-                            return false;
-                        }
-
-                        // Fix the case when 'application:*:*'
-                        if (resourcePermissions.getOrDefault("*", Collections.emptyList()).contains("*")) {
-                            return false;
-                        }
-
-                        String endpointResourceName = (String) exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_NAME);
-                        String endpointResourcePermission = (String) exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_PERMISSION);
-
-                        List<String> resourceOperations = resourcePermissions.getOrDefault(endpointResourceName, Collections.emptyList());
-                        return !resourceOperations.contains(endpointResourcePermission);
+                        List<UserPermission> userPermissions = exchange.getIn().getHeader(RBAC_USER_PERMISSIONS, List.class);
+                        String endpointResourceName = exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_NAME, String.class);
+                        String endpointResourcePermission = exchange.getIn().getHeader(RBAC_ENDPOINT_RESOURCE_PERMISSION, String.class);
+                        UserPermission requiredUserPermission = new UserPermission(endpointResourceName, endpointResourcePermission);
+                        return userPermissions.stream()
+                                // if none matches then the request is forbidden
+                                .noneMatch(permission -> isRequestAllowed.test(permission, requiredUserPermission));
                     })
                     .to("direct:request-forbidden")
                 .endChoice();

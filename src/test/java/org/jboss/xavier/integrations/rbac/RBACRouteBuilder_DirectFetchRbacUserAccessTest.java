@@ -115,8 +115,8 @@ public class RBACRouteBuilder_DirectFetchRbacUserAccessTest extends XavierCamelT
                                     new RbacResponse.Meta(10, 10, 0),
                                     new RbacResponse.Links(null, nextLink, null, null),
                                     Arrays.asList(
-                                            new Acl("permission", new ArrayList<>()),
-                                            new Acl("permission", new ArrayList<>())
+                                            new Acl("application-name:resource1:read", new ArrayList<>()),
+                                            new Acl("application-name:resource1:write", new ArrayList<>())
                                     )
                             );
                             try {
