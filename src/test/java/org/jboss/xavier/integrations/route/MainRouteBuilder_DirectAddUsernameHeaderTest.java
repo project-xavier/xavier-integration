@@ -63,7 +63,7 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
         });
 
         //Then
-        assertThat(result.getIn().getHeader("analysisUsername")).isEqualTo(null);
+        assertThat(result.getIn().getHeader("analysisUsername")).isNull();
         camelContext.stop();
     }
 
@@ -83,7 +83,7 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
         });
 
         //Then
-        assertThat(result.getIn().getHeader("analysisUsername")).isEqualTo(null);
+        assertThat(result.getIn().getHeader("analysisUsername")).isNull();
         camelContext.stop();
     }
 
@@ -103,7 +103,7 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
         });
 
         //Then
-        assertThat(result.getIn().getHeader("analysisUsername")).isEqualTo(null);
+        assertThat(result.getIn().getHeader("analysisUsername")).isNull();
         camelContext.stop();
     }
 }
