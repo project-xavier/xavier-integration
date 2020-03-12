@@ -223,9 +223,6 @@
                 <route id="workload-inventory-report-get-details-as-csv">
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                     <to uri="direct:toWorkloadInventoryReportCsv" />
-                    <setHeader headerName="${type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_TYPE}">
-                        <constant>text/csv</constant>
-                    </setHeader>
                     <setHeader headerName="${type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
                         <simple>attachment;filename=workloadInventory_${header.id}.csv</simple>
                     </setHeader>

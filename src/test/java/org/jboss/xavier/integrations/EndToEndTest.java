@@ -29,6 +29,7 @@ import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -88,6 +89,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
+@Ignore
 @RunWith(CamelSpringBootRunner.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @UseAdviceWith // Disables automatic start of Camel context
