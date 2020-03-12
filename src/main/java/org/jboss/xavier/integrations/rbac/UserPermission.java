@@ -47,9 +47,9 @@ public class UserPermission
 
     public boolean equalsWildcardPermissions(UserPermission userPermission)
     {
-        return userPermission.equals(UserPermission.WILDCARD_PERMISSION) ||
-                userPermission.equals(UserPermission.buildWildcardAction(userPermission.resource)) ||
-                userPermission.equals(UserPermission.buildWildcardResource(userPermission.action));
+        return this.equals(UserPermission.WILDCARD_PERMISSION) ||
+                this.equals(UserPermission.buildWildcardAction(userPermission.resource)) ||
+                this.equals(UserPermission.buildWildcardResource(userPermission.action));
     }
 
     @Override
