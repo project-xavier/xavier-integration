@@ -84,11 +84,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
             JsonNode xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
 
             String username = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "username").textValue();
-            Boolean isOrgAdmin = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "is_org_admin").booleanValue();
 
             exchange.getIn().setHeader(USERNAME, username);
             exchange.getIn().setHeader(X_RH_IDENTITY_JSON_NODE, xRhIdentityJsonNode);
-            exchange.getIn().setHeader(X_RH_IDENTITY_IS_ORG_ADMIN, isOrgAdmin);
         }
     };
 
