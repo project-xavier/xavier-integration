@@ -17,6 +17,7 @@ addons:
     organization: project-xavier
     token: $SONAR_TOKEN
 
+
 sudo: required
 
 services:
@@ -24,7 +25,7 @@ services:
 
 install:
   - cp ./configuration/settings.xml $HOME/.m2/settings.xml
-
+  - mvn install -P !fuse-fabric8-docker -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
     - stage: Test
@@ -33,7 +34,7 @@ jobs:
         - LOGGING_LEVEL_ROOT=info
         - ANALYSIS_DATAINTEGRITY_LOG=false
       script:
-        - mvn test -P !fuse-fabric8-docker,coverage
+        - mvn test -Pcoverage
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
     - stage: EndToEnd Test
@@ -56,6 +57,6 @@ jobs:
         - docker-compose --version
         - docker info
       script:
-        - mvn test -P !fuse-fabric8-docker,endToEnd
+        - mvn test -PendToEnd
 
 
