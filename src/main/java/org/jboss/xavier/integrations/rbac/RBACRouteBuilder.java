@@ -45,19 +45,12 @@ public class RBACRouteBuilder extends RouteBuilder {
                         .to("direct:request-forbidden")
                 .end()
 
-                .choice()
-                    .when(exchange -> exchange.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_IS_ORG_ADMIN, Boolean.class))
-                        .setHeader(RBAC_USER_PERMISSIONS, constant(Collections.singletonList(UserPermission.WILDCARD_PERMISSION)))
-                    .endChoice()
-                    .otherwise()
-                        .enrich("direct:fetch-rbac-user-access", (oldExchange, newExchange) -> {
-                            List<Acl> acls = newExchange.getIn().getBody(List.class);
-                            List<UserPermission> userPermissions = RBACUtils.generateUserPermissions(acls);
-                            oldExchange.getIn().setHeader(RBAC_USER_PERMISSIONS, userPermissions);
-                            return oldExchange;
-                        })
-                    .endChoice()
-                .end();
+                .enrich("direct:fetch-rbac-user-access", (oldExchange, newExchange) -> {
+                    List<Acl> acls = newExchange.getIn().getBody(List.class);
+                    List<UserPermission> userPermissions = RBACUtils.generateUserPermissions(acls);
+                    oldExchange.getIn().setHeader(RBAC_USER_PERMISSIONS, userPermissions);
+                    return oldExchange;
+                });
 
         from("direct:fetch-rbac-user-access")
                 .routeId("fetch-rbac-user-access")

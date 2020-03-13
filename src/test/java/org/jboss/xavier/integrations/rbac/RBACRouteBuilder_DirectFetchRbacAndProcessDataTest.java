@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.jboss.xavier.Application;
-import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
 import org.jboss.xavier.integrations.route.XavierCamelTest;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
@@ -135,9 +134,6 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
                 .createProducerTemplate()
                 .request("direct:fetch-and-process-rbac-user-access", exchange1 -> {
                     exchange1.getIn().setHeader(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
-
-                    // Set manually this header since it comes from the Rest filters
-                    exchange1.getIn().setHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_IS_ORG_ADMIN, false);
                 });
 
         //Then
@@ -184,9 +180,6 @@ public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCa
                 .createProducerTemplate()
                 .request("direct:fetch-and-process-rbac-user-access", exchange1 -> {
                     exchange1.getIn().setHeader(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
-
-                    // Set manually this header since it comes from the Rest filters
-                    exchange1.getIn().setHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_IS_ORG_ADMIN, false);
                 });
 
         //Then

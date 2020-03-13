@@ -21,7 +21,6 @@ public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
 
     public static final String X_RH_IDENTITY = "x-rh-identity";
     public static final String X_RH_IDENTITY_JSON_NODE = "x-rh-identity-json-node";
-    public static final String X_RH_IDENTITY_IS_ORG_ADMIN = "x-rh-identity-is-org-admin";
 
     @Inject
     protected AnalysisService analysisService;
