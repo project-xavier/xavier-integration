@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: ${{ github.repository == 'project-xavier/xavier-integration' }}
       matrix:
-        class-name: [Case1EndToEndIT,Case2EndToEndIT]
+        class-name: [UploadPayloadEndToEndIT]
     runs-on: ubuntu-latest
 
     steps:
