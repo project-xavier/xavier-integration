@@ -17,7 +17,6 @@ addons:
     organization: project-xavier
     token: $SONAR_TOKEN
 
-
 sudo: required
 
 services:
