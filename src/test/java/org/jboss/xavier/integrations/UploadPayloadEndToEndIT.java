@@ -573,6 +573,21 @@ public class UploadPayloadEndToEndIT {
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(8);
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().size()).isEqualTo(8);
 
+        // Test with a file with VM.used_disk_storage
+        logger.info("+++++++  Test with a file with VM.used_disk_storage ++++++");
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_with_used_disk_storage.json", "application/json"), String.class);
+        assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(8);
+
+        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport_vm_with_used_disk = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
+        assertThat(initialCostSavingsReport_vm_with_used_disk.getBody().getEnvironmentModel().getHypervisors()).isEqualTo(4);
+
+        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_vm_with_used_disk = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().size()).isEqualTo(8);
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+                .filter(e -> ("tomcat".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2159550464L)).count()).isEqualTo(1);
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+                .filter(e -> ("lb".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2620260352L + 5000L)).count()).isEqualTo(1);
+
 
         // Ultra Performance test
         logger.info("+++++++  Ultra Performance Test ++++++");
