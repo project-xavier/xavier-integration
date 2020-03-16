@@ -136,6 +136,7 @@ public class EndToEndTest {
             .withServices(S3);
 
     private static String ingressCommitHash = "3ea33a8d793c2154f7cfa12057ca005c5f6031fa"; // 2019-11-11
+    private static String insightsRbacCommitHash = "a55b610a1385f0f6d3188b08710ec6a5890a97f6"; // 2020-02-05
 
     @Inject
     private InitialSavingsEstimationReportService initialSavingsEstimationReportService;
@@ -176,6 +177,7 @@ public class EndToEndTest {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             try {
                 cloneIngressRepoAndUnzip();
+                cloneInsightsRbacRepo_UnzipAndConfigure();
 
                 Network network = Network.newNetwork();
 
@@ -224,6 +226,28 @@ public class EndToEndTest {
                         .withEnv("INGRESS_KAFKABROKERS", "kafka:9092");
                 ingress.start();
 
+                Network rbacNetwork = Network.newNetwork();
+                GenericContainer rbacPostgreSQL = new PostgreSQLContainer()
+                        .withDatabaseName("rb_database")
+                        .withUsername("rbac_username")
+                        .withPassword("rbac_password")
+                        .withNetwork(rbacNetwork)
+                        .withNetworkAliases("rbac_db");
+                rbacPostgreSQL.start();
+                GenericContainer rbacServer = new GenericContainer<>(new ImageFromDockerfile()
+                        .withDockerfile(Paths.get("src/test/resources/insights-rbac/insightsRbac_Dockerfile")))
+                        .withNetwork(rbacNetwork)
+                        .withNetworkAliases("rbac")
+                        .withExposedPorts(8000)
+                        .withEnv("DATABASE_SERVICE_NAME", "POSTGRES_SQL")
+                        .withEnv("DATABASE_ENGINE", "postgresql")
+                        .withEnv("DATABASE_NAME", "rb_database")
+                        .withEnv("DATABASE_USER", "rbac_username")
+                        .withEnv("DATABASE_PASSWORD", "rbac_password")
+                        .withEnv("POSTGRES_SQL_SERVICE_HOST", "rbac_db")
+                        .withEnv("POSTGRES_SQL_SERVICE_PORT", "5432");
+                rbacServer.start();
+
                 importProjectIntoKIE();
 
                 EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
@@ -243,7 +267,9 @@ public class EndToEndTest {
                         "kieserver.devel-service=" + getHostForKie() + "/kie-server",
                         "spring.datasource.url = jdbc:postgresql://" + getContainerHost(postgreSQL) + "/sampledb" ,
                         "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQL9Dialect" ,
-                        "thread.concurrentConsumers=3");
+                        "thread.concurrentConsumers=3",
+                        "insights.rbac.path=/api/v1/access/",
+                        "insights.rbac.host=" + "http://" + getContainerHost(rbacServer, 8000));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -275,6 +301,29 @@ public class EndToEndTest {
 
         // we rename the directory because we had issues with Docker and the long folder
         FileUtils.moveDirectory(new File("src/test/resources/insights-ingress-go-" + ingressCommitHash), new File("src/test/resources/insights-ingress-go"));
+    }
+
+    private static void cloneInsightsRbacRepo_UnzipAndConfigure() throws IOException {
+        // downloading, unzipping, renaming
+        String insightsRbacRepoZipURL = "https://github.com/RedHatInsights/insights-rbac/archive/" + insightsRbacCommitHash + ".zip";
+        File compressedFile = new File("src/test/resources/insightsRbacRepo.zip");
+        FileUtils.copyURLToFile(new URL(insightsRbacRepoZipURL), compressedFile, 1000, 10000);
+        unzipFile(compressedFile, "src/test/resources");
+
+        // we rename the directory because we had issues with Docker and the long folder
+        FileUtils.moveDirectory(new File("src/test/resources/insights-rbac-" + insightsRbacCommitHash), new File("src/test/resources/insights-rbac"));
+
+        // Use custom Dockerfile
+        FileUtils.copyFile(
+                new File("src/test/resources/insightsRbac_Dockerfile"),
+                new File("src/test/resources/insights-rbac/insightsRbac_Dockerfile")
+        );
+
+        // Configure default system roles for application=migration-analytics
+        FileUtils.copyFile(
+                new File("src/test/resources/insightsRbac_roleDefinitions.json"),
+                new File("src/test/resources/insights-rbac/rbac/management/role/definitions/migration-analytics.json")
+        );
     }
 
     private static void unzipFile(File file, String outputDir) throws IOException {
@@ -330,6 +379,9 @@ public class EndToEndTest {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
+
+        FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
+        FileUtils.deleteQuietly(new File("src/test/resources/insightsRbacRepo.zip"));
     }
 
     private List<String> getS3Objects(String bucket) {
@@ -520,6 +572,21 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(8);
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().size()).isEqualTo(8);
+
+        // Test with a file with VM.used_disk_storage
+        logger.info("+++++++  Test with a file with VM.used_disk_storage ++++++");
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_with_used_disk_storage.json", "application/json"), String.class);
+        assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(8);
+
+        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport_vm_with_used_disk = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
+        assertThat(initialCostSavingsReport_vm_with_used_disk.getBody().getEnvironmentModel().getHypervisors()).isEqualTo(4);
+
+        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_vm_with_used_disk = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().size()).isEqualTo(8);
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+                .filter(e -> ("tomcat".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2159550464L)).count()).isEqualTo(1);
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+                .filter(e -> ("lb".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2620260352L + 5000L)).count()).isEqualTo(1);
 
 
         // Ultra Performance test

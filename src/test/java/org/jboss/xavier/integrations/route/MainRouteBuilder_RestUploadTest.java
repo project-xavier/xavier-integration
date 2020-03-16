@@ -38,13 +38,14 @@ public class MainRouteBuilder_RestUploadTest extends XavierCamelTest {
     public void setup() {
         camel_context = camel_context.substring(0, camel_context.indexOf("*"));
     }
-   
+
     @Test
     public void mainRouteBuilder_routeRestUpload_ContentGiven_ShouldUpload() throws Exception {
         //Given
         String body = "{ \"body\" : \"this is a test body\" }";
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("rest-upload");
 
@@ -66,6 +67,7 @@ public class MainRouteBuilder_RestUploadTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("rest-upload");
 

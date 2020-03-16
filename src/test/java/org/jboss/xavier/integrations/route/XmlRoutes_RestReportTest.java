@@ -89,6 +89,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
 
@@ -113,6 +114,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
         ResponseEntity<String> result = restTemplate.getForEntity(camel_context + "report", String.class);
@@ -131,6 +133,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
         Map<String, Object> variables = new HashMap<>();
@@ -160,6 +163,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
         Map<String, Object> variables = new HashMap<>();
@@ -190,6 +194,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-get-details");
         camelContext.startRoute("add-username-header");
@@ -215,6 +220,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-details");
 
@@ -240,6 +246,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -275,6 +282,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -306,6 +314,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -341,6 +350,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -451,6 +461,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-delete");
         Map<String, Object> variables = new HashMap<>();
@@ -481,6 +492,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-delete");
         Map<String, Object> variables = new HashMap<>();
@@ -508,6 +520,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("workload-inventory-report-get-details-as-csv");
         camelContext.startRoute("workload-inventory-report-model-to-csv");
@@ -571,6 +584,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
@@ -655,6 +669,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
@@ -785,6 +800,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
@@ -827,6 +843,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("workload-inventory-report-available-filters");
         Map<String, Object> variables = new HashMap<>();
@@ -850,6 +867,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("workload-summary-report-get");
         Map<String, Object> variables = new HashMap<>();
@@ -874,6 +892,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -903,6 +922,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -936,6 +956,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -969,6 +990,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -998,6 +1020,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -1031,6 +1054,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("to-paginationBean");
         camelContext.startRoute("to-sortBean");
@@ -1064,6 +1088,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("administration-report-csv-aggregator");
         camelContext.startRoute("administration-metrics-model-to-csv");
@@ -1101,9 +1126,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
+        TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-payload-download");
-        camelContext.startRoute("check-authenticated-request");
-        camelContext.startRoute("add-username-header");
 
         AnalysisModel analysisModel = new AnalysisModel();
         analysisModel.setId(9L);
@@ -1137,6 +1162,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-payload-link");
         camelContext.startRoute("get-s3-payload-link");
@@ -1166,6 +1192,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-payload-link");
         camelContext.startRoute("get-s3-payload-link");
@@ -1190,6 +1217,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("report-payload-link");
         camelContext.startRoute("get-s3-payload-link");

@@ -52,6 +52,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
     public static final String HOSTNAMEPATH = "vmworkloadinventory.hostNamePath";
     public static final String VMDISKSPATH = "vmworkloadinventory.vmDisksPath";
     public static final String DATACOLLECTEDON = "datacollectedon" ;
+    public static final String USEDDISKSTORAGEPATH = "vmworkloadinventory.usedDiskSpacePath";
 
     @Autowired
     protected Environment env;
