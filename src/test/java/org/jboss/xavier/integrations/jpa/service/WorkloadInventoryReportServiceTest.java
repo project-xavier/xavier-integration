@@ -109,7 +109,7 @@ public class WorkloadInventoryReportServiceTest {
     @Test
     public void workloadInventoryReportService_findByAnalysisOwnerAndAnalysisId_shouldFilterResults() {
         // Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
 
         WorkloadInventoryReportModel reportModel0 = new WorkloadInventoryReportModel();
         reportModel0.setVmName("host-0");
