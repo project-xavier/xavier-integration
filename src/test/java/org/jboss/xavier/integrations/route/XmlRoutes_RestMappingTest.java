@@ -39,6 +39,7 @@ public class XmlRoutes_RestMappingTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("mappings-flag-assessment-findAll");
 

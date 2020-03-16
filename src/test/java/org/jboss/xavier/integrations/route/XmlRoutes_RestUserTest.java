@@ -42,6 +42,7 @@ public class XmlRoutes_RestUserTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("get-user-info");
 
@@ -64,6 +65,7 @@ public class XmlRoutes_RestUserTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("get-user-info");
 

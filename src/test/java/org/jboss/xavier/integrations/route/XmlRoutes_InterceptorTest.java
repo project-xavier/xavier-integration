@@ -77,6 +77,7 @@ public class XmlRoutes_InterceptorTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
 
         Supplier<Stream<Route>> streamRestRouteSupplier = () -> camelContext.getRoutes().stream()
@@ -132,6 +133,7 @@ public class XmlRoutes_InterceptorTest extends XavierCamelTest {
 
         //When
         camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
 
         Supplier<Stream<Route>> streamRestRouteSupplier = () -> camelContext.getRoutes().stream()

@@ -65,7 +65,7 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
         });
 
         //Then
-        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isEqualTo(null);
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
         camelContext.stop();
     }
 

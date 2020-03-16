@@ -72,8 +72,8 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         Integer numCPU = readValueFromExpandedEnvVarPath(NUMCPUPATH, vmStructMap, Integer.class);
         Integer numCORES = readValueFromExpandedEnvVarPath(NUMCORESPERSOCKETPATH, vmStructMap, Integer.class);
-        if (numCPU != null && numCORES != null && numCORES > 0) {
-            model.setCpuCores((numCPU / numCORES));
+        if (numCPU != null && numCORES != null) {
+            model.setCpuCores(numCORES > 0 ? (numCPU / numCORES) : 0);
         } else {
             analysisIssuesHandler.record(vmStructMap.get("_analysisId").toString(), "VM", vmStructMap.get("name").toString(), getExpandedPath(NUMCORESPERSOCKETPATH, vmStructMap), "CpuCores could not be calculated.");
         }
@@ -85,8 +85,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             model.setHasRdmDisk(hasRdmDisk);
         }
 
-        List<Number> diskSpaceList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
-        model.setDiskSpace(diskSpaceList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum());
+        model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap, Integer.class));
 
@@ -103,5 +102,22 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
 
         return model;
+    }
+
+    private Long getDiskSpaceList(Map vmStructMap) {
+        // If the VM.used_disk_storage is present use it, if not use VM.DISK[*].size_on_disk
+        try {
+            String usedDiskStoragePath = getExpandedPath(USEDDISKSTORAGEPATH, vmStructMap);
+            Number used_disk_storage = (Number) vmStructMap.get(usedDiskStoragePath);
+            if (used_disk_storage != null) {
+                return used_disk_storage.longValue();
+            }
+        } catch (Exception e) {
+            // In versions previous to 1_0_0 it will fail because there is no such property
+            log.warn("Using an old version of payload. Calculating size with sum of vm.hardware.disks.size_on_disk");
+        }
+
+        List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
+        return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
     }
 }
