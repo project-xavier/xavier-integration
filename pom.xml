@@ -130,7 +130,7 @@
 
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-kafka</artifactId>
+            <artifactId>camel-kafka-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -195,6 +195,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Later versions might cause the exception: com.thoughtworks.xstream.mapper.CannotResolveClassException: isTempSession-->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream-hibernate</artifactId>
+            <version>1.4.10</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -236,7 +243,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.12.2</version>
+            <version>3.15.0</version>
             <scope>test</scope>
         </dependency>
 

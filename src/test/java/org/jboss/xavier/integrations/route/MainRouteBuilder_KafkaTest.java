@@ -10,10 +10,10 @@ import org.junit.Test;
 
 import java.nio.charset.Charset;
 
-@MockEndpointsAndSkip("kafka:*|direct:download-file")
+@MockEndpointsAndSkip("kafka:*|seda:download-file")
 public class MainRouteBuilder_KafkaTest extends XavierCamelTest {
 
-    @EndpointInject(uri = "mock:direct:download-file")
+    @EndpointInject(uri = "mock:seda:download-file")
     private MockEndpoint mockUploadFile;
 
     @Before

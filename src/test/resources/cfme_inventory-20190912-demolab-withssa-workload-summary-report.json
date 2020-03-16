@@ -15,8 +15,8 @@
     "complexityModel": {
       "id": 461,
       "easy": 7,
-      "medium": 6,
-      "hard": 0,
+      "medium": 4,
+      "hard": 2,
       "unknown": 0,
       "unsupported": 1
     },
@@ -24,7 +24,7 @@
       "id": 410,
       "total": 14,
       "rhv": 13,
-      "rhel": 0,
+      "rhel": 4,
       "osp": 11
     },
     "workloadsDetectedOSTypeModels": [

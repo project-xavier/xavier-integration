@@ -18,11 +18,13 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.jboss.xavier.analytics.pojo.PayloadDownloadLinkModel;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.UserService;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
+import org.jboss.xavier.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import static org.apache.camel.builder.PredicateBuilder.not;
 
@@ -46,6 +47,9 @@ import static org.apache.camel.builder.PredicateBuilder.not;
  */
 @Component
 public class MainRouteBuilder extends RouteBuilderExceptionHandler {
+
+    @Value("${thread.concurrentConsumers:5}")
+    private int CONCURRENT_CONSUMERS;
 
     @Value("${insights.upload.host}")
     private String uploadHost;
@@ -65,10 +69,26 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     @Value("${camel.springboot.tracing}")
     private boolean tracingEnabled;
 
+    @Value("${s3.download.link.expiration}")
+    private String s3DownloadLinkExpiration;
+
     @Inject
     private UserService userService;
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
+
+    public static Processor xRhIdentityHeaderProcessor = exchange -> {
+        String xRhIdentityEncoded = exchange.getIn().getHeader(X_RH_IDENTITY, String.class);
+        if (xRhIdentityEncoded != null) {
+            String xRhIdentityDecoded = new String(Base64.getDecoder().decode(xRhIdentityEncoded));
+            JsonNode xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
+
+            String username = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "username").textValue();
+
+            exchange.getIn().setHeader(USERNAME, username);
+            exchange.getIn().setHeader(X_RH_IDENTITY_JSON_NODE, xRhIdentityJsonNode);
+        }
+    };
 
     public void configure() throws Exception {
         super.configure();
@@ -125,14 +145,15 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .routeId("kafka-upload-message")
                 .unmarshal().json(JsonLibrary.Jackson, FilePersistedNotification.class)
                 .filter(simple("'{{insights.service}}' == ${body.getService}"))
-                .to("direct:download-file");
+                .to("seda:download-file");
 
-        from("direct:download-file")
+        from("seda:download-file?concurrentConsumers=" + CONCURRENT_CONSUMERS).routeId("download-file")
                 .routeId("download-file")
                 .setHeader("Exchange.HTTP_URI", simple("${body.url}")).id("setHttpUri")
                 .convertBodyTo(FilePersistedNotification.class)
                 .setHeader(MA_METADATA, method(MainRouteBuilder.class, "extractMAmetadataHeaderFromIdentity(${body})"))
-                .setHeader(USERNAME, method(MainRouteBuilder.class, "getUserNameFromRHIdentity(${body.b64_identity})"))
+                .setHeader(X_RH_IDENTITY, simple("${body.b64_identity}"))
+                .process(xRhIdentityHeaderProcessor)
                 .setBody(constant(""))
                 .to("http4:oldhost").id("toOldHost")
                 .choice()
@@ -156,6 +177,49 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client&deleteAfterWrite=false").id("s3-call")
                 .process(exchange -> analysisService.updatePayloadStorageId(exchange.getIn().getHeader(S3Constants.KEY, String.class),
                         Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
+
+        from("direct:get-s3-payload-link").routeId("get-s3-payload-link")
+                .choice()
+                    .when(bodyAs(AnalysisModel.class).isNull())
+                        .to("direct:request-notfound")
+                    .endChoice()
+                .end()
+                .process(exchange -> {
+                    AnalysisModel analysisModel = exchange.getIn().getBody(AnalysisModel.class);
+
+                    String payloadName = analysisModel.getPayloadName();
+                    String payloadStorageId = analysisModel.getPayloadStorageId();
+
+                    if (payloadStorageId != null && payloadStorageId.trim().isEmpty()) {
+                        payloadStorageId = null;
+                    }
+
+                    exchange.getIn().setHeader("AnalysisPayloadName", payloadName);
+                    exchange.getIn().setHeader("AnalysisPayloadStorageId", payloadStorageId);
+                })
+                .choice()
+                    .when(header("AnalysisPayloadStorageId").isNull())
+                        .process(exchange -> {
+                            String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
+
+                            PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, null);
+                            exchange.getIn().setBody(payloadDownloadLinkModel);
+                        })
+                    .endChoice()
+                    .otherwise()
+                        .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
+                        .setHeader("CamelAwsS3DownloadLinkExpiration", constant(s3DownloadLinkExpiration))
+                        .setHeader("CamelAwsS3Operation", constant("downloadLink"))
+                        .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client").id("aws-s3-get-download-link")
+                        .process(exchange -> {
+                            String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
+                            String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
+
+                            PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
+                            exchange.getIn().setBody(payloadDownloadLinkModel);
+                        })
+                    .endChoice()
+                .end();
 
         from("direct:unzip-file")
                 .routeId("unzip-file")
@@ -203,7 +267,10 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .routeId("check-authenticated-request")
                 .to("direct:add-username-header")
                 .choice()
-                    .when(header(USERNAME).isEqualTo(""))
+                    .when(exchange -> {
+                        String username = exchange.getIn().getHeader(USERNAME, String.class);
+                        return username == null || username.trim().isEmpty();
+                    })
                     .to("direct:request-forbidden");
 
         from("direct:check-authorized-request")
@@ -217,14 +284,15 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
         from("direct:add-username-header")
                 .routeId("add-username-header")
-                .process(exchange ->  {
-                    String userName = this.getUserNameFromRHIdentity(exchange.getIn().getHeader("x-rh-identity", String.class));
-                    exchange.getIn().setHeader(USERNAME, userName);
-                });
+                .process(xRhIdentityHeaderProcessor);
 
         from("direct:request-forbidden")
                 .routeId("request-forbidden")
                 .process(httpError403());
+
+        from("direct:request-notfound")
+                .routeId("request-notfound")
+                .process(httpError404());
     }
 
     private Exchange calculateICSAggregated(Exchange old, Exchange neu) {
@@ -266,6 +334,14 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         };
     }
 
+    private Processor httpError404() {
+        return exchange -> {
+            exchange.getIn().setBody("Not found");
+            exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpServletResponse.SC_NOT_FOUND);
+            exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
+        };
+    }
+
     private Predicate isAllExpectedParamsExist() {
         return exchange -> insightsProperties.stream().allMatch(e -> StringUtils.isNoneEmpty((String)(exchange.getIn().getHeader(MA_METADATA, new HashMap<String,Object>(), Map.class)).get(e)));
     }
@@ -302,19 +378,6 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         internalNode.put(ANALYSIS_ID, analysisId);
 
         return Base64.getEncoder().encodeToString(node.toString().getBytes(StandardCharsets.UTF_8));
-    }
-
-    public String getUserNameFromRHIdentity(String x_rh_identity_base64) {
-        String result = "";
-        try {
-            JsonNode node = new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
-            JsonNode usernameNode = node.get("identity").get("user").get("username");
-            result = usernameNode.textValue();
-        } catch (Exception e) {
-            Logger.getLogger(this.getClass().getName()).warning("Unable to retrieve the 'username' field from cookies due to the following exception. Hence 'username' value set to '" + result + "'.");
-            e.printStackTrace();
-        }
-        return result;
     }
 
     private Predicate isZippedFile(String extension) {

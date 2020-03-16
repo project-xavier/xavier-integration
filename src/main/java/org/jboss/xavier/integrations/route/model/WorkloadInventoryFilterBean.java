@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.route.model;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -106,5 +107,20 @@ public class WorkloadInventoryFilterBean {
     @Override
     public int hashCode() {
         return Objects.hash(providers, datacenters, clusters, vmNames, osNames, workloads, complexities, recommendedTargetsIMS, flagsIMS);
+    }
+
+    @Override
+    public String toString() {
+        return "WorkloadInventoryFilterBean{" +
+                "providers=[" + String.join(",", providers != null ? providers : Collections.emptyList()) + "]" +
+                ", datacenters=[" + String.join(",", datacenters != null ? datacenters : Collections.emptyList()) + "]" +
+                ", clusters=[" + String.join(",", clusters != null ? clusters : Collections.emptyList()) + "]" +
+                ", vmNames=[" + String.join(",", vmNames != null ? vmNames : Collections.emptyList()) + "]" +
+                ", osNames=[" + String.join(",", osNames != null ? osNames : Collections.emptyList()) + "]" +
+                ", workloads=[" + String.join(",", workloads != null ? workloads : Collections.emptyList()) + "]" +
+                ", complexities=[" + String.join(",", complexities != null ? complexities : Collections.emptyList()) + "]" +
+                ", recommendedTargetsIMS=[" + String.join(",", recommendedTargetsIMS != null ? recommendedTargetsIMS : Collections.emptyList()) + "]" +
+                ", flagsIMS=[" + String.join(",", flagsIMS != null ? flagsIMS : Collections.emptyList()) + "]" +
+                '}';
     }
 }
