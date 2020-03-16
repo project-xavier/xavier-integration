@@ -22,6 +22,7 @@ import org.jboss.xavier.analytics.pojo.PayloadDownloadLinkModel;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.UserService;
+import org.jboss.xavier.integrations.rbac.RBACRouteBuilder;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.utils.Utils;
@@ -98,6 +99,12 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         from("rest:post:/upload?consumes=multipart/form-data")
                 .routeId("rest-upload")
                 .to("direct:check-authenticated-request")
+                .to("direct:fetch-and-process-rbac-user-access")
+                // RBAC check start: check min user permissions
+                .setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, constant("payload"))
+                .setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, constant("write"))
+                .to("direct:check-rbac-permissions")
+                // RBAC check end
                 .to("direct:upload");
 
         from("direct:upload").routeId("direct-upload")

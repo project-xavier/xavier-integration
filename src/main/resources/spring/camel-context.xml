@@ -69,6 +69,12 @@
             <description>Mapping REST API</description>
             <get uri="/flag-assessment">
                 <route id="mappings-flag-assessment-findAll">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>mappings</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="flagAssessmentService" method="findAll()" />
                 </route>
             </get>
@@ -77,6 +83,12 @@
         <rest path="/administration">
             <get uri="/report/csv" produces="application/octet-stream">
                 <route id="administration-report-csv">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>administration</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <setHeader headerName="${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.CORRELATION_ID}">
                         <method ref="utils" method="generateUUID"/>
                     </setHeader>
@@ -127,6 +139,12 @@
                 <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
                 <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
                 <route id="reports-get-all">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>
@@ -141,12 +159,24 @@
             <get uri="/{id}">
                 <description>Get the details of a report</description>
                 <route id="report-get-details">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                 </route>
             </get>
             <delete uri="/{id}">
                 <description>Delete a report</description>
                 <route id="report-delete">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>delete</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})"/>
                     <choice>
                         <when>
@@ -170,6 +200,12 @@
             <get uri="/{id}/initial-saving-estimation">
                 <description>Get the Initial Cost Saving report</description>
                 <route id="reports-get-details">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.initialSavingEstimation</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="initialSavingsEstimationReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                 </route>
             </get>
@@ -189,6 +225,12 @@
                 <param name="recommendedTargetIMS" type="query" required="false" description="Define a filter" />
                 <param name="flagIMS" type="query" required="false" description="Define a filter" />
                 <route id="workload-inventory-report-get-details">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadInventory</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <to uri="direct:to-paginationBean"/>
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
@@ -209,6 +251,12 @@
                 <param name="recommendedTargetIMS" type="query" required="false" description="Define a filter" />
                 <param name="flagIMS" type="query" required="false" description="Define a filter" />
                 <route id="filtered-workload-inventory-report-get-details-as-csv">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadInventory</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
@@ -221,6 +269,12 @@
             <get uri="/{id}/workload-inventory/csv" produces="text/csv">
                 <description>Get the Workload Inventory Reports in CSV format</description>
                 <route id="workload-inventory-report-get-details-as-csv">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadInventory</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                     <to uri="direct:toWorkloadInventoryReportCsv" />
                     <setHeader headerName="${type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
@@ -231,6 +285,12 @@
             <get uri="/{id}/workload-inventory/available-filters">
                 <description>Get available filters</description>
                 <route id="workload-inventory-report-available-filters">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadInventory</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <!-- if the user is the owner of the analysis then it's fine to get the filters -->
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})"/>
                     <choice>
@@ -253,6 +313,12 @@
             <get uri="/{id}/workload-summary">
                 <description>Get the Workload Summary Report</description>
                 <route id="workload-summary-report-get">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadSummary</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="workloadSummaryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                 </route>
             </get>
@@ -263,6 +329,12 @@
                 <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
                 <param name="orderAsc" type="query" defaultValue="false" required="false" description="Define if sort is ascending" dataType="boolean" />
                 <route id="workload-summary-workloads-report-get">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadSummary</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <to uri="direct:to-paginationBean"/>
                     <to uri="direct:to-sortBean"/>
                     <bean ref="workloadService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
@@ -275,6 +347,12 @@
                 <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
                 <param name="orderAsc" type="query" defaultValue="true" required="false" description="Define if sort is ascending" dataType="boolean" />
                 <route id="workload-summary-flags-report-get">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadSummary</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <to uri="direct:to-paginationBean"/>
                     <to uri="direct:to-sortBean"/>
                     <bean ref="flagService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
@@ -282,6 +360,12 @@
             </get>
             <get uri="/{id}/payload">
                 <route id="report-payload-download">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>payload</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
                     <choice>
                         <when>
@@ -310,6 +394,12 @@
             </get>
             <get uri="/{id}/payload-link">
                 <route id="report-payload-link">
+                    <!-- RBAC check start-->
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>payload</constant></setHeader>
+                    <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
+                    <to uri="direct:check-rbac-permissions" />
+                    <!-- RBAC check end-->
+
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
                     <to uri="direct:get-s3-payload-link"/>
                 </route>
@@ -326,6 +416,7 @@
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
+
                     <bean ref="userService" method="findUser(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}})" />
                 </route>
             </get>
