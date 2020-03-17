@@ -1255,6 +1255,7 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-225",
                     "has_rdm_disk": false,
+                    "cpu_affinity": "",
                     "host": {
                         "ems_ref": "host-47"
                     },
@@ -2190,6 +2191,7 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-381",
                     "has_rdm_disk": false,
+                    "cpu_affinity": null,
                     "host": {
                         "ems_ref": "host-47"
                     },

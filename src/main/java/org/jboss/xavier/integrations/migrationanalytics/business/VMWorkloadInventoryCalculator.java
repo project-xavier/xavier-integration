@@ -85,8 +85,8 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             model.setHasRdmDisk(hasRdmDisk);
         }
 
-        String cpuAffinity = readValueFromExpandedEnvVarPath(CPUAFFINITYPATH, vmStructMap);
-        model.setCpuAffinityNotNull(cpuAffinity != null);
+        String cpuAffinity = getCpuAffinity(vmStructMap);
+        model.setCpuAffinityNotNull(cpuAffinity != null && !cpuAffinity.isEmpty());
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
@@ -107,20 +107,42 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         return model;
     }
 
-    private Long getDiskSpaceList(Map vmStructMap) {
-        // If the VM.used_disk_storage is present use it, if not use VM.DISK[*].size_on_disk
+    private Object getValueForExpandedPathAndHandlePathNotPresent(String path, Map vmStructMap, String errorMessage)
+    {
         try {
-            String usedDiskStoragePath = getExpandedPath(USEDDISKSTORAGEPATH, vmStructMap);
-            Number used_disk_storage = (Number) vmStructMap.get(usedDiskStoragePath);
-            if (used_disk_storage != null) {
-                return used_disk_storage.longValue();
-            }
+            String foundPath = getExpandedPath(path, vmStructMap);
+            Object returnValue = vmStructMap.get(foundPath);
+            if (returnValue!= null)
+                return returnValue;
+
         } catch (Exception e) {
             // In versions previous to 1_0_0 it will fail because there is no such property
-            log.warn("Using an old version of payload. Calculating size with sum of vm.hardware.disks.size_on_disk");
+            log.warn("Using an old version of payload. " + errorMessage);
         }
+        return null;
+    }
+
+    private Long getDiskSpaceList(Map vmStructMap) {
+        // If the VM.used_disk_storage is present use it, if not use VM.DISK[*].size_on_disk
+
+        Object used_disk_storage = getValueForExpandedPathAndHandlePathNotPresent(USEDDISKSTORAGEPATH, vmStructMap,
+                "Calculating size with sum of vm.hardware.disks.size_on_disk");
+        if (used_disk_storage != null) {
+            return ((Number) used_disk_storage).longValue();
+        }
+
 
         List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
         return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
+    }
+
+    private String getCpuAffinity(Map vmStructMap) {
+        // If the VM.cpu_affinity is present use it, if not set value to null
+
+        Object cpuAffinityPathObject = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap,
+                "Setting value to null.");
+
+        return cpuAffinityPathObject != null ? (String) cpuAffinityPathObject : null;
+
     }
 }
