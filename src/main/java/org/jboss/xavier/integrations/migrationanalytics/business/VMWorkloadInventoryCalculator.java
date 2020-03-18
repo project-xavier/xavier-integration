@@ -86,7 +86,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         }
 
         String cpuAffinity = getCpuAffinity(vmStructMap);
-        model.setCpuAffinityNotNull(cpuAffinity != null && !cpuAffinity.isEmpty());
+        model.setCpuAffinityNotNull(cpuAffinity != null && !cpuAffinity.trim().isEmpty());
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
