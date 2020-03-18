@@ -33,6 +33,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
     public static final String NUMCORESPERSOCKETPATH = "vmworkloadinventory.numCoresPerSocketPath";
     public static final String HASRDMDISKPATH = "vmworkloadinventory.hasRDMDiskPath";
     public static final String RAMSIZEINBYTES = "vmworkloadinventory.ramSizeInBytesPath";
+    public static final String CPUAFFINITYPATH = "vmworkloadinventory.cpuAffinityPath";
     public static final String NICSPATH = "vmworkloadinventory.nicsPath";
     public static final String PRODUCTNAMEPATH = "vmworkloadinventory.productNamePath";
     public static final String PRODUCTNAME_FALLBACKPATH = "vmworkloadinventory.productNameFallbackPath";
