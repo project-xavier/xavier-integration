@@ -88,6 +88,9 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setHasMemoryHotAdd(getMemoryHotAdd(vmStructMap));
         model.setHasCpuHotRemove(getCpuHotRemove(vmStructMap));
 
+        String cpuAffinity = getCpuAffinity(vmStructMap);
+        model.setCpuAffinityNotNull(cpuAffinity != null && !cpuAffinity.trim().isEmpty());
+
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
         model.setNicsCount(readValueFromExpandedEnvVarPath(NICSPATH, vmStructMap, Integer.class));
@@ -131,10 +134,10 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             return ((Number) used_disk_storage).longValue();
         }
 
-
         List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
         return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
     }
+
 
     private Boolean getCpuHotAdd(Map vmStructMap) {
         // If the VM.cpu_hot_add_enabled is present use it, if not set value to null
@@ -163,6 +166,15 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
                 "Setting value to null.");
 
         return memoryHotAddPathObject != null ? (Boolean) memoryHotAddPathObject : null;
+    }
+  
+    private String getCpuAffinity(Map vmStructMap) {
+        // If the VM.cpu_affinity is present use it, if not set value to null
+
+        Object cpuAffinityPathObject = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap,
+                "Setting value to null.");
+
+        return cpuAffinityPathObject != null ? (String) cpuAffinityPathObject : null;
 
     }
 }

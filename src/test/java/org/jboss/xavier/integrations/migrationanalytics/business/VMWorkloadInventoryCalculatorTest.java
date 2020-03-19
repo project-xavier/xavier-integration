@@ -96,6 +96,7 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getHasCpuHotAdd() != null).count()).isEqualTo(2);
         assertThat(modelList.stream().filter(e -> e.getHasCpuHotRemove() != null).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getHasMemoryHotAdd() != null).count()).isEqualTo(2);
+        assertThat(modelList.stream().filter(e -> e.isCpuAffinityNotNull() == true).count()).isEqualTo(1);
 
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
         expectedModel.setVmName("oracle_db");

@@ -375,6 +375,7 @@
                     "ems_ref": "vm-321",
                     "has_rdm_disk": false,
                     "memory_hot_add_enabled":null,
+                    "cpu_affinity": "0,2",
                     "host": {
                         "ems_ref": "host-31"
                     },
@@ -1256,6 +1257,7 @@
                     "ems_ref": "vm-225",
                     "has_rdm_disk": false,
                     "memory_hot_add_enabled": false,
+                    "cpu_affinity": "",
                     "host": {
                         "ems_ref": "host-47"
                     },
@@ -2192,6 +2194,7 @@
                     "ems_ref": "vm-381",
                     "has_rdm_disk": false,
                     "cpu_hot_add_enabled": true,
+                    "cpu_affinity": null,
                     "host": {
                         "ems_ref": "host-47"
                     },
