@@ -143,7 +143,7 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel2.setDatacenter("JON TEST DC");
         expectedModel2.setCpuCores(1);
         expectedModel2.setCluster("VMCluster");
-        expectedModel2.setSystemServicesNames(Arrays.asList("NetworkManager-dispatcher","NetworkManager-wait-online","NetworkManager"));
+        expectedModel2.setSystemServicesNames(Arrays.asList("NetworkManager-dispatcher", "NetworkManager-wait-online", "NetworkManager"));
         expectedModel2.setVmDiskFilenames(Arrays.asList("[NFS-Storage] jboss1/", "[NFS-Storage] jboss1/jboss1.vmdk"));
         expectedModel2.setAnalysisId(analysisId);
         expectedModel2.setHost_name("host-47");
