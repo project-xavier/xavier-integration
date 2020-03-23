@@ -84,9 +84,15 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         if (hasRdmDisk != null) {
             model.setHasRdmDisk(hasRdmDisk);
         }
+        Object cpuHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotAdd(cpuHotAddObject != null? (Boolean)cpuHotAddObject: null);
+        Object memoryHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasMemoryHotAdd(memoryHotAddObject != null? (Boolean)memoryHotAddObject: null);
+        Object cpuHotRemoveObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotRemove(cpuHotRemoveObject != null? (Boolean)cpuHotRemoveObject: null);
 
-        String cpuAffinity = getCpuAffinity(vmStructMap);
-        model.setCpuAffinityNotNull(cpuAffinity != null && !cpuAffinity.trim().isEmpty());
+        Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, "Setting value to null.");
+        model.setCpuAffinityNotNull(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
@@ -131,18 +137,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
             return ((Number) used_disk_storage).longValue();
         }
 
-
         List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
         return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
-    }
-
-    private String getCpuAffinity(Map vmStructMap) {
-        // If the VM.cpu_affinity is present use it, if not set value to null
-
-        Object cpuAffinityPathObject = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap,
-                "Setting value to null.");
-
-        return cpuAffinityPathObject != null ? (String) cpuAffinityPathObject : null;
-
     }
 }
