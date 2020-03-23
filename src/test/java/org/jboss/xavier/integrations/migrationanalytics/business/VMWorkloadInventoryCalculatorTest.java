@@ -93,6 +93,10 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("CentOS 7 (64-bit)")).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getGuestOSFullName().equalsIgnoreCase("Red Hat Enterprise Linux Server release 7.6 (Maipo)")).count()).isEqualTo(6);
         assertThat(modelList.stream().filter(e -> e.getDiskSpace() == (17980588032L)).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getHasCpuHotAdd() != null).count()).isEqualTo(2);
+        assertThat(modelList.stream().filter(e -> e.getHasCpuHotRemove() != null).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getHasMemoryHotAdd() != null).count()).isEqualTo(2);
+        assertThat(modelList.stream().filter(e -> e.isCpuAffinityNotNull() == true).count()).isEqualTo(1);
 
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
         expectedModel.setVmName("oracle_db");
@@ -113,6 +117,9 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setVersion("6.7.2");
         expectedModel.setProduct("VMware vCenter");
         expectedModel.setScanRunDate(new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse("2019-09-18T14:52:45.871Z"));
+        expectedModel.setHasCpuHotRemove(false);
+        expectedModel.setHasCpuHotAdd(true);
+        expectedModel.setHasMemoryHotAdd(false);
 
         HashMap<String, String> files = new HashMap<>();
         files.put("/etc/GeoIP.conf","dummy content");
@@ -123,6 +130,36 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db"))
                 .findFirst().get())
                 .isEqualToIgnoringNullFields(expectedModel);
+
+        VMWorkloadInventoryModel expectedModel2 = new VMWorkloadInventoryModel();
+        expectedModel2.setVmName("jboss1");
+        expectedModel2.setProvider("vSphere");
+        expectedModel2.setOsProductName("Linux");
+        expectedModel2.setNicsCount(1);
+        expectedModel2.setMemory(2147483648L);
+        expectedModel2.setHasRdmDisk(false);
+        expectedModel2.setGuestOSFullName("Red Hat Enterprise Linux Server release 7.6 (Maipo)");
+        expectedModel2.setDiskSpace(4833341440L);
+        expectedModel2.setDatacenter("JON TEST DC");
+        expectedModel2.setCpuCores(1);
+        expectedModel2.setCluster("VMCluster");
+        expectedModel2.setSystemServicesNames(Arrays.asList("NetworkManager-dispatcher", "NetworkManager-wait-online", "NetworkManager"));
+        expectedModel2.setVmDiskFilenames(Arrays.asList("[NFS-Storage] jboss1/", "[NFS-Storage] jboss1/jboss1.vmdk"));
+        expectedModel2.setAnalysisId(analysisId);
+        expectedModel2.setHost_name("host-47");
+        expectedModel2.setVersion("6.7.2");
+        expectedModel2.setProduct("VMware vCenter");
+        expectedModel2.setScanRunDate(new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse("2019-09-18T14:52:45.871Z"));
+
+        HashMap<String, String> files2 = new HashMap<>();
+        files2.put("/etc/GeoIP.conf",null);
+        files2.put("/etc/asound.conf", null);
+        files2.put("/etc/chrony.conf", null);
+        expectedModel2.setFiles(files2);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("jboss1"))
+                .findFirst().get())
+                .isEqualToIgnoringNullFields(expectedModel2);
     }
 
 
@@ -162,6 +199,7 @@ public class VMWorkloadInventoryCalculatorTest {
         expectedModel.setVersion("6.7.2");
         expectedModel.setProduct("VMware vCenter");
         expectedModel.setScanRunDate(new SimpleDateFormat("yyyy-M-dd'T'hh:mm:ss.S").parse("2019-09-18T14:52:45.871Z"));
+        expectedModel.setHasCpuHotRemove(false);
 
         // These are the params missing because of the replace above
         expectedModel.setCluster(null);
