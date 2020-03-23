@@ -84,12 +84,15 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         if (hasRdmDisk != null) {
             model.setHasRdmDisk(hasRdmDisk);
         }
-        model.setHasCpuHotAdd(getCpuHotAdd(vmStructMap));
-        model.setHasMemoryHotAdd(getMemoryHotAdd(vmStructMap));
-        model.setHasCpuHotRemove(getCpuHotRemove(vmStructMap));
+        Object cpuHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotAdd(cpuHotAddObject != null? (Boolean)cpuHotAddObject: null);
+        Object memoryHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasMemoryHotAdd(memoryHotAddObject != null? (Boolean)memoryHotAddObject: null);
+        Object cpuHotRemoveObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotRemove(cpuHotRemoveObject != null? (Boolean)cpuHotRemoveObject: null);
 
-        String cpuAffinity = getCpuAffinity(vmStructMap);
-        model.setCpuAffinityNotNull(cpuAffinity != null && !cpuAffinity.trim().isEmpty());
+        Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, "Setting value to null.");
+        model.setCpuAffinityNotNull(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
@@ -136,45 +139,5 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);
         return hardwareDisksList.stream().filter(Objects::nonNull).mapToLong(Number::longValue).sum();
-    }
-
-
-    private Boolean getCpuHotAdd(Map vmStructMap) {
-        // If the VM.cpu_hot_add_enabled is present use it, if not set value to null
-
-        Object cpuHotAddPathObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap,
-                "Setting value to null.");
-
-        return cpuHotAddPathObject != null ? (Boolean) cpuHotAddPathObject : null;
-
-    }
-
-    private Boolean getCpuHotRemove(Map vmStructMap) {
-        // If the VM.cpu_hot_remove_enabled is present use it, if not set value to null
-
-        Object cpuHotRemovePathObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH, vmStructMap,
-                "Setting value to null.");
-
-        return cpuHotRemovePathObject != null ? (Boolean) cpuHotRemovePathObject : null;
-
-    }
-
-    private Boolean getMemoryHotAdd(Map vmStructMap) {
-        // If the VM.memory_hot_add_enabled is present use it, if not set value to null
-
-        Object memoryHotAddPathObject = getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH, vmStructMap,
-                "Setting value to null.");
-
-        return memoryHotAddPathObject != null ? (Boolean) memoryHotAddPathObject : null;
-    }
-  
-    private String getCpuAffinity(Map vmStructMap) {
-        // If the VM.cpu_affinity is present use it, if not set value to null
-
-        Object cpuAffinityPathObject = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap,
-                "Setting value to null.");
-
-        return cpuAffinityPathObject != null ? (String) cpuAffinityPathObject : null;
-
     }
 }
