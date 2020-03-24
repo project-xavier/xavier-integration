@@ -81,7 +81,6 @@ public class RBACRouteBuilder extends RouteBuilder {
                             .setHeader(RBAC_NEXT_LINK, () -> null)
                         .otherwise()
                             .convertBodyTo(String.class)
-                            .log("RBAC Response= ${body}")
                             .process(exchange -> {
                                 String body = exchange.getIn().getBody(String.class);
                                 RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
