@@ -60,6 +60,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                     .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
                     .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
                     .setHeader(Exchange.HTTP_PATH, constant(rbacPath))
+                    .setHeader("Accept").simple("application/json") // Force RBAC to response in JSON
                     .process(exchange -> {
                         String httpQuery;
                         String nextLink = exchange.getIn().getHeader(RBAC_NEXT_LINK, String.class);
