@@ -61,7 +61,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                 .loopDoWhile(exchange -> exchange.getIn().getHeader(RBAC_NEXT_LINK) != null)
                     .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
                     .setHeader(Exchange.CONTENT_TYPE, constant(ContentType.APPLICATION_JSON.getMimeType())) // Content-type is a way to specify the media type of request being sent from the client to the server (valid on POST and PUT)
-                    .setHeader(HttpHeaders.ACCEPT).constant(ContentType.APPLICATION_JSON.getMimeType()) // Accept header is a way for a client to specify the media type of the response content it is expecting.
+                    .setHeader(HttpHeaders.ACCEPT, constant(ContentType.APPLICATION_JSON.getMimeType())) // Accept header is a way for a client to specify the media type of the response content it is expecting.
                     .setHeader(Exchange.HTTP_PATH, constant(rbacPath))
                     .process(exchange -> {
                         String httpQuery;
