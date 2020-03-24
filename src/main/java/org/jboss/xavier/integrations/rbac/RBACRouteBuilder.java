@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http4.HttpMethods;
+import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
 import org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -58,7 +60,8 @@ public class RBACRouteBuilder extends RouteBuilder {
                 .setHeader(RBAC_NEXT_LINK, constant(""))
                 .loopDoWhile(exchange -> exchange.getIn().getHeader(RBAC_NEXT_LINK) != null)
                     .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-                    .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+                    .setHeader(Exchange.CONTENT_TYPE, constant(ContentType.APPLICATION_JSON.getMimeType())) // Content-type is a way to specify the media type of request being sent from the client to the server (valid on POST and PUT)
+                    .setHeader(HttpHeaders.ACCEPT, constant(ContentType.APPLICATION_JSON.getMimeType())) // Accept header is a way for a client to specify the media type of the response content it is expecting.
                     .setHeader(Exchange.HTTP_PATH, constant(rbacPath))
                     .process(exchange -> {
                         String httpQuery;
