@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.component.http4.HttpMethods;
+import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.route.XavierCamelTest;
 import org.jboss.xavier.integrations.util.TestUtil;
@@ -24,6 +27,9 @@ public class RBACRouteBuilder_DirectFetchRbacUserAccessTest extends XavierCamelT
 
     @Value("${camel.component.servlet.mapping.context-path}")
     String camel_context;
+
+    @Value("${insights.rbac.path}")
+    private String rbacPath;
 
     @Before
     public void setup() {
@@ -140,6 +146,40 @@ public class RBACRouteBuilder_DirectFetchRbacUserAccessTest extends XavierCamelT
         //Then
         assertThat(userAccess).isNotNull();
         assertThat(userAccess.size()).isEqualTo(4);
+        camelContext.stop();
+    }
+
+    @Test
+    public void rbacRouteBuilder_checkCorrectHeadersAreSentToRBACServer() throws Exception {
+        //Given
+        camelContext.getRouteDefinition("fetch-rbac-user-access").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                weaveById("fetch-rbac-user-access-endpoint").replace()
+                        .process(exchange -> {
+                            // Assert Headers are correct
+                            assertThat(exchange.getIn().getHeader(Exchange.HTTP_METHOD)).isEqualTo(HttpMethods.GET);
+                            assertThat(exchange.getIn().getHeader(Exchange.CONTENT_TYPE)).isEqualTo(ContentType.APPLICATION_JSON.getMimeType());
+                            assertThat(exchange.getIn().getHeader(HttpHeaders.ACCEPT)).isEqualTo(ContentType.APPLICATION_JSON.getMimeType());
+                            assertThat(exchange.getIn().getHeader(Exchange.HTTP_PATH)).isEqualTo(rbacPath);
+                        })
+                        .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("403"))
+                        .setBody(() -> null);
+            }
+        });
+
+        //When
+        camelContext.start();
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("fetch-rbac-user-access");
+
+        List userAccess = camelContext.createProducerTemplate().requestBodyAndHeader(
+                "direct:fetch-rbac-user-access", null, TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity(), List.class
+        );
+
+        //Then
+        assertThat(userAccess).isNotNull();
+        assertThat(userAccess).isEmpty();
         camelContext.stop();
     }
 

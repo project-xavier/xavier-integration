@@ -328,7 +328,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     private Processor httpError400() {
         return exchange -> {
           exchange.getIn().setBody("{ \"error\": \"Bad Request\"}");
-          exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
+          exchange.getIn().setHeader(Exchange.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
           exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
         };
     }
