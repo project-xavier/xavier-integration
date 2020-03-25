@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -18,11 +19,11 @@ public class UtilsTest {
         JsonNode jsonNode = objectMapper.readTree(json);
 
         // When
-        JsonNode fieldNode = Utils.getFieldValueFromJsonNode(jsonNode, "entitlements", "insights", "is_entitled");
+        Optional<JsonNode> fieldNode = Utils.getFieldValueFromJsonNode(jsonNode, "entitlements", "insights", "is_entitled");
 
         // Then
-        assertThat(fieldNode).isNotNull();
-        assertThat(fieldNode.booleanValue()).isTrue();
+        assertThat(fieldNode.isPresent()).isTrue();
+        assertThat(fieldNode.map(JsonNode::booleanValue).get()).isTrue();
     }
 
     @Test
@@ -33,9 +34,9 @@ public class UtilsTest {
         JsonNode jsonNode = objectMapper.readTree(json);
 
         // When
-        JsonNode fieldNode = Utils.getFieldValueFromJsonNode(jsonNode, "entitlements", "no_existing_node", "is_entitled");
+        Optional<JsonNode> fieldNode = Utils.getFieldValueFromJsonNode(jsonNode, "entitlements", "no_existing_node", "is_entitled");
 
         // Then
-        assertThat(fieldNode).isNull();
+        assertThat(fieldNode.isPresent()).isFalse();
     }
 }

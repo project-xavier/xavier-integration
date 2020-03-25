@@ -1,7 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.builder.RouteBuilder;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Test;
 
@@ -9,7 +8,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTest {
 
@@ -34,7 +33,7 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
     }
 
     @Test
-    public void mainRouteBuilder_routeDirectAddUsernameHeader_NoContentGiven_ShouldAddEmptyHeaderInExchange() throws Exception {
+    public void mainRouteBuilder_routeDirectAddUsernameHeader_NoContentGiven_ShouldAddNullHeadersInExchange() throws Exception {
         //When
         camelContext.start();
         camelContext.startRoute("add-username-header");
@@ -46,11 +45,13 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
 
         //Then
         assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USER_ACCOUNT_NUMBER)).isNull();
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_JSON_NODE)).isNull();
         camelContext.stop();
     }
 
     @Test
-    public void mainRouteBuilder_routeDirectAddUsernameHeader_MissingUsernameContentGiven_ShouldAddEmptyHeaderInExchange() throws Exception {
+    public void mainRouteBuilder_routeDirectAddUsernameHeader_MissingUsernameContentGiven_ShouldAddNullUsernameHeaderInExchange() throws Exception {
         //When
         camelContext.start();
         camelContext.startRoute("add-username-header");
@@ -66,6 +67,8 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
 
         //Then
         assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USER_ACCOUNT_NUMBER)).isEqualTo("1460290");
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_JSON_NODE)).isNotNull();
         camelContext.stop();
     }
 
@@ -86,11 +89,13 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
 
         //Then
         assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USER_ACCOUNT_NUMBER)).isEqualTo("1460290");
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_JSON_NODE)).isNotNull();
         camelContext.stop();
     }
 
     @Test
-    public void mainRouteBuilder_routeDirectAddUsernameHeader_BadContentGiven_ShouldAddEmptyHeaderInExchange() throws Exception {
+    public void mainRouteBuilder_routeDirectAddUsernameHeader_BadContentGiven_ShouldAddNullHeadersInExchange() throws Exception {
         //When
         camelContext.start();
         camelContext.startRoute("add-username-header");
@@ -106,59 +111,23 @@ public class MainRouteBuilder_DirectAddUsernameHeaderTest extends XavierCamelTes
 
         //Then
         assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USER_ACCOUNT_NUMBER)).isNull();
+        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.X_RH_IDENTITY_JSON_NODE)).isNull();
         camelContext.stop();
     }
 
     @Test
-    public void mainRouteBuilder_xRhIdentityHeaderProcessor_givenInvalidHeader_shouldSetNullIdentityHeader() throws Exception {
+    public void mainRouteBuilder_xRhIdentityHeaderProcessor_givenValidHeader_shouldAllRequiredHeaders() throws Exception {
         // Given
-        camelContext.addRoutes(new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                from("direct:test-xRhIdentityProcessor")
-                        .routeId("test-xRhIdentityProcessor")
-                        .process(MainRouteBuilder.xRhIdentityHeaderProcessor);
-            }
-        });
 
         //When
         camelContext.start();
-        camelContext.startRoute("test-xRhIdentityProcessor");
-
-        String x_rh_identity= Base64.getEncoder().encodeToString("BadContentGiven".getBytes());
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(MainRouteBuilder.X_RH_IDENTITY, x_rh_identity);
-
-        Exchange result = camelContext.createProducerTemplate().request("direct:test-xRhIdentityProcessor",  exchange -> {
-            exchange.getIn().setBody(null);
-            exchange.getIn().setHeaders(headers);
-        });
-
-        //Then
-        assertThat(result.getIn().getHeader(RouteBuilderExceptionHandler.USERNAME)).isNull();
-        camelContext.stop();
-    }
-
-    @Test
-    public void mainRouteBuilder_xRhIdentityHeaderProcessor_givenValidHeader_shouldSetUserIdentityHeaders() throws Exception {
-        // Given
-        camelContext.addRoutes(new RouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                from("direct:test-xRhIdentityProcessor")
-                        .routeId("test-xRhIdentityProcessor")
-                        .process(MainRouteBuilder.xRhIdentityHeaderProcessor);
-            }
-        });
-
-        //When
-        camelContext.start();
-        camelContext.startRoute("test-xRhIdentityProcessor");
+        camelContext.startRoute("add-username-header");
 
         Map<String, Object> headers = new HashMap<>();
         headers.put(MainRouteBuilder.X_RH_IDENTITY, TestUtil.getBase64RHIdentity());
 
-        Exchange result = camelContext.createProducerTemplate().request("direct:test-xRhIdentityProcessor",  exchange -> {
+        Exchange result = camelContext.createProducerTemplate().request("direct:add-username-header",  exchange -> {
             exchange.getIn().setBody(null);
             exchange.getIn().setHeaders(headers);
         });
