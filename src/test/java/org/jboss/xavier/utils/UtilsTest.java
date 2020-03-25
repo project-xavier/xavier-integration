@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UtilsTest {
 
