@@ -79,7 +79,7 @@ public class MainRouteBuilder_DirectInsightsTest extends XavierCamelTest {
 
     @Test
     public void mainRouteBuilder_routeDirectInsights_UploadErrorGiven_ShouldMarkAnalysisAsFail() throws Exception {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         String body = "this is a test body";
         String filename = "testfilename.txt";
@@ -115,7 +115,7 @@ public class MainRouteBuilder_DirectInsightsTest extends XavierCamelTest {
 
     @Test
     public void mainRouteBuilder_routeDirectInsights_UploadSuccessGiven_ShouldNOTMarkAnalysisAsFail() throws Exception {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         String body = "this is a test body";
         String filename = "testfilename.txt";
@@ -151,7 +151,7 @@ public class MainRouteBuilder_DirectInsightsTest extends XavierCamelTest {
 
     @Test
     public void mainRouteBuilder_routeDirectInsights_XRHIdentityHeaderMissingGiven_ShouldMarkAnalysisAsFail() throws Exception {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         String body = "this is a test body";
         String filename = "testfilename.txt";

@@ -44,7 +44,7 @@ public class XmlRoutes_RouteMaTest extends XavierCamelTest {
     @Test
     public void xmlroutes_directInputDataModel_InputDataModelGiven_ShouldReportDecisionServerHelperValues() throws Exception
     {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
         assertThat(analysisModel.getInitialSavingsEstimationReportModel()).isNull();
 
         modifyFromAndWeaveDecisionServer();
@@ -65,7 +65,7 @@ public class XmlRoutes_RouteMaTest extends XavierCamelTest {
 
     @Test
     public void xmlroutes_directInputDataModel_ErrorInsideExtractReportGiven_ShouldMarkAnalysisAsFailed() throws Exception {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
         assertThat(analysisModel.getInitialSavingsEstimationReportModel()).isNull();
 
         doThrow(new IllegalArgumentException("Dummy error")).when(decisionServerHelper).extractInitialSavingsEstimationReportModel(any());
@@ -91,7 +91,7 @@ public class XmlRoutes_RouteMaTest extends XavierCamelTest {
 
     @Test
     public void xmlroutes_directInputDataModel_BadHttpResponseReceivedGiven_ShouldMarkAnalysisAsFailed() throws Exception {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
         assertThat(analysisModel.getInitialSavingsEstimationReportModel()).isNull();
 
         camelContext.getRouteDefinition("route-ma").adviceWith(camelContext, new AdviceWithRouteBuilder() {
@@ -128,7 +128,7 @@ public class XmlRoutes_RouteMaTest extends XavierCamelTest {
 
     @Test
     public void xmlroutes_directInputDataModel_JPAErrorReceivedGiven_ShouldMarkAnalysisAsFailed() throws Exception {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
         assertThat(analysisModel.getInitialSavingsEstimationReportModel()).isNull();
         doThrow(HibernateException.class).when(analysisService).setInitialSavingsEstimationReportModel(any(), any());
         modifyFromAndWeaveDecisionServer();

@@ -84,6 +84,15 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         if (hasRdmDisk != null) {
             model.setHasRdmDisk(hasRdmDisk);
         }
+        Object cpuHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotAdd(cpuHotAddObject != null? (Boolean)cpuHotAddObject: null);
+        Object memoryHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasMemoryHotAdd(memoryHotAddObject != null? (Boolean)memoryHotAddObject: null);
+        Object cpuHotRemoveObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotRemove(cpuHotRemoveObject != null? (Boolean)cpuHotRemoveObject: null);
+
+        Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, "Setting value to null.");
+        model.setCpuAffinityNotNull(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
@@ -104,17 +113,28 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         return model;
     }
 
-    private Long getDiskSpaceList(Map vmStructMap) {
-        // If the VM.used_disk_storage is present use it, if not use VM.DISK[*].size_on_disk
+    private Object getValueForExpandedPathAndHandlePathNotPresent(String path, Map vmStructMap, String errorMessage)
+    {
         try {
-            String usedDiskStoragePath = getExpandedPath(USEDDISKSTORAGEPATH, vmStructMap);
-            Number used_disk_storage = (Number) vmStructMap.get(usedDiskStoragePath);
-            if (used_disk_storage != null) {
-                return used_disk_storage.longValue();
-            }
+            String foundPath = getExpandedPath(path, vmStructMap);
+            Object returnValue = vmStructMap.get(foundPath);
+            if (returnValue!= null)
+                return returnValue;
+
         } catch (Exception e) {
             // In versions previous to 1_0_0 it will fail because there is no such property
-            log.warn("Using an old version of payload. Calculating size with sum of vm.hardware.disks.size_on_disk");
+            log.warn("Using an old version of payload. " + errorMessage);
+        }
+        return null;
+    }
+
+    private Long getDiskSpaceList(Map vmStructMap) {
+        // If the VM.used_disk_storage is present use it, if not use VM.DISK[*].size_on_disk
+
+        Object used_disk_storage = getValueForExpandedPathAndHandlePathNotPresent(USEDDISKSTORAGEPATH, vmStructMap,
+                "Calculating size with sum of vm.hardware.disks.size_on_disk");
+        if (used_disk_storage != null) {
+            return ((Number) used_disk_storage).longValue();
         }
 
         List<Number> hardwareDisksList = readListValuesFromExpandedEnvVarPath(DISKSIZEPATH, vmStructMap);

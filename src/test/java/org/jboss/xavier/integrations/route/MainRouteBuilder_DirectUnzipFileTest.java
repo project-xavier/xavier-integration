@@ -42,7 +42,7 @@ public class MainRouteBuilder_DirectUnzipFileTest extends XavierCamelTest {
         @Test
     public void mainRouteBuilder_routeDirectUnzip_TarGzFileWith2FilesGiven_ShouldReturn2Messages() throws Exception {
         //Given
-            AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+            AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         mockSendCostsavings.expectedMessageCount(1);
             mockCalculateVMWorkload.expectedMessageCount(2);
@@ -78,7 +78,7 @@ public class MainRouteBuilder_DirectUnzipFileTest extends XavierCamelTest {
 
     @Test
     public void mainRouteBuilder_routeDirectUnzip_TarGzFileWith2FilesGivenAndTarGzContentType_ShouldReturn2Messages() throws Exception {
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         //Given
         mockSendCostsavings.expectedMessageCount(1);
@@ -122,7 +122,7 @@ public class MainRouteBuilder_DirectUnzipFileTest extends XavierCamelTest {
     @Test
     public void mainRouteBuilder_routeDirectUnzip_JsonFileGiven_ShouldReturn1Messages() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         mockSendCostsavings.expectedMessageCount(1);
         mockCalculateVMWorkload.expectedMessageCount(1);

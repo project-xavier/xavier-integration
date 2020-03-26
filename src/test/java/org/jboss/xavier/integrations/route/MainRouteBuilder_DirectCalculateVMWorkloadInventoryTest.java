@@ -31,7 +31,7 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest extends Xav
     @Test
     public void mainRouteBuilder_DirectCalculate_JSONGiven_ShouldReturnExpectedCalculatedValues() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
@@ -92,7 +92,7 @@ public class MainRouteBuilder_DirectCalculateVMWorkloadInventoryTest extends Xav
     @Test
     public void mainRouteBuilder_DirectCalculate_JSONOnVersion1_0_0Given_ShouldReturnExpectedCalculatedValues() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1_0_0.json";
