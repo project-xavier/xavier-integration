@@ -37,7 +37,7 @@ public class FlagServiceTest {
 
     @Test
     public void flagService_NewReportGiven_ShouldPersistEntityAndFilterByAnalysisOwner() {
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         WorkloadSummaryReportModel reportModel = new WorkloadSummaryReportModel();
         FlagModel flagModel = new FlagModel();
         flagModel.setFlag("RDM");

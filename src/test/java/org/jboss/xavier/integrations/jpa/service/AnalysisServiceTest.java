@@ -27,10 +27,11 @@ public class AnalysisServiceTest {
 
     @Test
     public void analysisService_NewStatusGiven_ShouldChangeAndPersistTheEntity() {
-        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         assertThat(analysisModel).isNotNull();
         assertThat(analysisModel.getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.IN_PROGRESS.toString());
         assertThat(analysisModel.getOwner()).isEqualToIgnoringCase("user name");
+        assertThat(analysisModel.getOwnerAccountNumber()).isEqualTo("user_account_number");
         service.updateStatus(AnalysisService.STATUS.FAILED.toString(), analysisModel.getId());
         analysisModel = service.findByOwnerAndId("user name", analysisModel.getId());
         assertThat(analysisModel.getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.FAILED.toString());
@@ -38,7 +39,7 @@ public class AnalysisServiceTest {
 
     @Test
     public void analysisService_NewAnalysisGiven_ShouldFilterByOwner() {
-        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
 
         analysisModel = service.findByOwnerAndId("user name", analysisModel.getId());
         assertThat(analysisModel).isNotNull();
@@ -49,9 +50,9 @@ public class AnalysisServiceTest {
 
     @Test
     public void analysisService_NewAnalysisGiven_ShouldCountByOwner() {
-        service.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
-        service.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com");
-        service.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com");
+        service.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
+        service.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com", "user_account_number");
+        service.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com", "user_account_number");
 
         assertThat(service.countByOwner("user name")).isEqualTo(1);
         assertThat(service.countByOwner("mrizzi@redhat.com")).isEqualTo(2);
@@ -60,14 +61,14 @@ public class AnalysisServiceTest {
 
     @Test
     public void analysisService_FailedAnalysisGiven_ShouldMarkAsFailedWhenNotInCreatedStatus() {
-        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         service.markAsFailedIfNotCreated(analysisModel.getId());
         assertThat(service.findByOwnerAndId("user name", analysisModel.getId()).getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.FAILED.toString());
     }
 
     @Test
     public void analysisService_FailedAnalysisGiven_ShouldNOTMarkAsFailedWhenInCreatedStatus() {
-        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         service.updateStatus(AnalysisService.STATUS.CREATED.toString(), analysisModel.getId());
         service.markAsFailedIfNotCreated(analysisModel.getId());
         assertThat(service.findByOwnerAndId("user name", analysisModel.getId()).getStatus()).isEqualToIgnoringCase(AnalysisService.STATUS.CREATED.toString());
@@ -75,7 +76,7 @@ public class AnalysisServiceTest {
 
     @Test
     public void analysisService_ConcreteStatusGiven_ShouldReturnOnlyIfStutusIsNotEqualAsProvided() {
-        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = service.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         service.updateStatus(AnalysisService.STATUS.IN_PROGRESS.toString(), analysisModel.getId());
         assertThat(service.findByIdAndStatusIgnoreCaseNot(analysisModel.getId(), AnalysisService.STATUS.IN_PROGRESS.toString())).isNull();
         assertThat(service.findByIdAndStatusIgnoreCaseNot(analysisModel.getId(), AnalysisService.STATUS.FAILED.toString())).isNotNull();

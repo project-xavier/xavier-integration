@@ -52,6 +52,7 @@ public class AnalysisModel
     private Date lastUpdate;
     private String owner;
     private String payloadStorageId;
+    private String ownerAccountNumber;
 
     public Long getId() {
         return id;
@@ -156,5 +157,13 @@ public class AnalysisModel
 
     public String getPayloadStorageId() {
         return payloadStorageId;
+    }
+
+    public String getOwnerAccountNumber() {
+        return ownerAccountNumber;
+    }
+
+    public void setOwnerAccountNumber(String ownerAccountNumber) {
+        this.ownerAccountNumber = ownerAccountNumber;
     }
 }

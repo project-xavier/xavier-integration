@@ -30,9 +30,9 @@ public class UserServiceTest {
 
     @Test
     public void userService_AnalysisGiven_ShouldReturnUser() {
-        analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
-        analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com");
-        analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com");
+        analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
+        analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com", "user_account_number");
+        analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "mrizzi@redhat.com", "user_account_number");
 
         assertThat(userService.findUser("user name").isFirstTimeCreatingReports()).isEqualTo(false);
         assertThat(userService.findUser("mrizzi@redhat.com").isFirstTimeCreatingReports()).isEqualTo(false);

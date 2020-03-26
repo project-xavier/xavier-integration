@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -78,15 +79,24 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
-    public static Processor xRhIdentityHeaderProcessor = exchange -> {
+    public Processor xRhIdentityHeaderProcessor = exchange -> {
         String xRhIdentityEncoded = exchange.getIn().getHeader(X_RH_IDENTITY, String.class);
         if (xRhIdentityEncoded != null) {
             String xRhIdentityDecoded = new String(Base64.getDecoder().decode(xRhIdentityEncoded));
-            JsonNode xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
 
-            String username = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "username").textValue();
+            JsonNode xRhIdentityJsonNode;
+            try {
+                xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
+            } catch (JsonParseException e) {
+                log.error("x-rh-identity could not be parsed to JSON Object");
+                return;
+            }
+
+            String username = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "user", "username").map(JsonNode::textValue).orElse(null);
+            String userAccountNumber = Utils.getFieldValueFromJsonNode(xRhIdentityJsonNode, "identity", "account_number").map(JsonNode::textValue).orElse(null);
 
             exchange.getIn().setHeader(USERNAME, username);
+            exchange.getIn().setHeader(USER_ACCOUNT_NUMBER, userAccountNumber);
             exchange.getIn().setHeader(X_RH_IDENTITY_JSON_NODE, xRhIdentityJsonNode);
         }
     };
@@ -126,9 +136,14 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         from("direct:analysis-model").routeId("analysis-model-creation")
                 .process(e -> {
                     String userName = e.getIn().getHeader(USERNAME, String.class);
-                    AnalysisModel analysisModel = analysisService.buildAndSave((String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportName"),
+                    String userAccountNumber = e.getIn().getHeader(USER_ACCOUNT_NUMBER, String.class);
+                    AnalysisModel analysisModel = analysisService.buildAndSave(
+                            (String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportName"),
                             (String) e.getIn().getHeader(MA_METADATA, Map.class).get("reportDescription"),
-                            (String) e.getIn().getHeader(Exchange.FILE_NAME), userName);
+                            (String) e.getIn().getHeader(Exchange.FILE_NAME),
+                            userName,
+                            userAccountNumber
+                    );
                     e.getIn().getHeader(MA_METADATA, Map.class).put(ANALYSIS_ID, analysisModel.getId().toString());
                 });
 
@@ -328,7 +343,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     private Processor httpError400() {
         return exchange -> {
           exchange.getIn().setBody("{ \"error\": \"Bad Request\"}");
-          exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
+          exchange.getIn().setHeader(Exchange.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
           exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
         };
     }
