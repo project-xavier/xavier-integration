@@ -546,7 +546,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnFilteredCsvUsingDefaultOrder() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com", "user_account_number");
 
 
         List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
@@ -622,7 +622,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisIdAndReturnFilteredCsv() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com", "user_account_number");
 
         List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
 
@@ -702,7 +702,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_FilterAndSortParamsGiven_ShouldCallFindByAnalysisId_usingRightParams_AndReturnEmptyFilteredCsv() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "mrizzi@redhat.com", "user_account_number");
 
         List<WorkloadInventoryReportModel> workloadInventoryReportModels = new ArrayList<>();
 

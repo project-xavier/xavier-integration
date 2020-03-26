@@ -33,7 +33,7 @@ public class InitialSavingsEstimationReportServiceTest {
 
     @Test
     public void initialSavingsEstimationReportService_NewReportGiven_ShouldPersistEntityAndFilterByAnalysisOwner() {
-        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("reportName", "reportDescription", "payloadName", "user name", "user_account_number");
         InitialSavingsEstimationReportModel reportModel = new InitialSavingsEstimationReportModel();
         reportModel.setCreationDate(new Date());
         analysisService.setInitialSavingsEstimationReportModel(reportModel, analysisModel.getId());

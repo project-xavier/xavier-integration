@@ -38,7 +38,7 @@ public class MainRouteBuilder_SedaDownloadTest extends XavierCamelTest {
     @Test
     public void mainRouteBuilder_DirectDownloadFile_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         mockUnzipFile.expectedMessageCount(1);
 
@@ -93,7 +93,7 @@ public class MainRouteBuilder_SedaDownloadTest extends XavierCamelTest {
     @Test
     public void mainRouteBuilder_DirectDownloadFile_HTTPErrorDownloadingFileGiven_ShouldMarkAnalysisAsFailed() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override

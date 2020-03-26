@@ -40,7 +40,7 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
     @Test
     public void mainRouteBuilder_DirectCalculate_PersistedNotificationGiven_ShouldCallFileWithGivenHeaders() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         String customerId = "CID123";
         String fileName = "cloudforms-export-v1.json";
@@ -91,7 +91,7 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
     @Test
     public void mainRouteBuilder_DirectCalculate_FileGiven_ShouldSendMessageToJMS() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         mockJmsQueueCostSavings.expectedMessageCount(1);
 
@@ -137,7 +137,7 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
     @Test
     public void mainRouteBuilder_DirectCalculateWithV1_0_0_FileGiven_ShouldSendMessageToJMS() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
         mockJmsQueueCostSavings.expectedMessageCount(1);
 
         String fileName = "cloudforms-export-v1_0_0.json";
@@ -184,7 +184,7 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
     @Test
     public void mainRouteBuilder_DirectCalculateWithMultipleJSONFilesGiven_ShouldSendOneMessageToICSAnd2ToWILQueue() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
         mockJmsQueueCostSavings.expectedMessageCount(1);
         mockDirectWorkloadInventory.expectedMessageCount(2);
