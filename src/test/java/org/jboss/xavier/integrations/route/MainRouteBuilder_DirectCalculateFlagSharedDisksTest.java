@@ -40,7 +40,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
             }
         });
 
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
         Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
         expectedVmNamesWithSharedDisk.add("dev-windows-server-2008-TEST");
         expectedVmNamesWithSharedDisk.add("james-db-03-copy");
@@ -93,7 +93,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
             }
         });
 
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
         Set<String> expectedVmNamesWithSharedDisk = new HashSet<>();
         expectedVmNamesWithSharedDisk.add("tomcat");
         expectedVmNamesWithSharedDisk.add("lb");
@@ -138,7 +138,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
     @Test
     public void mainRouteBuilder_DirectReevaluateWorkloadInventoryReport_GivenWorkloadInventoryReports_ShouldUpdateComplexity() throws Exception {
         //Given
-        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name");
+        AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
 
         Long wirId = 1L;

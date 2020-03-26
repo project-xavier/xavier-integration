@@ -13,6 +13,7 @@ public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
     public static final String MA_METADATA = "MA_metadata";
     public static final String ANALYSIS_ID = "analysisId";
     public static final String USERNAME = "analysisUsername";
+    public static final String USER_ACCOUNT_NUMBER = "analysisUserAccountNumber";
     public static final String CORRELATION_ID = "correlationId";
     public static final String WORKING_DIR = "workingFile";
     public static final String WORKING_FILE = "workingFile";
