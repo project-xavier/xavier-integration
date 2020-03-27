@@ -60,7 +60,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 WorkloadInventoryReportModel wir = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
                 exchange.getIn().setHeader(ANALYSIS_ID, wir.getAnalysis().getId());
             })
-                .setHeader("KieSessionId", constant("WorkloadInventoryComplexityKSession0"))
+                .setHeader("KieSessionId", constant("WorkloadInventoryReevaluateKBase"))
                 .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
             .end()
             .process(exchange -> {
@@ -71,6 +71,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                             WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneByOwnerAndId(username, element.getId());
                             dbWir.setComplexity(element.getComplexity());
                             dbWir.setFlagsIMS(element.getFlagsIMS());
+                            dbWir.setRecommendedTargetsIMS(element.getRecommendedTargetsIMS());
                             return dbWir;
                         }).collect(Collectors.toList());
                 workloadInventoryReportService.saveAll(updatedWir);
