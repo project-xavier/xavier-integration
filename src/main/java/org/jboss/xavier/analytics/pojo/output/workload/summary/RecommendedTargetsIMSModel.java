@@ -22,14 +22,14 @@ import javax.persistence.*;
 
 @NamedNativeQuery(
         name = "RecommendedTargetsIMSModel.calculateRecommendedTargetsIMS",
-        query = "select count(distinct wi.id) as total, \n" +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhv' then 1 else 0 end), 0) as rhv, \n" +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='osp' then 1 else 0 end), 0) as osp, \n" +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhel' then 1 else 0 end), 0) as rhel, \n" +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='cnv' then 1 else 0 end), 0) as cnv \n" +
-                "from workload_inventory_report_model_recommended_targetsims rt \n" +
-                "right join workload_inventory_report_model wi on rt.workload_inventory_report_model_id=wi.id \n" +
-                "where wi.analysis_id = :analysisId \n",
+        query = "select count(distinct wi.id) as total, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhv' then 1 else 0 end), 0) as rhv, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='osp' then 1 else 0 end), 0) as osp, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhel' then 1 else 0 end), 0) as rhel, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='cnv' then 1 else 0 end), 0) as cnv " +
+                "from workload_inventory_report_model_recommended_targetsims rt " +
+                "right join workload_inventory_report_model wi on rt.workload_inventory_report_model_id=wi.id " +
+                "where wi.analysis_id = :analysisId",
         resultSetMapping = "mappingRecommendedTargetsIMSModels"
 )
 

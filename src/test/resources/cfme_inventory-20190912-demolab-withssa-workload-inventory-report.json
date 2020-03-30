@@ -68,6 +68,7 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "RHV",
+          "CNV",
           "OSP"
         ],
         "flagsIMS": [],
@@ -117,6 +118,7 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "RHV",
+          "CNV",
           "OSP"
         ],
         "flagsIMS": [],
@@ -142,7 +144,8 @@
         ],
         "complexity": "Medium",
         "recommendedTargetsIMS": [
-          "RHV"
+          "RHV",
+          "CNV"
         ],
         "flagsIMS": [
           "RDM"
@@ -169,7 +172,8 @@
         ],
         "complexity": "Medium",
         "recommendedTargetsIMS": [
-          "RHV"
+          "RHV",
+          "CNV"
         ],
         "flagsIMS": [
           "RDM"
@@ -195,6 +199,7 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "RHV",
+          "CNV",
           "OSP"
         ],
         "flagsIMS": [],
@@ -221,6 +226,7 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "RHV",
+          "CNV",
           "OSP"
         ],
         "flagsIMS": [],
@@ -301,6 +307,7 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "RHV",
+          "CNV",
           "OSP"
         ],
         "flagsIMS": [],
@@ -327,6 +334,7 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "RHV",
+          "CNV",
           "OSP"
         ],
         "flagsIMS": [],
@@ -353,6 +361,7 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "RHV",
+          "CNV",
           "OSP"
         ],
         "flagsIMS": [],
