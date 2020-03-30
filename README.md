@@ -115,4 +115,8 @@ If using the Fedora docker package it is needed to set the *ryuk.container.privi
 # References
 
 
- 
+# Github Actions
+Github Actions is used to manage the software development workflow of this project. Every single Workflow should be placed in
+the folder `.github/workflows/` using the `.yml` extension; e.g. `my-action.yml`. Currently we have:
+- `.github/workflows/ci-actions.yml` used for executing unit tests and end-to-end tests on Pull Requests, new Commits in the `master` branch, and it also executes
+tests daily using the `schedule:cron` feature. See the comments inside the file for more details.
