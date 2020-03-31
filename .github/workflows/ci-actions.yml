@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v1
         if: failure()
         with:
-          name: test-reports-linux-jvm${{matrix.java-version}}
+          name: test-reports
           path: 'test-reports.tgz'
 ##
 ## THE SONAR ANALYSIS WILL BE DONE IN TRAVIS
@@ -90,4 +90,14 @@ jobs:
         with:
           java-version: openjdk8
       - name: Build with Maven
-        run: eval mvn $JVM_TEST_MAVEN_OPTS -P endToEnd -Dtest=${{ matrix.class-name }} test
+        run: eval mvn $JVM_TEST_MAVEN_OPTS -P coverage,endToEnd -Dtest=${{ matrix.class-name }} test
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czvf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-${{matrix.class-name}}
+          path: 'test-reports.tgz'
