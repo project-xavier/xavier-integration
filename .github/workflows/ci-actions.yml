@@ -41,18 +41,33 @@ jobs:
           java-version: openjdk8
       - name: Build with Maven
         # If 'pull_request' just execute tests
-        if: github.event_name == 'pull_request'
+#        if: github.event_name == 'pull_request'
         run: eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage
-      - name: Build with Maven and Sonar
-        # If not 'pull_request' execute tests and analyze the code using Sonar maven profile
-        if: github.event_name != 'pull_request'
-        run: eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage,sonar
-        env:
-          # No need to add GITHUB_TOKEN to the list of secrets in Github since it is available by default.
-          # But we do need to add SONAR_TOKEN in the Github Secrets Page.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-# The coverage will come from Travis CI for now
+      - name: Prepare failure archive (if maven failed)
+        if: failure()
+        shell: bash
+        run: find . -name '*-reports' -type d | tar -czvf test-reports.tgz -T -
+      - name: Upload failure Archive (if maven failed)
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: test-reports-linux-jvm${{matrix.java-version}}
+          path: 'test-reports.tgz'
+##
+## THE SONAR ANALYSIS WILL BE DONE IN TRAVIS
+##
+#      - name: Build with Maven and Sonar
+#        # If not 'pull_request' execute tests and analyze the code using Sonar maven profile
+#        if: github.event_name != 'pull_request'
+#        run: eval mvn $JVM_TEST_MAVEN_OPTS verify -P coverage,sonar
+#        env:
+#          # No need to add GITHUB_TOKEN to the list of secrets in Github since it is available by default.
+#          # But we do need to add SONAR_TOKEN in the Github Secrets Page.
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+##
+## THE COVERAGE REPORT SHOULD BE GENERATED IN TRAVIS
+##
 #      - name: Codecov metrics
 #        uses: codecov/codecov-action@v1
 
