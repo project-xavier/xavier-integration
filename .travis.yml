@@ -49,6 +49,6 @@ jobs:
         - LOGGING_LEVEL_ROOT=info
         - ANALYSIS_DATAINTEGRITY_LOG=false
       script:
-        - mvn test -Pcoverage -PendToEnd
+        - mvn test -P coverage,unitTests-endToEnd
         - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then sonar-scanner; fi'
         - bash <(curl -s https://codecov.io/bash)
