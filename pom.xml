@@ -467,6 +467,7 @@
                         <version>${maven-surefire-plugin.version}</version>
                         <configuration>
                             <includes>
+                                <include>**/*Test.java</include>
                                 <include>**/*EndToEndIT.java</include>
                             </includes>
                         </configuration>
