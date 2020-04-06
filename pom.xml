@@ -95,7 +95,7 @@
 
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-metrics</artifactId>
+            <artifactId>camel-metrics-starter</artifactId>
         </dependency>
 
         <dependency>
