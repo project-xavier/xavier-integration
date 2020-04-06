@@ -18,10 +18,7 @@
 
     <!-- use camel-metrics route policy to gather metrics for all routes -->
     <bean id="metricsRoutePolicyFactory" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"/>
-
-    <!-- use camel-metrics message history to gather metrics for all messages being routed -->
-    <bean id="metricsMessageHistoryFactory" class="org.apache.camel.component.metrics.messagehistory.MetricsMessageHistoryFactory"/>
-
+    
     <!-- setup ActiveMQ Artemis connection factory -->
     <bean id="artemisConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory">
         <constructor-arg index="0" value="tcp://${amq.server}:${amq.port:61616}"/>
