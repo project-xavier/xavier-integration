@@ -11,13 +11,13 @@
     <jpa:repositories base-package="org.jboss.xavier.integrations.jpa" />
 
     <!-- Metrics-->
-<!--    <bean id="metricsPolicy" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy">-->
-<!--        <property name="useJmx" value="true"/>-->
-<!--        <property name="jmxDomain" value="fis.metrics"/>-->
-<!--    </bean>-->
+    <bean id="metricsPolicy" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy">
+        <property name="useJmx" value="true"/>
+        <property name="jmxDomain" value="fis.metrics"/>
+    </bean>
 
     <!-- use camel-metrics route policy to gather metrics for all routes -->
-<!--    <bean id="metricsRoutePolicyFactory" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"/>-->
+    <bean id="metricsRoutePolicyFactory" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"/>
 
     <!-- setup ActiveMQ Artemis connection factory -->
     <bean id="artemisConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory">
@@ -145,6 +145,7 @@
                             <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.page}, ${header.size})" />
                         </otherwise>
                     </choice>
+                    <to uri="metrics:counter:analysis.list"/>
                 </route>
             </get>
             <get uri="/{id}">
