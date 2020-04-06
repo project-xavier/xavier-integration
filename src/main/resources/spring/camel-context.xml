@@ -11,13 +11,16 @@
     <jpa:repositories base-package="org.jboss.xavier.integrations.jpa" />
 
     <!-- Metrics-->
-<!--    <bean id="metricsPolicy" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy">-->
-<!--        <property name="useJmx" value="true"/>-->
-<!--        <property name="jmxDomain" value="fis.metrics"/>-->
-<!--    </bean>-->
+    <bean id="metricsPolicy" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy">
+        <property name="useJmx" value="true"/>
+        <property name="jmxDomain" value="fis.metrics"/>
+    </bean>
 
     <!-- use camel-metrics route policy to gather metrics for all routes -->
     <bean id="metricsRoutePolicyFactory" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"/>
+
+    <!-- use camel-metrics message history to gather metrics for all messages being routed -->
+    <bean id="metricsMessageHistoryFactory" class="org.apache.camel.component.metrics.messagehistory.MetricsMessageHistoryFactory"/>
 
     <!-- setup ActiveMQ Artemis connection factory -->
     <bean id="artemisConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory">
@@ -135,7 +138,7 @@
                 <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" />
                 <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
                 <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
-                <route id="reports-get-all" routePolicyRef="metricsRoutePolicyFactory">
+                <route id="reports-get-all" routePolicyRef="metricsPolicy">
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>
