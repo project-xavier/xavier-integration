@@ -11,10 +11,10 @@
     <jpa:repositories base-package="org.jboss.xavier.integrations.jpa" />
 
     <!-- Metrics-->
-    <bean id="metricsPolicy" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy">
-        <property name="useJmx" value="true"/>
-        <property name="jmxDomain" value="fis.metrics"/>
-    </bean>
+<!--    <bean id="metricsPolicy" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy">-->
+<!--        <property name="useJmx" value="true"/>-->
+<!--        <property name="jmxDomain" value="fis.metrics"/>-->
+<!--    </bean>-->
 
     <!-- use camel-metrics route policy to gather metrics for all routes -->
     <bean id="metricsRoutePolicyFactory" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"/>
@@ -135,7 +135,7 @@
                 <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" />
                 <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
                 <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
-                <route id="reports-get-all" routePolicyRef="metricsPolicy">
+                <route id="reports-get-all" routePolicyRef="metricsRoutePolicyFactory">
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>
