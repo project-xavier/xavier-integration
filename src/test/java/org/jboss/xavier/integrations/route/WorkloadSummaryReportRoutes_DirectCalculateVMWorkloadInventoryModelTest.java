@@ -63,7 +63,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
 
         List<Set<String>> recommendedTargetsIMS = new ArrayList<>(Arrays.asList(
                 new HashSet<>(Arrays.asList("rhv", "osp", "RHEL")),
-                new HashSet<>(Arrays.asList("rhv", "osp", "cnv")),
+                new HashSet<>(Arrays.asList("rhv", "osp", "ocp")),
                 new HashSet<>(Arrays.asList("osp", "rhel")),
                 new HashSet<>(Collections.singletonList("RHEL")),
                 new HashSet<>(Collections.singletonList("other")),
@@ -213,7 +213,7 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         Assert.assertEquals(2, (int) recommendedTargetsIMS.getRhv());
         Assert.assertEquals(3, (int) recommendedTargetsIMS.getOsp());
         Assert.assertEquals(3, (int) recommendedTargetsIMS.getRhel());
-        Assert.assertEquals(1, (int) recommendedTargetsIMS.getCnv());
+        Assert.assertEquals(1, (int) recommendedTargetsIMS.getOcp());
 
         camelContext.stop();
     }
