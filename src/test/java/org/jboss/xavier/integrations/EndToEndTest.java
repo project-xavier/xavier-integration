@@ -587,15 +587,9 @@ public class EndToEndTest {
                 .filter(e -> ("tomcat".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2159550464L)).count()).isEqualTo(1);
         assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
                 .filter(e -> ("lb".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2620260352L + 5000L)).count()).isEqualTo(1);
-
-        // Test > 4 NICS flag
-        logger.info("+++++++  Test with a file with >4 NICs Flag ++++++");
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-v1_0_0_with_missing_attributes.json", "application/json"), String.class);
-        assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(5);
-
-        
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_nics_flag = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_file_nics_flag.getBody().getContent().stream().filter(e -> e.getFlagsIMS().contains(">4 vNICs")).count()).isEqualTo(0);
+        //NICs flag test
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+                .filter(e -> e.getFlagsIMS().contains(">4 vNICs")).count()).isEqualTo(0);
 
 
 
