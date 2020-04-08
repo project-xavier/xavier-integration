@@ -15,7 +15,7 @@ import javax.persistence.*;
                         @ColumnResult(name = "rhv", type = Integer.class),
                         @ColumnResult(name = "osp", type = Integer.class),
                         @ColumnResult(name = "rhel", type = Integer.class),
-                        @ColumnResult(name = "cnv", type = Integer.class)
+                        @ColumnResult(name = "ocp", type = Integer.class)
                 }
         )
 )
@@ -26,7 +26,7 @@ import javax.persistence.*;
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='rhv' then 1 else 0 end), 0) as rhv, " +
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='osp' then 1 else 0 end), 0) as osp, " +
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='rhel' then 1 else 0 end), 0) as rhel, " +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='cnv' then 1 else 0 end), 0) as cnv " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='ocp' then 1 else 0 end), 0) as ocp " +
                 "from workload_inventory_report_model_recommended_targetsims rt " +
                 "right join workload_inventory_report_model wi on rt.workload_inventory_report_model_id=wi.id " +
                 "where wi.analysis_id = :analysisId",
@@ -57,16 +57,16 @@ public class RecommendedTargetsIMSModel
     private Integer rhv;
     private Integer rhel;
     private Integer osp;
-    private Integer cnv;
+    private Integer ocp;
 
     public RecommendedTargetsIMSModel() {}
 
-    public RecommendedTargetsIMSModel(Integer total, Integer rhv, Integer osp, Integer rhel, Integer cnv) {
+    public RecommendedTargetsIMSModel(Integer total, Integer rhv, Integer osp, Integer rhel, Integer ocp) {
         this.total = total;
         this.rhv = rhv;
         this.osp = osp;
         this.rhel = rhel;
-        this.cnv = cnv;
+        this.ocp = ocp;
     }
 
     public Long getId() {
@@ -117,12 +117,12 @@ public class RecommendedTargetsIMSModel
         this.osp = osp;
     }
 
-    public Integer getCnv() {
-        return cnv;
+    public Integer getOcp() {
+        return ocp;
     }
 
-    public void setCnv(Integer cnv) {
-        this.cnv = cnv;
+    public void setOcp(Integer ocp) {
+        this.ocp = ocp;
     }
 
     @Override
@@ -133,7 +133,7 @@ public class RecommendedTargetsIMSModel
                 ", rhv='" + rhv +
                 ", rhel=" + rhel +
                 ", osp=" + osp +
-                ", cnv=" + cnv +
+                ", ocp=" + ocp +
                 '}';
     }
 
