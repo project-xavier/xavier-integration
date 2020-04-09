@@ -25,7 +25,8 @@
       "total": 14,
       "rhv": 13,
       "rhel": 4,
-      "osp": 11
+      "osp": 11,
+      "ocp": 9
     },
     "workloadsDetectedOSTypeModels": [
       {

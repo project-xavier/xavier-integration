@@ -14,14 +14,22 @@ import javax.persistence.*;
                         @ColumnResult(name = "total", type = Integer.class),
                         @ColumnResult(name = "rhv", type = Integer.class),
                         @ColumnResult(name = "osp", type = Integer.class),
-                        @ColumnResult(name = "rhel", type = Integer.class)
+                        @ColumnResult(name = "rhel", type = Integer.class),
+                        @ColumnResult(name = "ocp", type = Integer.class)
                 }
         )
 )
 
 @NamedNativeQuery(
         name = "RecommendedTargetsIMSModel.calculateRecommendedTargetsIMS",
-        query = "select count(distinct wi.id) as total, coalesce(sum(case when lower(rt.recommended_targetsims)='rhv' then 1 else 0 end), 0) as rhv, coalesce(sum(case when lower(rt.recommended_targetsims)='osp' then 1 else 0 end), 0) as osp, coalesce(sum(case when lower(rt.recommended_targetsims)='rhel' then 1 else 0 end), 0) as rhel from workload_inventory_report_model_recommended_targetsims rt right join workload_inventory_report_model wi on rt.workload_inventory_report_model_id=wi.id where wi.analysis_id = :analysisId",
+        query = "select count(distinct wi.id) as total, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhv' then 1 else 0 end), 0) as rhv, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='osp' then 1 else 0 end), 0) as osp, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhel' then 1 else 0 end), 0) as rhel, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='ocp' then 1 else 0 end), 0) as ocp " +
+                "from workload_inventory_report_model_recommended_targetsims rt " +
+                "right join workload_inventory_report_model wi on rt.workload_inventory_report_model_id=wi.id " +
+                "where wi.analysis_id = :analysisId",
         resultSetMapping = "mappingRecommendedTargetsIMSModels"
 )
 
@@ -49,14 +57,16 @@ public class RecommendedTargetsIMSModel
     private Integer rhv;
     private Integer rhel;
     private Integer osp;
+    private Integer ocp;
 
     public RecommendedTargetsIMSModel() {}
 
-    public RecommendedTargetsIMSModel(Integer total, Integer rhv, Integer osp, Integer rhel) {
+    public RecommendedTargetsIMSModel(Integer total, Integer rhv, Integer osp, Integer rhel, Integer ocp) {
         this.total = total;
         this.rhv = rhv;
         this.osp = osp;
         this.rhel = rhel;
+        this.ocp = ocp;
     }
 
     public Long getId() {
@@ -107,6 +117,14 @@ public class RecommendedTargetsIMSModel
         this.osp = osp;
     }
 
+    public Integer getOcp() {
+        return ocp;
+    }
+
+    public void setOcp(Integer ocp) {
+        this.ocp = ocp;
+    }
+
     @Override
     public String toString() {
         return "RecommendedTargetsIMSModel{" +
@@ -115,6 +133,7 @@ public class RecommendedTargetsIMSModel
                 ", rhv='" + rhv +
                 ", rhel=" + rhel +
                 ", osp=" + osp +
+                ", ocp=" + ocp +
                 '}';
     }
 
