@@ -1323,6 +1323,33 @@
                         ],
                         "nics": [
                             {
+                                "id": 26,
+                                "device_name": "Network adapter 2",
+                                "device_type": "ethernet",
+                                "address": "00:50:56:99:54:c3",
+                                "model": "VirtualVmxnet3",
+                                "uid_ems": "00:50:56:99:54:c3",
+                                "network": null
+                            },
+                            {
+                                "id": 25,
+                                "device_name": "Network adapter 2",
+                                "device_type": "ethernet",
+                                "address": "00:50:56:99:54:c3",
+                                "model": "VirtualVmxnet3",
+                                "uid_ems": "00:50:56:99:54:c3",
+                                "network": null
+                            },
+                            {
+                                "id": 24,
+                                "device_name": "Network adapter 2",
+                                "device_type": "ethernet",
+                                "address": "00:50:56:99:54:c3",
+                                "model": "VirtualVmxnet3",
+                                "uid_ems": "00:50:56:99:54:c3",
+                                "network": null
+                            },
+                            {
                                 "id": 20,
                                 "device_name": "Network adapter 2",
                                 "device_type": "ethernet",
