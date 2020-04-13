@@ -587,6 +587,10 @@ public class EndToEndTest {
                 .filter(e -> ("tomcat".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2159550464L)).count()).isEqualTo(1);
         assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
                 .filter(e -> ("lb".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2620260352L + 5000L)).count()).isEqualTo(1);
+        //NICs flag test
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+                .filter(e -> e.getFlagsIMS().contains(">4 vNICs")).count()).isEqualTo(0);
+
 
 
         // Ultra Performance test
