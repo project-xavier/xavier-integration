@@ -348,4 +348,5 @@ public class WorkloadInventoryReportModel
     public void setInsightsEnabled(Boolean insightsEnabled) {
         this.insightsEnabled = insightsEnabled;
     }
+
 }
