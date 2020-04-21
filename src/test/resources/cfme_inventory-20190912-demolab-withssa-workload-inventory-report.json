@@ -24,7 +24,8 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": false
+        "ssaEnabled": false,
+        "insightsEnabled": false
       },
       {
         "id": 48034,
@@ -51,7 +52,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": false
+        "ssaEnabled": false,
+        "insightsEnabled": false
       },
       {
         "id": 48029,
@@ -76,7 +78,8 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48023,
@@ -99,7 +102,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": false
+        "ssaEnabled": false,
+        "insightsEnabled": false
       },
       {
         "id": 48025,
@@ -126,7 +130,8 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48028,
@@ -154,7 +159,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48035,
@@ -182,7 +188,8 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48036,
@@ -207,7 +214,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48030,
@@ -234,7 +242,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48031,
@@ -261,7 +270,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48026,
@@ -288,7 +298,8 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48032,
@@ -315,7 +326,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48024,
@@ -342,7 +354,8 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       },
       {
         "id": 48027,
@@ -369,6 +382,7 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false
       }
 ]
