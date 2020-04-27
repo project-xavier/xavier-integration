@@ -25,8 +25,8 @@ import javax.persistence.*;
                 "inner join workload_inventory_report_model WIR on WIR.analysis_id = A.id \n" +
                 "inner join workload_inventory_report_model_workloads W on W.workload_inventory_report_model_id = WIR.id \n" +
                 "inner join java_runtime_model JRM on JRM.workload = W.workloads \n" +
-                "group by W.workloads \n" +
-                "where A.id = :analysisId",
+                "where A.id = :analysisId \n" +
+                "group by W.workloads, JRM.vendor, JRM.version",
         resultSetMapping = "mappingWorkloadsJavaRuntimeDetectedModels"
 )
 @Entity

@@ -69,7 +69,6 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ScanRunModel> scanRunModels;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes;
 
