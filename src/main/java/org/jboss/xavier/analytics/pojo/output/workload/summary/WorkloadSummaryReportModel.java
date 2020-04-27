@@ -158,6 +158,7 @@ public class WorkloadSummaryReportModel
     }
 
     public void setJavaRuntimes(Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes) {
+        javaRuntimes.forEach(model -> model.setReport(this));
         this.javaRuntimes = javaRuntimes;
     }
 }
