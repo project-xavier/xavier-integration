@@ -69,6 +69,10 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ScanRunModel> scanRunModels;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes;
+
     public WorkloadSummaryReportModel() {}
 
     public Long getId() {
@@ -148,5 +152,13 @@ public class WorkloadSummaryReportModel
     public void setScanRunModels(Set<ScanRunModel> scanRunModels) {
         scanRunModels.forEach(model -> model.setReport(this));
         this.scanRunModels = scanRunModels;
+    }
+
+    public Set<WorkloadsJavaRuntimeDetectedModel> getJavaRuntimes() {
+        return javaRuntimes;
+    }
+
+    public void setJavaRuntimes(Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes) {
+        this.javaRuntimes = javaRuntimes;
     }
 }
