@@ -12,7 +12,7 @@ import javax.persistence.*;
                 targetClass = WorkloadsJavaRuntimeDetectedModel.class,
                 columns = {
                         @ColumnResult(name = "vendor", type = String.class),
-                        @ColumnResult(name = "version", type = Integer.class),
+                        @ColumnResult(name = "version", type = String.class),
                         @ColumnResult(name = "total", type = Integer.class)
                 }
         )
