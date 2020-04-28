@@ -47,5 +47,6 @@
         "date": 1568239200000,
         "smartStateEnabled": "Virt Platform + SmartState"
       }
-    ]
+    ],
+    "javaRuntimes": []
   }
