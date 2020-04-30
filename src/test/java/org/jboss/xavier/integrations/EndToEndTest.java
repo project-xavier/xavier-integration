@@ -17,14 +17,14 @@ import org.awaitility.Duration;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.JavaRuntimeModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.JavaRuntimeIdentityModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.AppIdentifierModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.AppIdentifierIDModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
-import org.jboss.xavier.integrations.jpa.repository.JavaRuntimeRepository;
+import org.jboss.xavier.integrations.jpa.repository.AppIdentifierRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
@@ -149,7 +149,7 @@ public class EndToEndTest {
     private InitialSavingsEstimationReportRepository initialSavingsEstimationReportRepository;
 
     @Inject
-    private JavaRuntimeRepository javaRuntimeRepository;
+    private AppIdentifierRepository appIdentifierRepository;
 
     @Value("${S3_BUCKET}")
     private String bucket;
@@ -380,19 +380,47 @@ public class EndToEndTest {
 
     @Before
     public void setDefaults() {
-        JavaRuntimeModel runtime1 = new JavaRuntimeModel();
-        runtime1.setWorkload("Oracle JDK 8");
-        runtime1.setId(new JavaRuntimeIdentityModel("Oracle", "8"));
+        // Group 1
+        String groupJava = "Java";
+        String jdkVendor = "Oracle";
 
-        JavaRuntimeModel runtime2 = new JavaRuntimeModel();
-        runtime2.setWorkload("Oracle JDK 11");
-        runtime2.setId(new JavaRuntimeIdentityModel("Oracle", "11"));
+        AppIdentifierModel runtime1 = new AppIdentifierModel();
+        runtime1.setVersion("8");
+        runtime1.setIdentifier("Oracle JDK 8"); // Workload name
+        runtime1.setId(new AppIdentifierIDModel(groupJava, jdkVendor));
 
-        JavaRuntimeModel runtime3 = new JavaRuntimeModel();
-        runtime3.setWorkload("Oracle JDK 13");
-        runtime3.setId(new JavaRuntimeIdentityModel("Oracle", "13"));
+        AppIdentifierModel runtime2 = new AppIdentifierModel();
+        runtime2.setVersion("11");
+        runtime2.setIdentifier("Oracle JDK 11"); // Workload name
+        runtime2.setId(new AppIdentifierIDModel(groupJava, jdkVendor));
 
-        javaRuntimeRepository.save(Arrays.asList(runtime1, runtime2, runtime3));
+        AppIdentifierModel runtime3 = new AppIdentifierModel();
+        runtime3.setVersion("13");
+        runtime3.setIdentifier("Oracle JDK 13"); // Workload name
+        runtime3.setId(new AppIdentifierIDModel(groupJava, jdkVendor));
+
+        appIdentifierRepository.save(Arrays.asList(runtime1, runtime2, runtime3));
+
+        // Group 2, Application does not manages versions
+        String groupApplication = "Application";
+
+        AppIdentifierModel application1 = new AppIdentifierModel();
+        application1.setId(new AppIdentifierIDModel(groupApplication, "JBoss EAP"));
+        application1.setIdentifier("Red Hat JBoss EAP"); // Workload name
+
+        AppIdentifierModel application2 = new AppIdentifierModel();
+        application2.setId(new AppIdentifierIDModel(groupApplication, "Tomcat"));
+        application2.setIdentifier("Tomcat"); // Workload name
+
+        AppIdentifierModel application3 = new AppIdentifierModel();
+        application3.setId(new AppIdentifierIDModel(groupApplication, "Oracle Weblogic"));
+        application3.setIdentifier("Oracle Weblogic"); // Workload name
+
+        AppIdentifierModel application4 = new AppIdentifierModel();
+        application4.setId(new AppIdentifierIDModel(groupApplication, "IBM WebSphere"));
+        application4.setIdentifier("IBM Websphere App Server"); // Workload name
+
+        appIdentifierRepository.save(Arrays.asList(application1, application2, application3, application4));
     }
     @After
     public void cleanUp() throws IOException {

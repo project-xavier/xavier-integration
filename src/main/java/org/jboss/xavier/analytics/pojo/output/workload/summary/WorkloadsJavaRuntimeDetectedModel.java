@@ -20,18 +20,20 @@ import javax.persistence.*;
 
 @NamedNativeQuery(
         name = "WorkloadsJavaRuntimeDetectedModel.calculateWorkloadsJavaRuntimeDetectedModels",
-        query = "select JRM.vendor as vendor, JRM.version as version, count(WIR.id) as total \n" +
+        query = "select AP.name as vendor, AP.version as version, count(WIR.id) as total \n" +
                 "from analysis_model A \n" +
                 "inner join workload_inventory_report_model WIR on WIR.analysis_id = A.id \n" +
                 "inner join workload_inventory_report_model_workloads W on W.workload_inventory_report_model_id = WIR.id \n" +
-                "inner join java_runtime_model JRM on JRM.workload = W.workloads \n" +
-                "where A.id = :analysisId \n" +
-                "group by W.workloads, JRM.vendor, JRM.version",
+                "inner join app_identifier_model AP on AP.identifier = W.workloads \n" +
+                "where AP.group_name='" + WorkloadsJavaRuntimeDetectedModel.APP_IDENTIFIER + "' and A.id = :analysisId \n" +
+                "group by W.workloads, AP.name, AP.version",
         resultSetMapping = "mappingWorkloadsJavaRuntimeDetectedModels"
 )
 @Entity
 public class WorkloadsJavaRuntimeDetectedModel
 {
+    public final static String APP_IDENTIFIER = "Java";
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "WORKLOADSJAVARUNTIMEDETECTEDMODEL_ID_GENERATOR")
     @GenericGenerator(
