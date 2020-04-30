@@ -1,33 +1,27 @@
 package org.jboss.xavier.analytics.pojo.output.workload.summary;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 @Entity
 public class AppIdentifierModel {
 
-    @JsonIgnore
-    @EmbeddedId
-    private AppIdentifierIDModel id;
+    @Id
+    private Long id;
 
-    @Column(insertable = false, updatable = false)
     private String groupName;
 
-    @Column(insertable = false, updatable = false)
     private String name;
 
     private String version;
 
     private String identifier;
 
-    public AppIdentifierIDModel getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(AppIdentifierIDModel id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -35,16 +29,16 @@ public class AppIdentifierModel {
         return groupName;
     }
 
-    public void setGroupName(String group) {
-        this.groupName = group;
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String vendor) {
-        this.name = vendor;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getVersion() {

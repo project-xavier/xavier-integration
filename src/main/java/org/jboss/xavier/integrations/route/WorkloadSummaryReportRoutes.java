@@ -38,6 +38,9 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
     @Inject
     WorkloadsJavaRuntimeDetectedService workloadsJavaRuntimeDetectedService;
 
+    @Inject
+    WorkloadsApplicationPlatformsDetectedService workloadsApplicationPlatformsDetectedService;
+
     @Override
     public void configure() throws Exception {
         super.configure();
@@ -82,6 +85,9 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
 
                 List<WorkloadsJavaRuntimeDetectedModel> workloadsJavaRuntimeDetectedModels = workloadsJavaRuntimeDetectedService.calculateWorkloadsJavaRuntimeDetectedModels(analysisId);
                 workloadSummaryReportModel.setJavaRuntimes(new LinkedHashSet<>(workloadsJavaRuntimeDetectedModels)); // // LinkedList to preserve the order
+
+                List<WorkloadsApplicationPlatformsDetectedModel> workloadsApplicationPlatformsDetectedModels = workloadsApplicationPlatformsDetectedService.calculateWorkloadApplicationPlatformsDetectedModels(analysisId);
+                workloadSummaryReportModel.setApplicationPlatforms(new LinkedHashSet<>(workloadsApplicationPlatformsDetectedModels)); // // LinkedList to preserve the order
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel and update status to CREATED
                 analysisService.setWorkloadSummaryReportModelAndUpdateStatus(workloadSummaryReportModel, analysisId);

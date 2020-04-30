@@ -72,6 +72,9 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes;
 
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<WorkloadsApplicationPlatformsDetectedModel> applicationPlatforms;
+
     public WorkloadSummaryReportModel() {}
 
     public Long getId() {
@@ -160,5 +163,14 @@ public class WorkloadSummaryReportModel
     public void setJavaRuntimes(Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes) {
         javaRuntimes.forEach(model -> model.setReport(this));
         this.javaRuntimes = javaRuntimes;
+    }
+
+    public Set<WorkloadsApplicationPlatformsDetectedModel> getApplicationPlatforms() {
+        return applicationPlatforms;
+    }
+
+    public void setApplicationPlatforms(Set<WorkloadsApplicationPlatformsDetectedModel> applications) {
+        applications.forEach(model -> model.setReport(this));
+        this.applicationPlatforms = applications;
     }
 }

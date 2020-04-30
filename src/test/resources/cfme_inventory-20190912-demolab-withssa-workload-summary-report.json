@@ -48,5 +48,31 @@
         "smartStateEnabled": "Virt Platform + SmartState"
       }
     ],
-    "javaRuntimes": []
+    "javaRuntimes": [],
+    "applicationPlatforms": [
+      {
+        "id": 1,
+        "name": "Tomcat",
+        "version": null,
+        "total": 1
+      },
+      {
+        "id": 2,
+        "name": "IBM WebSphere",
+        "version": null,
+        "total": 1
+      },
+      {
+        "id": 3,
+        "name": "JBoss EAP",
+        "version": null,
+        "total": 2
+      },
+      {
+        "id": 4,
+        "name": "Oracle Weblogic",
+        "version": null,
+        "total": 1
+      }
+    ]
   }

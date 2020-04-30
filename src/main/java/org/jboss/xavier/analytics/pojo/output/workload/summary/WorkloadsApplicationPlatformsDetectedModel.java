@@ -7,11 +7,11 @@ import org.hibernate.annotations.Parameter;
 import javax.persistence.*;
 
 @SqlResultSetMapping(
-        name = "mappingWorkloadsJavaRuntimeDetectedModels",
+        name = "mappingWorkloadsApplicationPlatformsDetectedModels",
         classes = @ConstructorResult(
-                targetClass = WorkloadsJavaRuntimeDetectedModel.class,
+                targetClass = WorkloadsApplicationPlatformsDetectedModel.class,
                 columns = {
-                        @ColumnResult(name = "vendor", type = String.class),
+                        @ColumnResult(name = "name", type = String.class),
                         @ColumnResult(name = "version", type = String.class),
                         @ColumnResult(name = "total", type = Integer.class)
                 }
@@ -19,28 +19,28 @@ import javax.persistence.*;
 )
 
 @NamedNativeQuery(
-        name = "WorkloadsJavaRuntimeDetectedModel.calculateWorkloadsJavaRuntimeDetectedModels",
-        query = "select AP.name as vendor, AP.version as version, count(WIR.id) as total \n" +
+        name = "WorkloadsApplicationPlatformsDetectedModel.calculateWorkloadApplicationPlatformsDetectedModels",
+        query = "select AP.name as name, AP.version as version, count(WIR.id) as total \n" +
                 "from analysis_model A \n" +
                 "inner join workload_inventory_report_model WIR on WIR.analysis_id = A.id \n" +
                 "inner join workload_inventory_report_model_workloads W on W.workload_inventory_report_model_id = WIR.id \n" +
                 "inner join app_identifier_model AP on AP.identifier = W.workloads \n" +
-                "where AP.group_name='" + WorkloadsJavaRuntimeDetectedModel.APP_IDENTIFIER + "' and A.id = :analysisId \n" +
+                "where AP.group_name='" + WorkloadsApplicationPlatformsDetectedModel.APP_IDENTIFIER + "' and A.id = :analysisId \n" +
                 "group by W.workloads, AP.name, AP.version",
-        resultSetMapping = "mappingWorkloadsJavaRuntimeDetectedModels"
+        resultSetMapping = "mappingWorkloadsApplicationPlatformsDetectedModels"
 )
 @Entity
-public class WorkloadsJavaRuntimeDetectedModel
+public class WorkloadsApplicationPlatformsDetectedModel
 {
-    public final static String APP_IDENTIFIER = "JAVA_RUNTIME";
+    public final static String APP_IDENTIFIER = "APPLICATION_PLATFORM";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "WORKLOADSJAVARUNTIMEDETECTEDMODEL_ID_GENERATOR")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "WORKLOADSAPPLICATIONPLATFORMSDETECTEDMODEL_ID_GENERATOR")
     @GenericGenerator(
-            name = "WORKLOADSJAVARUNTIMEDETECTEDMODEL_ID_GENERATOR",
+            name = "WORKLOADSAPPLICATIONPLATFORMSDETECTEDMODEL_ID_GENERATOR",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
             parameters = {
-                    @Parameter(name = "sequence_name", value = "WORKLOADSJAVARUNTIMEDETECTEDMODEL_SEQUENCE")
+                    @Parameter(name = "sequence_name", value = "WORKLOADSAPPLICATIONPLATFORMSDETECTEDMODEL_SEQUENCE")
             }
     )
     private Long id;
@@ -50,14 +50,14 @@ public class WorkloadsJavaRuntimeDetectedModel
     @JsonBackReference
     private WorkloadSummaryReportModel report;
 
-    private String vendor;
+    private String name;
     private String version;
     private Integer total;
 
-    public WorkloadsJavaRuntimeDetectedModel() {}
+    public WorkloadsApplicationPlatformsDetectedModel() {}
 
-    public WorkloadsJavaRuntimeDetectedModel(String vendor, String version, Integer total) {
-        this.vendor = vendor;
+    public WorkloadsApplicationPlatformsDetectedModel(String name, String version, Integer total) {
+        this.name = name;
         this.version = version;
         this.total = total;
     }
@@ -78,12 +78,12 @@ public class WorkloadsJavaRuntimeDetectedModel
         this.report = report;
     }
 
-    public String getVendor() {
-        return vendor;
+    public String getName() {
+        return name;
     }
 
-    public void setVendor(String vendor) {
-        this.vendor = vendor;
+    public void setName(String vendor) {
+        this.name = vendor;
     }
 
     public String getVersion() {
@@ -104,10 +104,10 @@ public class WorkloadsJavaRuntimeDetectedModel
 
     @Override
     public String toString() {
-        return "WorkloadsJavaRuntimeDetectedModel{" +
+        return "WorkloadsApplicationPlatformsDetectedModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", vendor='" + vendor + '\'' +
+                ", name='" + name + '\'' +
                 ", version='" + version + '\'' +
                 ", total=" + total +
                 '}';
