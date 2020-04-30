@@ -10,6 +10,14 @@ public class JavaRuntimeIdentityModel implements Serializable {
     private String vendor;
     private String version;
 
+    public JavaRuntimeIdentityModel() {
+    }
+
+    public JavaRuntimeIdentityModel(String vendor, String version) {
+        this.vendor = vendor;
+        this.version = version;
+    }
+
     public String getVendor() {
         return vendor;
     }

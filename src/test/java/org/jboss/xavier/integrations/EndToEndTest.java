@@ -17,17 +17,20 @@ import org.awaitility.Duration;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.JavaRuntimeModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.JavaRuntimeIdentityModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
-import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
+import org.jboss.xavier.integrations.jpa.repository.JavaRuntimeRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,6 +75,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
@@ -145,7 +149,7 @@ public class EndToEndTest {
     private InitialSavingsEstimationReportRepository initialSavingsEstimationReportRepository;
 
     @Inject
-    private AnalysisRepository analysisRepository;
+    private JavaRuntimeRepository javaRuntimeRepository;
 
     @Value("${S3_BUCKET}")
     private String bucket;
@@ -374,6 +378,22 @@ public class EndToEndTest {
         }
     }
 
+    @Before
+    public void setDefaults() {
+        JavaRuntimeModel runtime1 = new JavaRuntimeModel();
+        runtime1.setWorkload("Oracle JDK 8");
+        runtime1.setId(new JavaRuntimeIdentityModel("Oracle", "8"));
+
+        JavaRuntimeModel runtime2 = new JavaRuntimeModel();
+        runtime2.setWorkload("Oracle JDK 11");
+        runtime2.setId(new JavaRuntimeIdentityModel("Oracle", "11"));
+
+        JavaRuntimeModel runtime3 = new JavaRuntimeModel();
+        runtime3.setWorkload("Oracle JDK 13");
+        runtime3.setId(new JavaRuntimeIdentityModel("Oracle", "13"));
+
+        javaRuntimeRepository.save(Arrays.asList(runtime1, runtime2, runtime3));
+    }
     @After
     public void cleanUp() throws IOException {
         // cleaning downloadable files/directories
@@ -599,6 +619,19 @@ public class EndToEndTest {
         ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_with_insights_enabled = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
         assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().size()).isEqualTo(14);
         assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().stream().filter(e -> e.getInsightsEnabled()).count()).isEqualTo(2);
+
+        // Test Java Runtimes in WMS
+        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20200304-Linux_JDK.tar.gz", "application/zip"), String.class);
+
+        assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(14);
+
+        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReportJavaRuntimes = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+        WorkloadSummaryReportModel workloadSummaryReport_JavaRuntimesExpected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20200304-Linux_JDK-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
+
+        assertThat(workloadSummaryReportJavaRuntimes.getBody())
+                .usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*",  ".*report.*", ".*workloadsDetectedOSTypeModels.*", ".*scanRunModels.*")
+                .isEqualTo(workloadSummaryReport_JavaRuntimesExpected);
 
         // Ultra Performance test
         logger.info("+++++++  Ultra Performance Test ++++++");
