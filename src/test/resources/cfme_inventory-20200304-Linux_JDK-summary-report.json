@@ -1,8 +1,8 @@
 {
-  "id": 1043,
+  "id": 1044,
   "summaryModels": [
     {
-      "id": 1050,
+      "id": 1051,
       "provider": "vSphere",
       "clusters": 1,
       "sockets": 20,
@@ -13,7 +13,7 @@
     }
   ],
   "complexityModel": {
-    "id": 1043,
+    "id": 1044,
     "easy": 7,
     "medium": 3,
     "hard": 3,
@@ -21,7 +21,7 @@
     "unsupported": 1
   },
   "recommendedTargetsIMSModel": {
-    "id": 992,
+    "id": 993,
     "total": 14,
     "rhv": 13,
     "rhel": 4,
@@ -30,19 +30,19 @@
   },
   "workloadsDetectedOSTypeModels": [
     {
-      "id": 1093,
+      "id": 1095,
       "osName": "ServerNT",
       "total": 1
     },
     {
-      "id": 1092,
+      "id": 1094,
       "osName": "Linux",
       "total": 12
     }
   ],
   "scanRunModels": [
     {
-      "id": 875,
+      "id": 876,
       "target": "vSphere",
       "date": 1583280000000,
       "smartStateEnabled": true
@@ -50,39 +50,45 @@
   ],
   "javaRuntimes": [
     {
-      "id": 13,
+      "id": 16,
       "vendor": "Oracle",
       "version": "11",
       "total": 1
     },
     {
-      "id": 14,
-      "vendor": "Oracle",
-      "version": "13",
-      "total": 1
-    },
-    {
-      "id": 15,
+      "id": 18,
       "vendor": "Oracle",
       "version": "8",
       "total": 2
+    },
+    {
+      "id": 17,
+      "vendor": "Oracle",
+      "version": "13",
+      "total": 1
     }
   ],
   "applicationPlatforms": [
     {
-      "id": 13,
+      "id": 17,
       "name": "Oracle Weblogic",
       "version": null,
       "total": 1
     },
     {
-      "id": 14,
+      "id": 16,
+      "name": "IBM WebSphere",
+      "version": null,
+      "total": 1
+    },
+    {
+      "id": 18,
       "name": "JBoss EAP",
       "version": null,
       "total": 2
     },
     {
-      "id": 15,
+      "id": 19,
       "name": "Tomcat",
       "version": null,
       "total": 1
