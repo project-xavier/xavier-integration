@@ -658,7 +658,7 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().size()).isEqualTo(14);
         assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().stream().filter(e -> e.getInsightsEnabled()).count()).isEqualTo(2);
 
-        // Test Java Runtimes in WMS
+        // Test Java Runtimes and Application Platforms in WMS
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20200304-Linux_JDK.tar.gz", "application/zip"), String.class);
 
         assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(14);
@@ -668,7 +668,7 @@ public class EndToEndTest {
 
         assertThat(workloadSummaryReportJavaRuntimes.getBody())
                 .usingRecursiveComparison()
-                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*",  ".*report.*", ".*workloadsDetectedOSTypeModels.*", ".*scanRunModels.*", ".*applicationPlatforms.*")
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*",  ".*report.*", ".*workloadsDetectedOSTypeModels.*", ".*scanRunModels.*")
                 .isEqualTo(workloadSummaryReport_JavaRuntimesExpected);
 
         // Ultra Performance test
