@@ -36,6 +36,9 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
     SummaryService summaryService;
 
     @Inject
+    OSInformationService osInformationService;
+
+    @Inject
     WorkloadsJavaRuntimeDetectedService workloadsJavaRuntimeDetectedService;
 
     @Inject
@@ -81,13 +84,16 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
 
                 // Calculate parts of the Workload Summary Report which depends of previous data
                 List<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels = workloadsDetectedOSTypeService.calculateWorkloadsDetectedOSTypeModels(analysisId);
-                workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(new LinkedHashSet<>(workloadsDetectedOSTypeModels)); // // LinkedHashSet to preserve the order
+                workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(new LinkedHashSet<>(workloadsDetectedOSTypeModels)); // LinkedHashSet to preserve the order
+
+                List<OSInformationModel> osInformationModels = osInformationService.calculateOSFamiliesModels(analysisId);
+                workloadSummaryReportModel.setOsInformation(new LinkedHashSet<>(osInformationModels)); // LinkedList to preserve the order
 
                 List<WorkloadsJavaRuntimeDetectedModel> workloadsJavaRuntimeDetectedModels = workloadsJavaRuntimeDetectedService.calculateWorkloadsJavaRuntimeDetectedModels(analysisId);
-                workloadSummaryReportModel.setJavaRuntimes(new LinkedHashSet<>(workloadsJavaRuntimeDetectedModels)); // // LinkedList to preserve the order
+                workloadSummaryReportModel.setJavaRuntimes(new LinkedHashSet<>(workloadsJavaRuntimeDetectedModels)); // LinkedList to preserve the order
 
                 List<WorkloadsApplicationPlatformsDetectedModel> workloadsApplicationPlatformsDetectedModels = workloadsApplicationPlatformsDetectedService.calculateWorkloadApplicationPlatformsDetectedModels(analysisId);
-                workloadSummaryReportModel.setApplicationPlatforms(new LinkedHashSet<>(workloadsApplicationPlatformsDetectedModels)); // // LinkedList to preserve the order
+                workloadSummaryReportModel.setApplicationPlatforms(new LinkedHashSet<>(workloadsApplicationPlatformsDetectedModels)); // LinkedList to preserve the order
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel and update status to CREATED
                 analysisService.setWorkloadSummaryReportModelAndUpdateStatus(workloadSummaryReportModel, analysisId);

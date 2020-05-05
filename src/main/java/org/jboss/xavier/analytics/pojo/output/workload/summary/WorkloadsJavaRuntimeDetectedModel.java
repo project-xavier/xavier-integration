@@ -13,6 +13,7 @@ import javax.persistence.*;
                 columns = {
                         @ColumnResult(name = "vendor", type = String.class),
                         @ColumnResult(name = "version", type = String.class),
+                        @ColumnResult(name = "priority", type = Integer.class),
                         @ColumnResult(name = "total", type = Integer.class)
                 }
         )
@@ -20,13 +21,13 @@ import javax.persistence.*;
 
 @NamedNativeQuery(
         name = "WorkloadsJavaRuntimeDetectedModel.calculateWorkloadsJavaRuntimeDetectedModels",
-        query = "select AP.name as vendor, AP.version as version, count(WIR.id) as total \n" +
+        query = "select AP.name as vendor, AP.version as version, AP.priority as priority, count(WIR.id) as total \n" +
                 "from analysis_model A \n" +
                 "inner join workload_inventory_report_model WIR on WIR.analysis_id = A.id \n" +
                 "inner join workload_inventory_report_model_workloads W on W.workload_inventory_report_model_id = WIR.id \n" +
                 "inner join app_identifier_model AP on AP.identifier = W.workloads \n" +
                 "where AP.group_name='" + WorkloadsJavaRuntimeDetectedModel.APP_IDENTIFIER + "' and A.id = :analysisId \n" +
-                "group by W.workloads, AP.name, AP.version",
+                "group by AP.name, AP.version, AP.priority",
         resultSetMapping = "mappingWorkloadsJavaRuntimeDetectedModels"
 )
 @Entity
@@ -52,13 +53,15 @@ public class WorkloadsJavaRuntimeDetectedModel
 
     private String vendor;
     private String version;
+    private Integer priority;
     private Integer total;
 
     public WorkloadsJavaRuntimeDetectedModel() {}
 
-    public WorkloadsJavaRuntimeDetectedModel(String vendor, String version, Integer total) {
+    public WorkloadsJavaRuntimeDetectedModel(String vendor, String version, Integer priority, Integer total) {
         this.vendor = vendor;
         this.version = version;
+        this.priority = priority;
         this.total = total;
     }
 
@@ -94,6 +97,14 @@ public class WorkloadsJavaRuntimeDetectedModel
         this.version = version;
     }
 
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
     public Integer getTotal() {
         return total;
     }
@@ -109,6 +120,7 @@ public class WorkloadsJavaRuntimeDetectedModel
                 ", report=" + report +
                 ", vendor='" + vendor + '\'' +
                 ", version='" + version + '\'' +
+                ", priority=" + priority +
                 ", total=" + total +
                 '}';
     }

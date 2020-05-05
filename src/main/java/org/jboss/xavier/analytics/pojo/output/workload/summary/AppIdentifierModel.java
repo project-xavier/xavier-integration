@@ -17,6 +17,8 @@ public class AppIdentifierModel {
 
     private String identifier;
 
+    private Integer priority;
+
     public Long getId() {
         return id;
     }
@@ -55,5 +57,13 @@ public class AppIdentifierModel {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
     }
 }

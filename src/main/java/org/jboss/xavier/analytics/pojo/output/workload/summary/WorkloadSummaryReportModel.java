@@ -70,6 +70,9 @@ public class WorkloadSummaryReportModel
     private Set<ScanRunModel> scanRunModels;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<OSInformationModel> osInformation;
+
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -154,6 +157,15 @@ public class WorkloadSummaryReportModel
     public void setScanRunModels(Set<ScanRunModel> scanRunModels) {
         scanRunModels.forEach(model -> model.setReport(this));
         this.scanRunModels = scanRunModels;
+    }
+
+    public Set<OSInformationModel> getOsInformation() {
+        return osInformation;
+    }
+
+    public void setOsInformation(Set<OSInformationModel> osInformation) {
+        osInformation.forEach(model -> model.setReport(this));
+        this.osInformation = osInformation;
     }
 
     public Set<WorkloadsJavaRuntimeDetectedModel> getJavaRuntimes() {
