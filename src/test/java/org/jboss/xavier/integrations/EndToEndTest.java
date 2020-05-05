@@ -626,6 +626,14 @@ public class EndToEndTest {
         int timeoutMilliseconds_secondSmallFile = timeoutMilliseconds_UltraPerformaceTest + timeoutMilliseconds_SmallFileSummaryReport;
         assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", analysisNum + 4), timeoutMilliseconds_secondSmallFile)).isEqualTo( 8);
 
+        // Testing the deletion of a file in S3
+        logger.info("++++++++ Delete report test +++++");
+        int s3Objects = getS3Objects(bucket).size();
+
+        new RestTemplate().delete("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/delete", analysisNum + 4));
+        assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", analysisNum + 4L)).isNull();
+        assertThat(getS3Objects(bucket).size()).isEqualTo(s3Objects - 1);
+
         camelContext.stop();
     }
 

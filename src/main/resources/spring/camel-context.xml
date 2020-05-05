@@ -182,6 +182,7 @@
                         <when>
                             <simple>${body} != null</simple>
                             <bean ref="analysisService" method="deleteById(${header.id})" />
+                            <to uri="aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client&amp;fileName=${body.payloadStorageId}&amp;operation=deleteObject"/>
                             <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
                                 <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_NO_CONTENT}</simple>
                             </setHeader>
