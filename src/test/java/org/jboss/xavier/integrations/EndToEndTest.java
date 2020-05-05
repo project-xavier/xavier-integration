@@ -630,7 +630,7 @@ public class EndToEndTest {
         logger.info("++++++++ Delete report test +++++");
         int s3Objects = getS3Objects(bucket).size();
 
-        new RestTemplate().delete("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/delete", analysisNum + 4));
+        new RestTemplate().delete("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", analysisNum + 4));
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", analysisNum + 4L)).isNull();
         assertThat(getS3Objects(bucket).size()).isEqualTo(s3Objects - 1);
 
