@@ -386,9 +386,11 @@ public class EndToEndTest {
     }
 
     private List<String> getS3Objects(String bucket) {
-        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucket).withMaxKeys(2);
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucket);
 
-        return amazonS3.listObjectsV2(req).getObjectSummaries().stream().map(e -> e.getKey()).collect(Collectors.toList());
+        List<String> collect = amazonS3.listObjectsV2(req).getObjectSummaries().stream().map(e -> e.getKey()).collect(Collectors.toList());
+        logger.info("S3 Objects : " + collect);
+        return collect;
     }
 
     @Test
@@ -398,14 +400,6 @@ public class EndToEndTest {
         // given
         camelContext.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_MAX_CHARS, "5000");
         camelContext.start();
-
-        camelContext.getRouteDefinition("store-in-s3").adviceWith(camelContext, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() {
-                weaveById("set-s3-key")
-                        .replace().process(e -> e.getIn().setHeader(S3Constants.KEY, "S3KEY123" + UUID.randomUUID().toString()));
-            }
-        });
 
         camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
@@ -432,6 +426,7 @@ public class EndToEndTest {
 
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
         int analysisNum = 0;
+        assertThat(getS3Objects(bucket).size()).isEqualTo(0);
 
         logger.info("+++++++  Regular Test ++++++");
         analysisNum++;
@@ -448,7 +443,6 @@ public class EndToEndTest {
             });
 
         // Check S3
-        assertThat(getS3Objects(bucket).stream().allMatch(e -> e.startsWith("S3KEY123"))).isTrue();
         assertThat(getS3Objects(bucket).size()).isEqualTo(1);
 
         // Check DB for initialCostSavingsReport with concrete values
@@ -517,7 +511,6 @@ public class EndToEndTest {
                     softly.assertThat(wks_scanrunmodel_actual).isEqualTo(wks_scanrunmodel_expected);
                     softly.assertThat(wks_ostypemodel_actual).isEqualTo(wks_ostypemodel_expected);
         });
-
         // Performance test
         logger.info("+++++++  Performance Test ++++++");
 
@@ -629,12 +622,13 @@ public class EndToEndTest {
 
         // Testing the deletion of a file in S3
         logger.info("++++++++ Delete report test +++++");
-        int s3Objects = getS3Objects(bucket).size();
+        int s3ObjectsBefore = getS3Objects(bucket).size();
 
-        ResponseEntity<String> stringEntity = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", 1), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
+        ResponseEntity<String> stringEntity = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
         assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_NO_CONTENT);
-        assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 1L)).isNull();
-        assertThat(getS3Objects(bucket).size()).isEqualTo(s3Objects - 1);
+
+        assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
+        assertThat(getS3Objects(bucket).size()).isEqualTo(s3ObjectsBefore - 1);
 
         camelContext.stop();
     }
