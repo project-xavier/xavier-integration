@@ -10,6 +10,7 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.SoftAssertions;
@@ -630,8 +631,9 @@ public class EndToEndTest {
         logger.info("++++++++ Delete report test +++++");
         int s3Objects = getS3Objects(bucket).size();
 
-        new RestTemplate().delete("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", analysisNum + 4));
-        assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", analysisNum + 4L)).isNull();
+        ResponseEntity<String> stringEntity = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", 1), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
+        assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_NO_CONTENT);
+        assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 1L)).isNull();
         assertThat(getS3Objects(bucket).size()).isEqualTo(s3Objects - 1);
 
         camelContext.stop();
