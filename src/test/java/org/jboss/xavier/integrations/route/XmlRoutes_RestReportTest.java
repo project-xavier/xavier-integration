@@ -489,6 +489,13 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         Long one = 1L;
         when(analysisService.findByOwnerAndId("mrizzi@redhat.com",one)).thenReturn(new AnalysisModel());
         doNothing().when(analysisService).deleteById(one);
+        
+        camelContext.getRouteDefinition("report-delete").adviceWith(camelContext, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() {
+                weaveById("s3DeleteClient").remove();
+            }
+        });
 
         //When
         camelContext.start();
