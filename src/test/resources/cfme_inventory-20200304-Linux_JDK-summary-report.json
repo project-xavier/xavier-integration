@@ -1,8 +1,8 @@
 {
-  "id": 1044,
+  "id": 1048,
   "summaryModels": [
     {
-      "id": 1051,
+      "id": 1055,
       "provider": "vSphere",
       "clusters": 1,
       "sockets": 20,
@@ -13,7 +13,7 @@
     }
   ],
   "complexityModel": {
-    "id": 1044,
+    "id": 1048,
     "easy": 7,
     "medium": 3,
     "hard": 3,
@@ -21,7 +21,7 @@
     "unsupported": 1
   },
   "recommendedTargetsIMSModel": {
-    "id": 993,
+    "id": 997,
     "total": 14,
     "rhv": 13,
     "rhel": 4,
@@ -30,68 +30,105 @@
   },
   "workloadsDetectedOSTypeModels": [
     {
-      "id": 1095,
-      "osName": "ServerNT",
-      "total": 1
-    },
-    {
-      "id": 1094,
+      "id": 1102,
       "osName": "Linux",
       "total": 12
+    },
+    {
+      "id": 1103,
+      "osName": "ServerNT",
+      "total": 1
     }
   ],
   "scanRunModels": [
     {
-      "id": 876,
+      "id": 880,
       "target": "vSphere",
       "date": 1583280000000,
       "smartStateEnabled": true
     }
   ],
-  "javaRuntimes": [
+  "osInformation": [
     {
-      "id": 16,
-      "vendor": "Oracle",
-      "version": "11",
+      "id": 6,
+      "osFamily": "Other",
+      "version": null,
+      "priority": 20,
       "total": 1
     },
     {
-      "id": 18,
+      "id": 7,
+      "osFamily": "RHEL",
+      "version": null,
+      "priority": 100,
+      "total": 8
+    },
+    {
+      "id": 5,
+      "osFamily": "CentOS",
+      "version": null,
+      "priority": 60,
+      "total": 4
+    },
+    {
+      "id": 8,
+      "osFamily": "Windows Server",
+      "version": null,
+      "priority": 90,
+      "total": 1
+    }
+  ],
+  "javaRuntimes": [
+    {
+      "id": 22,
+      "vendor": "Oracle",
+      "version": "11",
+      "priority": null,
+      "total": 1
+    },
+    {
+      "id": 24,
       "vendor": "Oracle",
       "version": "8",
+      "priority": null,
       "total": 2
     },
     {
-      "id": 17,
+      "id": 23,
       "vendor": "Oracle",
       "version": "13",
+      "priority": null,
       "total": 1
     }
   ],
   "applicationPlatforms": [
     {
-      "id": 17,
+      "id": 30,
       "name": "Oracle Weblogic",
       "version": null,
+      "priority": null,
       "total": 1
     },
     {
-      "id": 16,
-      "name": "IBM WebSphere",
-      "version": null,
-      "total": 1
-    },
-    {
-      "id": 18,
-      "name": "JBoss EAP",
-      "version": null,
-      "total": 2
-    },
-    {
-      "id": 19,
+      "id": 31,
       "name": "Tomcat",
       "version": null,
+      "priority": null,
       "total": 1
+    },
+    {
+      "id": 28,
+      "name": "IBM WebSphere",
+      "version": null,
+      "priority": null,
+      "total": 1
+    },
+    {
+      "id": 29,
+      "name": "JBoss EAP",
+      "version": null,
+      "priority": 100,
+      "total": 2
     }
   ]
 }

@@ -375,61 +375,93 @@ public class EndToEndTest {
 
     @Before
     public void setDefaults() {
-        // Group 1
-        String groupJava = WorkloadsJavaRuntimeDetectedModel.APP_IDENTIFIER;
-        String jdkVendor = "Oracle";
+        long id = 0L;
 
-        AppIdentifierModel runtime1 = new AppIdentifierModel();
-        runtime1.setId(1L);
-        runtime1.setGroupName(groupJava);
-        runtime1.setName(jdkVendor);
-        runtime1.setVersion("8");
-        runtime1.setIdentifier("Oracle JDK 8"); // Workload name
+        // OSInformation
+        AppIdentifierModel osFamily1 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("RHEL")
+                .withIdentifier("RHEL") // osFamily field
+                .withPriority(100)
+                .build();
+        AppIdentifierModel osFamily2 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("Windows Server")
+                .withIdentifier("Windows Server") // osFamily field
+                .withPriority(90)
+                .build();
+        AppIdentifierModel osFamily3 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("Windows Other")
+                .withIdentifier("Windows Other") // osFamily field
+                .withPriority(80)
+                .build();
+        AppIdentifierModel osFamily4 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("SUSE")
+                .withIdentifier("SUSE") // osFamily field
+                .withPriority(70)
+                .build();
+        AppIdentifierModel osFamily5 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("CentOS")
+                .withIdentifier("CentOS") // osFamily field
+                .withPriority(60)
+                .build();
+        AppIdentifierModel osFamily6 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("Oracle Linux")
+                .withIdentifier("Oracle Linux") // osFamily field
+                .withPriority(50)
+                .build();
+        AppIdentifierModel osFamily7 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("Ubuntu")
+                .withIdentifier("Ubuntu") // osFamily field
+                .withPriority(40)
+                .build();
+        AppIdentifierModel osFamily8 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("Debian")
+                .withIdentifier("Debian") // osFamily field
+                .withPriority(30)
+                .build();
+        AppIdentifierModel osFamily9 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
+                .withName("Other")
+                .withIdentifier("Other") // osFamily field
+                .withPriority(20)
+                .build();
+        appIdentifierRepository.save(Arrays.asList(osFamily1, osFamily2, osFamily3, osFamily4, osFamily5, osFamily6, osFamily7, osFamily8, osFamily9));
 
-        AppIdentifierModel runtime2 = new AppIdentifierModel();
-        runtime2.setId(2L);
-        runtime2.setGroupName(groupJava);
-        runtime2.setName(jdkVendor);
-        runtime2.setVersion("11");
-        runtime2.setIdentifier("Oracle JDK 11"); // Workload name
+        // JDK Runtimes
+        String oracleVendorName = "Oracle";
+        AppIdentifierModel jdkRuntime1 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(WorkloadsJavaRuntimeDetectedModel.APP_IDENTIFIER)
+                .withName(oracleVendorName)
+                .withVersion("8")
+                .withIdentifier("Oracle JDK 8") // Workload name
+                .build();
+        AppIdentifierModel jdkRuntime2 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(WorkloadsJavaRuntimeDetectedModel.APP_IDENTIFIER)
+                .withName(oracleVendorName)
+                .withVersion("11")
+                .withIdentifier("Oracle JDK 11") // Workload name
+                .build();
+        AppIdentifierModel jdkRuntime3 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(WorkloadsJavaRuntimeDetectedModel.APP_IDENTIFIER)
+                .withName(oracleVendorName)
+                .withVersion("13")
+                .withIdentifier("Oracle JDK 13") // Workload name
+                .build();
+        appIdentifierRepository.save(Arrays.asList(jdkRuntime1, jdkRuntime2, jdkRuntime3));
 
-        AppIdentifierModel runtime3 = new AppIdentifierModel();
-        runtime3.setId(3L);
-        runtime3.setGroupName(groupJava);
-        runtime3.setName(jdkVendor);
-        runtime3.setVersion("13");
-        runtime3.setIdentifier("Oracle JDK 13"); // Workload name
-
-        appIdentifierRepository.save(Arrays.asList(runtime1, runtime2, runtime3));
-
-        // Group 2, Application does not manages versions
-        String groupApplication = WorkloadsApplicationPlatformsDetectedModel.APP_IDENTIFIER;
-
-        AppIdentifierModel application1 = new AppIdentifierModel();
-        application1.setId(4L);
-        application1.setGroupName(groupApplication);
-        application1.setName("JBoss EAP");
-        application1.setIdentifier("Red Hat JBoss EAP"); // Workload name
-
-        AppIdentifierModel application2 = new AppIdentifierModel();
-        application2.setId(5L);
-        application2.setGroupName(groupApplication);
-        application2.setName("Tomcat");
-        application2.setIdentifier("Tomcat"); // Workload name
-
-        AppIdentifierModel application3 = new AppIdentifierModel();
-        application3.setId(6L);
-        application3.setGroupName(groupApplication);
-        application3.setName("Oracle Weblogic");
-        application3.setIdentifier("Oracle Weblogic"); // Workload name
-
-        AppIdentifierModel application4 = new AppIdentifierModel();
-        application4.setId(7L);
-        application4.setGroupName(groupApplication);
-        application4.setName("IBM WebSphere");
-        application4.setIdentifier("IBM Websphere App Server"); // Workload name
-
-        appIdentifierRepository.save(Arrays.asList(application1, application2, application3, application4));
+        // ApplicationPlatforms
+        AppIdentifierModel applicationPlatform1 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(WorkloadsApplicationPlatformsDetectedModel.APP_IDENTIFIER)
+                .withName("JBoss EAP")
+                .withIdentifier("Red Hat JBoss EAP") // Workload name
+                .build();
+        AppIdentifierModel applicationPlatform2 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(WorkloadsApplicationPlatformsDetectedModel.APP_IDENTIFIER)
+                .withName("Tomcat")
+                .withIdentifier("Tomcat") // Workload name
+                .build();
+        AppIdentifierModel applicationPlatform3 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(WorkloadsApplicationPlatformsDetectedModel.APP_IDENTIFIER)
+                .withName("Oracle Weblogic")
+                .withIdentifier("Oracle Weblogic") // Workload name
+                .build();
+        AppIdentifierModel applicationPlatform4 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(WorkloadsApplicationPlatformsDetectedModel.APP_IDENTIFIER)
+                .withName("IBM WebSphere")
+                .withIdentifier("IBM Websphere App Server") // Workload name
+                .build();
+        appIdentifierRepository.save(Arrays.asList(applicationPlatform1, applicationPlatform2, applicationPlatform3, applicationPlatform4));
     }
 
     @After
@@ -658,7 +690,7 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().size()).isEqualTo(14);
         assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().stream().filter(e -> e.getInsightsEnabled()).count()).isEqualTo(2);
 
-        // Test Java Runtimes and Application Platforms in WMS
+        // Test OSInformation, JavaRuntimes, and ApplicationPlatforms in WMS
         new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20200304-Linux_JDK.tar.gz", "application/zip"), String.class);
 
         assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(14);
