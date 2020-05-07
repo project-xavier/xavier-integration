@@ -1,13 +1,11 @@
 package org.jboss.xavier.integrations;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.httpclient.HttpStatus;
@@ -25,6 +23,7 @@ import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetected
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
+import org.jboss.xavier.integrations.storage.StorageService;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +80,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -148,8 +146,8 @@ public class EndToEndTest {
     @Inject
     private AnalysisRepository analysisRepository;
 
-    @Value("${S3_BUCKET}")
-    private String bucket;
+    @Inject
+    private StorageService storageService;
 
     @Value("${server.port:8080}")
     private String serverPort;
@@ -385,14 +383,6 @@ public class EndToEndTest {
         FileUtils.deleteQuietly(new File("src/test/resources/insightsRbacRepo.zip"));
     }
 
-    private List<String> getS3Objects(String bucket) {
-        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucket);
-
-        List<String> collect = amazonS3.listObjectsV2(req).getObjectSummaries().stream().map(e -> e.getKey()).collect(Collectors.toList());
-        logger.info("S3 Objects : " + collect);
-        return collect;
-    }
-
     @Test
     public void end2endTest() throws Exception {
         Thread.sleep(2000);
@@ -426,7 +416,7 @@ public class EndToEndTest {
 
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
         int analysisNum = 0;
-        assertThat(getS3Objects(bucket).size()).isEqualTo(0);
+        assertThat(storageService.getStorageObjectsSize()).isEqualTo(0);
 
         logger.info("+++++++  Regular Test ++++++");
         analysisNum++;
@@ -443,7 +433,7 @@ public class EndToEndTest {
             });
 
         // Check S3
-        assertThat(getS3Objects(bucket).size()).isEqualTo(1);
+        assertThat(storageService.getStorageObjectsSize()).isEqualTo(1);
 
         // Check DB for initialCostSavingsReport with concrete values
         InitialSavingsEstimationReportModel initialCostSavingsReportDB = initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 1L);
@@ -622,13 +612,13 @@ public class EndToEndTest {
 
         // Testing the deletion of a file in S3
         logger.info("++++++++ Delete report test +++++");
-        int s3ObjectsBefore = getS3Objects(bucket).size();
+        int s3ObjectsBefore = storageService.getStorageObjectsSize();
 
         ResponseEntity<String> stringEntity = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
         assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_NO_CONTENT);
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
-        assertThat(getS3Objects(bucket).size()).isEqualTo(s3ObjectsBefore - 1);
+        assertThat(storageService.getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
 
         camelContext.stop();
     }

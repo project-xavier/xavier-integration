@@ -1,5 +1,7 @@
 package org.jboss.xavier.integrations.route;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +28,7 @@ import org.jboss.xavier.integrations.jpa.service.UserService;
 import org.jboss.xavier.integrations.rbac.RBACRouteBuilder;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
+import org.jboss.xavier.integrations.storage.StorageService;
 import org.jboss.xavier.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -76,6 +79,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     @Inject
     private UserService userService;
+
+    @Inject
+    private StorageService storageService;
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
@@ -198,7 +204,8 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                 .setHeader(S3Constants.CONTENT_DISPOSITION, simple("attachment;filename=\"${header.MA_metadata[filename]}\""))
                 .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client&deleteAfterWrite=false").id("s3-call")
                 .process(exchange -> analysisService.updatePayloadStorageId(exchange.getIn().getHeader(S3Constants.KEY, String.class),
-                        Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))));
+                        Long.parseLong((String) exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID))))
+                .process(e -> storageService.getStorageObjectsSize());
 
         from("direct:get-s3-payload-link").routeId("get-s3-payload-link")
                 .choice()
@@ -229,13 +236,13 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                         })
                     .endChoice()
                     .otherwise()
-                        .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
-                        .setHeader("CamelAwsS3DownloadLinkExpiration", constant(s3DownloadLinkExpiration))
-                        .setHeader("CamelAwsS3Operation", constant("downloadLink"))
+                        .setHeader(S3Constants.KEY, simple("${header.AnalysisPayloadStorageId}"))
+                        .setHeader(S3Constants.DOWNLOAD_LINK_EXPIRATION, constant(s3DownloadLinkExpiration))
+                        .setHeader(S3Constants.S3_OPERATION, constant("downloadLink"))
                         .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client").id("aws-s3-get-download-link")
                         .process(exchange -> {
                             String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
-                            String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
+                            String downloadLink = exchange.getIn().getHeader(S3Constants.DOWNLOAD_LINK, String.class);
 
                             PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
                             exchange.getIn().setBody(payloadDownloadLinkModel);

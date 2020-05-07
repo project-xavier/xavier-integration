@@ -2,6 +2,7 @@ package org.jboss.xavier.integrations.route;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
@@ -16,6 +17,7 @@ import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFor
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
+import org.jboss.xavier.integrations.storage.StorageService;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,6 +72,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
     @SpyBean
     private AnalysisService analysisService;
+
+    @MockBean
+    private StorageService storageService;
 
     @SpyBean
     private WorkloadSummaryReportService workloadSummaryReportService;
@@ -1125,8 +1130,8 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
                 public void configure() throws Exception {
                     weaveById("pollEnrich").replace()
                             .setHeader(Exchange.HTTP_RESPONSE_CODE, simple("200"))
-                            .setHeader("CamelAwsS3ContentDisposition", constant("attachment; filename=\"cloudforms-export-v1_0_0.json\""))
-                            .setHeader("CamelAwsS3ContentType", constant("application/octet-stream"))
+                            .setHeader(S3Constants.CONTENT_DISPOSITION, constant("attachment; filename=\"cloudforms-export-v1_0_0.json\""))
+                            .setHeader(S3Constants.CONTENT_TYPE, constant("application/octet-stream"))
                             .setBody(exchange -> this.getClass().getClassLoader().getResourceAsStream("cloudforms-export-v1_0_0.json"));
                 }
             });
@@ -1163,7 +1168,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
             @Override
             public void configure() throws Exception {
                 weaveById("aws-s3-get-download-link").replace()
-                        .setHeader("CamelAwsS3DownloadLink", constant("https://myDownloadLink.s3.com"));
+                        .setHeader(S3Constants.DOWNLOAD_LINK, constant("https://myDownloadLink.s3.com"));
             }
         });
 
