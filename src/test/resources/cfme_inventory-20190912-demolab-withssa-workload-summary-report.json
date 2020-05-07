@@ -1,112 +1,112 @@
 {
-  "id": 461,
-  "summaryModels": [
-    {
-      "id": 486,
-      "provider": "vSphere",
-      "clusters": 1,
-      "sockets": 20,
-      "vms": 14,
-      "hosts": 2,
-      "product": "VMware vCenter",
-      "version": "6.7.2"
-    }
-  ],
-  "complexityModel": {
     "id": 461,
-    "easy": 7,
-    "medium": 4,
-    "hard": 2,
-    "unknown": 0,
-    "unsupported": 1
-  },
-  "recommendedTargetsIMSModel": {
-    "id": 410,
-    "total": 14,
-    "rhv": 13,
-    "rhel": 4,
-    "osp": 11,
-    "ocp": 9
-  },
-  "workloadsDetectedOSTypeModels": [
-    {
-      "id": 470,
-      "osName": "ServerNT",
-      "total": 1
+    "summaryModels": [
+      {
+        "id": 486,
+        "provider": "vSphere",
+        "clusters": 1,
+        "sockets": 20,
+        "vms": 14,
+        "hosts": 2,
+        "product": "VMware vCenter",
+        "version": "6.7.2"
+      }
+    ],
+    "complexityModel": {
+      "id": 461,
+      "easy": 7,
+      "medium": 4,
+      "hard": 2,
+      "unknown": 0,
+      "unsupported": 1
     },
-    {
-      "id": 469,
-      "osName": "Linux",
-      "total": 8
-    }
-  ],
-  "scanRunModels": [
-    {
-      "id": 311,
-      "target": "vSphere",
-      "date": 1568239200000,
-      "smartStateEnabled": "Virt Platform + SmartState"
-    }
-  ],
-  "osInformation": [
-    {
-      "id": 10,
-      "osFamily": "Other",
-      "version": null,
-      "priority": 20,
-      "total": 1
+    "recommendedTargetsIMSModel": {
+      "id": 410,
+      "total": 14,
+      "rhv": 13,
+      "rhel": 4,
+      "osp": 11,
+      "ocp": 9
     },
-    {
-      "id": 11,
-      "osFamily": "RHEL",
-      "version": null,
-      "priority": 100,
-      "total": 8
-    },
-    {
-      "id": 12,
-      "osFamily": "Windows Server",
-      "version": null,
-      "priority": 90,
-      "total": 1
-    },
-    {
-      "id": 9,
-      "osFamily": "CentOS",
-      "version": null,
-      "priority": 60,
-      "total": 4
-    }
-  ],
-  "javaRuntimes": [],
-  "applicationPlatforms": [
-    {
-      "id": 34,
-      "name": "Oracle Weblogic",
-      "version": null,
-      "priority": null,
-      "total": 1
-    },
-    {
-      "id": 35,
-      "name": "Tomcat",
-      "version": null,
-      "priority": null,
-      "total": 1
-    },
-    {
-      "id": 32,
-      "name": "IBM WebSphere",
-      "version": null,
-      "priority": null,
-      "total": 1
-    },
-    {
-      "id": 33,
-      "name": "JBoss EAP",
-      "version": null,
-      "priority": 100,
-      "total": 2
-    }
-  ]
+    "workloadsDetectedOSTypeModels": [
+      {
+        "id": 470,
+        "osName": "ServerNT",
+        "total": 1
+      },
+      {
+        "id": 469,
+        "osName": "Linux",
+        "total": 8
+      }
+    ],
+    "scanRunModels": [
+      {
+        "id": 311,
+        "target": "vSphere",
+        "date": 1568239200000,
+        "smartStateEnabled": "Virt Platform + SmartState"
+      }
+    ],
+    "osInformation": [
+      {
+        "id": 10,
+        "osFamily": "Other",
+        "version": null,
+        "priority": 20,
+        "total": 1
+      },
+      {
+        "id": 11,
+        "osFamily": "RHEL",
+        "version": null,
+        "priority": 100,
+        "total": 8
+      },
+      {
+        "id": 12,
+        "osFamily": "Windows Server",
+        "version": null,
+        "priority": 90,
+        "total": 1
+      },
+      {
+        "id": 9,
+        "osFamily": "CentOS",
+        "version": null,
+        "priority": 60,
+        "total": 4
+      }
+    ],
+    "javaRuntimes": [],
+    "applicationPlatforms": [
+      {
+        "id": 34,
+        "name": "Oracle Weblogic",
+        "version": null,
+        "priority": null,
+        "total": 1
+      },
+      {
+        "id": 35,
+        "name": "Tomcat",
+        "version": null,
+        "priority": null,
+        "total": 1
+      },
+      {
+        "id": 32,
+        "name": "IBM WebSphere",
+        "version": null,
+        "priority": null,
+        "total": 1
+      },
+      {
+        "id": 33,
+        "name": "JBoss EAP",
+        "version": null,
+        "priority": 100,
+        "total": 2
+      }
+    ]
 }
