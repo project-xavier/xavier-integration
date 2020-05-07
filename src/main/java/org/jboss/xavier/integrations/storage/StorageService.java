@@ -14,16 +14,9 @@ import org.springframework.stereotype.Component;
 public class StorageService {
     private static Logger logger = LoggerFactory.getLogger(StorageService.class);
 
-    @Inject
-    @Named("s3client")
-    private AmazonS3 storageClient;
 
-    @Value("${S3_BUCKET}")
-    private String bucket;
 
-    public int getStorageObjectsSize() {
-        int s3Size = storageClient.listObjectsV2(new ListObjectsV2Request().withBucketName(bucket)).getKeyCount();
-        logger.info("S3 Objects : " + s3Size);
-        return s3Size;
-    }
+
+
+
 }

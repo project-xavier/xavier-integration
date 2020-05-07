@@ -1,6 +1,7 @@
 package org.jboss.xavier.integrations;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
@@ -64,6 +65,8 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -146,8 +149,12 @@ public class EndToEndTest {
     @Inject
     private AnalysisRepository analysisRepository;
 
+    @Value("${S3_BUCKET}")
+    private String bucket;
+
     @Inject
-    private StorageService storageService;
+    @Named("s3client")
+    private AmazonS3 storageClient;
 
     @Value("${server.port:8080}")
     private String serverPort;
@@ -382,7 +389,13 @@ public class EndToEndTest {
         FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
         FileUtils.deleteQuietly(new File("src/test/resources/insightsRbacRepo.zip"));
     }
-
+    
+    private int getStorageObjectsSize() {
+        int s3Size = storageClient.listObjectsV2(new ListObjectsV2Request().withBucketName(bucket)).getKeyCount();
+        logger.info("S3 Objects : " + s3Size);
+        return s3Size;
+    }
+    
     @Test
     public void end2endTest() throws Exception {
         Thread.sleep(2000);
@@ -416,7 +429,7 @@ public class EndToEndTest {
 
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
         int analysisNum = 0;
-        assertThat(storageService.getStorageObjectsSize()).isEqualTo(0);
+        assertThat(getStorageObjectsSize()).isEqualTo(0);
 
         logger.info("+++++++  Regular Test ++++++");
         analysisNum++;
@@ -433,7 +446,7 @@ public class EndToEndTest {
             });
 
         // Check S3
-        assertThat(storageService.getStorageObjectsSize()).isEqualTo(1);
+        assertThat(getStorageObjectsSize()).isEqualTo(1);
 
         // Check DB for initialCostSavingsReport with concrete values
         InitialSavingsEstimationReportModel initialCostSavingsReportDB = initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 1L);
@@ -612,13 +625,13 @@ public class EndToEndTest {
 
         // Testing the deletion of a file in S3
         logger.info("++++++++ Delete report test +++++");
-        int s3ObjectsBefore = storageService.getStorageObjectsSize();
+        int s3ObjectsBefore = getStorageObjectsSize();
 
         ResponseEntity<String> stringEntity = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
         assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_NO_CONTENT);
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
-        assertThat(storageService.getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
+        assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
 
         camelContext.stop();
     }
