@@ -17,7 +17,6 @@ import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFor
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
-import org.jboss.xavier.integrations.storage.StorageService;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,9 +71,6 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
     @SpyBean
     private AnalysisService analysisService;
-
-    @MockBean
-    private StorageService storageService;
 
     @SpyBean
     private WorkloadSummaryReportService workloadSummaryReportService;

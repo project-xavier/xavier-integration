@@ -1,7 +1,5 @@
 package org.jboss.xavier.integrations.route;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +26,6 @@ import org.jboss.xavier.integrations.jpa.service.UserService;
 import org.jboss.xavier.integrations.rbac.RBACRouteBuilder;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
-import org.jboss.xavier.integrations.storage.StorageService;
 import org.jboss.xavier.utils.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -79,9 +76,6 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     @Inject
     private UserService userService;
-
-    @Inject
-    private StorageService storageService;
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 

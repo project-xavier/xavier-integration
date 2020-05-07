@@ -24,7 +24,6 @@ import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetected
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
-import org.jboss.xavier.integrations.storage.StorageService;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
