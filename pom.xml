@@ -14,10 +14,11 @@
         <run.profiles>dev</run.profiles>
 
         <!-- configure the Fuse version you want to use here -->
-        <fuse.version>7.3.0.fuse-730058-redhat-00001</fuse.version>
+        <fuse.version>7.6.0.fuse-760027-redhat-00001</fuse.version>
 
         <drools.version>7.18.0.Final-redhat-00002</drools.version>
         <activemq.artemis.version>2.7.0</activemq.artemis.version>
+        <spring.version>1.5.22.RELEASE</spring.version>
 
         <!-- maven plugin versions -->
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
@@ -34,6 +35,14 @@
                 <groupId>org.jboss.redhat-fuse</groupId>
                 <artifactId>fuse-springboot-bom</artifactId>
                 <version>${fuse.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <!-- Import dependency management from Spring Boot -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -74,6 +83,10 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring-boot-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-undertow-starter</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -81,7 +94,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-swagger-java-starter</artifactId>
+            <artifactId>camel-rest-openapi-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-openapi-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -175,10 +192,11 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-bindy-starter</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.8</version>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
         </dependency>
 
         <!-- For decision server auto-configuration -->
