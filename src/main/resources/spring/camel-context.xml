@@ -181,7 +181,9 @@
                     <choice>
                         <when>
                             <simple>${body} != null</simple>
+                            <setHeader headerName="${type:org.apache.camel.component.aws.s3.S3Constants.KEY}"><simple>${body.payloadStorageId}</simple></setHeader>
                             <bean ref="analysisService" method="deleteById(${header.id})" />
+                            <to uri="aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client&amp;operation=deleteObject" id="s3DeleteClient"/>
                             <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
                                 <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_NO_CONTENT}</simple>
                             </setHeader>
