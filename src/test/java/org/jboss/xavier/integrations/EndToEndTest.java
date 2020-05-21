@@ -629,7 +629,7 @@ public class EndToEndTest {
         logger.info("++++++++ Delete report test +++++");
         int s3ObjectsBefore = getStorageObjectsSize();
 
-        ResponseEntity<String> stringEntity = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
+        ResponseEntity<String> stringEntity = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
         assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_NO_CONTENT);
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
