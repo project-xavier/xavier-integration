@@ -488,13 +488,13 @@ public class EndToEndTest {
         FileUtils.deleteDirectory(new File("src/test/resources/insights-rbac"));
         FileUtils.deleteQuietly(new File("src/test/resources/insightsRbacRepo.zip"));
     }
-    
+
     private int getStorageObjectsSize() {
         int s3Size = storageClient.listObjectsV2(new ListObjectsV2Request().withBucketName(bucket)).getKeyCount();
         logger.info("S3 Objects : " + s3Size);
         return s3Size;
     }
-    
+
     @Test
     public void end2endTest() throws Exception {
         Thread.sleep(2000);
@@ -697,11 +697,11 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().stream().filter(e -> e.getInsightsEnabled()).count()).isEqualTo(2);
 
         // Test OSInformation, JavaRuntimes, and ApplicationPlatforms in WMS
-        new RestTemplate().postForEntity("http://localhost:" + serverPort + "/api/xavier/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20200304-Linux_JDK.tar.gz", "application/zip"), String.class);
+        new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20200304-Linux_JDK.tar.gz", "application/zip"), String.class);
 
-        assertThat(callSummaryReportAndCheckVMs(String.format("/api/xavier/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(14);
+        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(14);
 
-        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReportJavaRuntimes = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
+        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReportJavaRuntimes = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
         WorkloadSummaryReportModel workloadSummaryReport_JavaRuntimesExpected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20200304-Linux_JDK-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
 
         assertThat(workloadSummaryReportJavaRuntimes.getBody())
