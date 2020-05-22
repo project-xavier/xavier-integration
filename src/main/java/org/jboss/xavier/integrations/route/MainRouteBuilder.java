@@ -79,6 +79,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
+    @Inject
+    ObjectMapper objectMapper;
+
     public Processor xRhIdentityHeaderProcessor = exchange -> {
         String xRhIdentityEncoded = exchange.getIn().getHeader(X_RH_IDENTITY, String.class);
         if (xRhIdentityEncoded != null) {
@@ -86,7 +89,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
             JsonNode xRhIdentityJsonNode;
             try {
-                xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
+                xRhIdentityJsonNode = objectMapper.reader().readTree(xRhIdentityDecoded);
             } catch (JsonParseException e) {
                 log.error("x-rh-identity could not be parsed to JSON Object");
                 return;
@@ -332,7 +335,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     public Map<String,String> extractMAmetadataHeaderFromIdentity(FilePersistedNotification filePersistedNotification) throws IOException {
         String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
-        JsonNode node= new ObjectMapper().reader().readTree(identity_json);
+        JsonNode node= objectMapper.reader().readTree(identity_json);
 
         Map header = new HashMap<String, String>();
         JsonNode internalNode = node.get("identity").get("internal");
@@ -383,7 +386,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     }
 
     public String getRHIdentity(String x_rh_identity_base64, String filename, Map<String, Object> headers) throws IOException {
-        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
+        JsonNode node= objectMapper.reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
 
         ObjectNode internalNode = (ObjectNode) node.get("identity").get("internal");
         internalNode.put("filename", filename);

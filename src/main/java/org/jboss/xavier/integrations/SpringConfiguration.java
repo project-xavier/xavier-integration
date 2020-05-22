@@ -1,12 +1,9 @@
 package org.jboss.xavier.integrations;
 
-import java.text.SimpleDateFormat;
-
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,10 +22,7 @@ public class SpringConfiguration {
     @Value("${S3_REGION}")
     String region;
 
-    @Value("${json.dateFormat:yyyy-MM-ddTHH:mm:ss}")
-    String jsonDateFormat;
-
-    @Bean(name = "s3client")
+   @Bean(name = "s3client")
     public AmazonS3 getAmazonS3client() {
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(key,secret)))
@@ -36,10 +30,4 @@ public class SpringConfiguration {
                 .build();
     }
 
-    @Bean
-    public ObjectMapper gObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setDateFormat(new SimpleDateFormat(jsonDateFormat));
-        return mapper;
-    }
 }

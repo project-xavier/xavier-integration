@@ -297,6 +297,9 @@ public class EndToEndTest {
     @Inject
     AmazonS3 amazonS3;
 
+    @Inject
+    private ObjectMapper objectMapper;
+
     private static void cloneIngressRepoAndUnzip() throws IOException {
         // downloading, unzipping, renaming
         String ingressRepoZipURL = "https://github.com/RedHatInsights/insights-ingress-go/archive/" + ingressCommitHash + ".zip";
@@ -462,7 +465,7 @@ public class EndToEndTest {
         ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
 
         // Checks on Initial Savings Report
-        InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
+        InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
         SoftAssertions.assertSoftly(softly -> softly.assertThat(initialCostSavingsReport.getBody())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*", ".*report.*")
@@ -487,14 +490,14 @@ public class EndToEndTest {
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
         });
 
-        WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel[].class);
+        WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel[].class);
         assertThat(workloadInventoryReport.getBody().getContent().toArray())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
                 .isEqualTo(workloadInventoryReportModelExpected);
 
         // Checks on Workload Summary Report
-        WorkloadSummaryReportModel workloadSummaryReport_Expected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
+        WorkloadSummaryReportModel workloadSummaryReport_Expected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
 
         assertThat(workloadSummaryReport.getBody())
                 .usingRecursiveComparison()
@@ -632,6 +635,8 @@ public class EndToEndTest {
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
 
+        ResponseEntity<String> initialCostSavingsReportJSON = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<String>() {});
+        assertThat(initialCostSavingsReportJSON.getBody().matches("regex"));
         camelContext.stop();
     }
 
