@@ -28,6 +28,7 @@ import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotif
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -176,6 +177,18 @@ public class EndToEndTest {
     @Value("${test.bigfile.vms_expected:5254}")
     private int numberVMsExpected_InBigFile;
 
+    @Inject
+    CamelContext camelContext;
+
+    @Inject
+    AmazonS3 amazonS3;
+
+    @Inject
+    private ObjectMapper objectMapper;
+
+    @Value("${camel.component.servlet.mapping.context-path}")
+    private String basePath;
+
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         @Override
@@ -291,16 +304,7 @@ public class EndToEndTest {
         }
     }
 
-    @Inject
-    CamelContext camelContext;
 
-    @Inject
-    AmazonS3 amazonS3;
-
-    @Inject
-    private ObjectMapper objectMapper;
-    @Value("${camel.component.servlet.mapping.context-path}")
-    private String basePath;
 
     private static void cloneIngressRepoAndUnzip() throws IOException {
         // downloading, unzipping, renaming
@@ -384,6 +388,7 @@ public class EndToEndTest {
         }
     }
 
+    @Before
     @After
     public void cleanUp() throws IOException {
         // cleaning downloadable files/directories
@@ -519,7 +524,6 @@ public class EndToEndTest {
                     softly.assertThat(wks_ostypemodel_actual).isEqualTo(wks_ostypemodel_expected);
         });
 
-/*        
         // Performance test
         logger.info("+++++++  Performance Test ++++++");
 
@@ -638,11 +642,10 @@ public class EndToEndTest {
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
-*/
+
         // Checking that the JSON file for Cost Savings Report has ISO Format Dates
-        ResponseEntity<String> initialCostSavingsReportJSON = new RestTemplate().exchange("http://localhost:" + serverPort + String.format("/api/xavier/report/%d/initial-saving-estimation", 1), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<String>() {});
-        System.out.println(initialCostSavingsReportJSON.getBody());
-        assertThat(initialCostSavingsReportJSON.getBody().matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}")).isTrue();
+        ResponseEntity<String> initialCostSavingsReportJSON = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", 1), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<String>() {});
+        assertThat(initialCostSavingsReportJSON.getBody().matches(".*creationDate\"\\:\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")).isTrue();
         
         camelContext.stop();
     }
