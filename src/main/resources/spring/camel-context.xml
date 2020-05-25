@@ -201,7 +201,7 @@
             </delete>
             <get uri="/{id}/initial-saving-estimation">
                 <description>Get the Initial Cost Saving report</description>
-                <route id="reports-get-details">
+                <route id="initial-saving-estimation-report-get-details">
                     <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.initialSavingEstimation</constant></setHeader>
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
