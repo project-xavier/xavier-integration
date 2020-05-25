@@ -9,7 +9,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.SoftAssertions;
@@ -46,6 +45,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -66,6 +66,8 @@ import org.testcontainers.utility.MountableFile;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.NotFoundException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,6 +89,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
@@ -500,7 +503,7 @@ public class EndToEndTest {
         WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel[].class);
         assertThat(workloadInventoryReport.getBody().getContent().toArray())
                 .usingRecursiveComparison()
-                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*", ".*osFamily")
                 .isEqualTo(workloadInventoryReportModelExpected);
 
         // Checks on Workload Summary Report
@@ -523,6 +526,16 @@ public class EndToEndTest {
                     softly.assertThat(wks_scanrunmodel_actual).isEqualTo(wks_scanrunmodel_expected);
                     softly.assertThat(wks_ostypemodel_actual).isEqualTo(wks_ostypemodel_expected);
         });
+
+        // Checking that the JSON file for Cost Savings Report has ISO Format Dates
+        ResponseEntity<String> initialCostSavingsReportJSON = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", 1), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<String>() {});
+        assertThat(initialCostSavingsReportJSON.getBody().matches(".*creationDate\"\\:\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")).isTrue();
+
+        // Checking that a NOT FOUND status code is returned when asking for a Initial Savings Report that doesnt exist
+        assertThatExceptionOfType(org.springframework.web.client.HttpClientErrorException.class)
+          .isThrownBy(() -> new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", 9999), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<String>() {}))
+          .matches(e -> e.getStatusCode().equals(HttpStatus.NOT_FOUND))
+          .matches(e -> e.getResponseBodyAsString().equalsIgnoreCase("Report not found"));
 
         // Performance test
         logger.info("+++++++  Performance Test ++++++");
@@ -638,15 +651,12 @@ public class EndToEndTest {
         int s3ObjectsBefore = getStorageObjectsSize();
 
         ResponseEntity<String> stringEntity = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
-        assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_NO_CONTENT);
+        assertThat(stringEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
 
-        // Checking that the JSON file for Cost Savings Report has ISO Format Dates
-        ResponseEntity<String> initialCostSavingsReportJSON = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", 1), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<String>() {});
-        assertThat(initialCostSavingsReportJSON.getBody().matches(".*creationDate\"\\:\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")).isTrue();
-        
+
         camelContext.stop();
     }
 
