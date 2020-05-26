@@ -598,7 +598,7 @@ public class EndToEndTest {
         WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel[].class);
         assertThat(workloadInventoryReport.getBody().getContent().toArray())
                 .usingRecursiveComparison()
-                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*", ".*osFamily")
+                .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
                 .isEqualTo(workloadInventoryReportModelExpected);
 
         // Checks on Workload Summary Report
@@ -763,7 +763,6 @@ public class EndToEndTest {
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
-
 
         camelContext.stop();
     }
