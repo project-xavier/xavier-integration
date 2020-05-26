@@ -69,6 +69,15 @@ public class WorkloadSummaryReportModel
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ScanRunModel> scanRunModels;
 
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<OSInformationModel> osInformation;
+
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes;
+
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<WorkloadsApplicationPlatformsDetectedModel> applicationPlatforms;
+
     public WorkloadSummaryReportModel() {}
 
     public Long getId() {
@@ -148,5 +157,32 @@ public class WorkloadSummaryReportModel
     public void setScanRunModels(Set<ScanRunModel> scanRunModels) {
         scanRunModels.forEach(model -> model.setReport(this));
         this.scanRunModels = scanRunModels;
+    }
+
+    public Set<OSInformationModel> getOsInformation() {
+        return osInformation;
+    }
+
+    public void setOsInformation(Set<OSInformationModel> osInformation) {
+        osInformation.forEach(model -> model.setReport(this));
+        this.osInformation = osInformation;
+    }
+
+    public Set<WorkloadsJavaRuntimeDetectedModel> getJavaRuntimes() {
+        return javaRuntimes;
+    }
+
+    public void setJavaRuntimes(Set<WorkloadsJavaRuntimeDetectedModel> javaRuntimes) {
+        javaRuntimes.forEach(model -> model.setReport(this));
+        this.javaRuntimes = javaRuntimes;
+    }
+
+    public Set<WorkloadsApplicationPlatformsDetectedModel> getApplicationPlatforms() {
+        return applicationPlatforms;
+    }
+
+    public void setApplicationPlatforms(Set<WorkloadsApplicationPlatformsDetectedModel> applications) {
+        applications.forEach(model -> model.setReport(this));
+        this.applicationPlatforms = applications;
     }
 }
