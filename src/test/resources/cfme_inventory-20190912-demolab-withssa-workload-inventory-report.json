@@ -25,7 +25,8 @@
         "host_name": "host-47",
         "creationDate": 1568305947979,
         "ssaEnabled": false,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48034,
@@ -53,7 +54,8 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": false,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48029,
@@ -79,7 +81,8 @@
         "host_name": "host-47",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48023,
@@ -103,7 +106,8 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": false,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "Other"
       },
       {
         "id": 48025,
@@ -131,7 +135,8 @@
         "host_name": "host-47",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48028,
@@ -160,7 +165,8 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48035,
@@ -189,7 +195,8 @@
         "host_name": "host-47",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48036,
@@ -215,7 +222,8 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48030,
@@ -243,7 +251,8 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48031,
@@ -271,7 +280,8 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48026,
@@ -299,7 +309,8 @@
         "host_name": "host-47",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48032,
@@ -327,7 +338,8 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48024,
@@ -355,7 +367,8 @@
         "host_name": "host-47",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48027,
@@ -383,6 +396,7 @@
         "host_name": "host-31",
         "creationDate": 1568305947979,
         "ssaEnabled": true,
-        "insightsEnabled": false
+        "insightsEnabled": false,
+        "osFamily": "Windows Server"
       }
 ]
