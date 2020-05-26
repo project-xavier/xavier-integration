@@ -237,6 +237,8 @@
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
+
+                    <bean ref="openApiService" method="buildResponse(${headers}, ${body}, 'provider', 'datacenter', 'cluster', 'vmName', 'osName', 'workload', 'complexity', 'recommendedTargetIMG', 'flagIMS')" />
                 </route>
             </get>
             <get uri="/{id}/workload-inventory/filtered-csv" produces="text/csv">
