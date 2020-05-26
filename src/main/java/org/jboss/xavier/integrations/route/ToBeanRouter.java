@@ -46,6 +46,26 @@ public class ToBeanRouter extends RouteBuilderExceptionHandler {
                     }
                 });
 
+        from("direct:to-paginationBean2")
+                .routeId("to-paginationBean2")
+                .process(exchange -> {
+                    // extract the name parameter from the Camel message which we want to use
+                    Object offsetValue = exchange.getIn().getHeader("offset");
+                    Integer offset = ConversionUtils.toInteger(offsetValue);
+
+                    Object limitValue = exchange.getIn().getHeader("limit");
+                    Integer limit = ConversionUtils.toInteger(limitValue);
+
+                    // create pagination header
+                    Map<String, Object> headers = exchange.getIn().getHeaders();
+                    headers.put(PAGE_HEADER_NAME, new PageBean(offset / limit, limit));
+
+                    // store the reply from the bean on the OUT message
+                    exchange.getOut().setHeaders(headers);
+                    exchange.getOut().setBody(exchange.getIn().getBody());
+                    exchange.getOut().setAttachments(exchange.getIn().getAttachments());
+                });
+
         from("direct:to-sortBean")
                 .routeId("to-sortBean")
                 .process(new Processor() {
@@ -66,6 +86,28 @@ public class ToBeanRouter extends RouteBuilderExceptionHandler {
                         exchange.getOut().setBody(exchange.getIn().getBody());
                         exchange.getOut().setAttachments(exchange.getIn().getAttachments());
                     }
+                });
+
+        from("direct:to-sortBean2")
+                .routeId("to-sortBean2")
+                .process(exchange -> {
+                    // extract the name parameter from the Camel message which we want to use
+                    Object sortByValue = exchange.getIn().getHeader("sort_by");
+                    String sortBy = sortByValue != null ? (String) sortByValue : "";
+
+                    String[] split = sortBy.split(":");
+                    String fieldName = !split[0].isEmpty() ? split[0] : null;
+                    boolean isAsc = split.length <= 1 || split[1].equalsIgnoreCase("asc");
+
+
+                    // create pagination header
+                    Map<String, Object> headers = exchange.getIn().getHeaders();
+                    headers.put(SORT_HEADER_NAME, new SortBean(fieldName, isAsc));
+
+                    // store the reply from the bean on the OUT message
+                    exchange.getOut().setHeaders(headers);
+                    exchange.getOut().setBody(exchange.getIn().getBody());
+                    exchange.getOut().setAttachments(exchange.getIn().getAttachments());
                 });
 
         from("direct:to-workloadInventoryFilterBean")

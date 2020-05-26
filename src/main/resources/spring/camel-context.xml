@@ -213,10 +213,10 @@
             </get>
             <get uri="/{id}/workload-inventory">
                 <description>Get the Workload Inventory Reports</description>
-                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
-                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
-                <param name="orderBy" type="query" required="false" description="Define sort field which will be use" />
-                <param name="orderAsc" type="query" defaultValue="true" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
+                <param name="limit" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
+                <param name="sort_by" type="query" required="false" description="Define sort field which will be use" />
+
                 <param name="provider" type="query" required="false" description="Define a filter" />
                 <param name="datacenter" type="query" required="false" description="Define a filter" />
                 <param name="cluster" type="query" required="false" description="Define a filter" />
@@ -233,12 +233,11 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
-                    <to uri="direct:to-paginationBean"/>
-                    <to uri="direct:to-sortBean"/>
+                    <to uri="direct:to-paginationBean2"/>
+                    <to uri="direct:to-sortBean2"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
-
-                    <bean ref="openApiService" method="buildResponse(${headers}, ${body}, 'provider', 'datacenter', 'cluster', 'vmName', 'osName', 'workload', 'complexity', 'recommendedTargetIMG', 'flagIMS')" />
+                    <bean ref="openApiService" method="buildResponse(${headers}, ${body}])" />
                 </route>
             </get>
             <get uri="/{id}/workload-inventory/filtered-csv" produces="text/csv">
