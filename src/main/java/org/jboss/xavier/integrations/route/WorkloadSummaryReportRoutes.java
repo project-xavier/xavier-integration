@@ -1,29 +1,12 @@
 package org.jboss.xavier.integrations.route;
 
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.ComplexityModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.RecommendedTargetsIMSModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
-import org.jboss.xavier.integrations.jpa.service.ComplexityService;
-import org.jboss.xavier.integrations.jpa.service.FlagService;
-import org.jboss.xavier.integrations.jpa.service.RecommendedTargetsIMSService;
-import org.jboss.xavier.integrations.jpa.service.ScanRunService;
-import org.jboss.xavier.integrations.jpa.service.SummaryService;
-import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
-import org.jboss.xavier.integrations.jpa.service.WorkloadService;
-import org.jboss.xavier.integrations.jpa.service.WorkloadsDetectedOSTypeService;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
+import org.jboss.xavier.integrations.jpa.service.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Named
 public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
@@ -51,6 +34,15 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
 
     @Inject
     SummaryService summaryService;
+
+    @Inject
+    OSInformationService osInformationService;
+
+    @Inject
+    WorkloadsJavaRuntimeDetectedService workloadsJavaRuntimeDetectedService;
+
+    @Inject
+    WorkloadsApplicationPlatformsDetectedService workloadsApplicationPlatformsDetectedService;
 
     @Override
     public void configure() throws Exception {
@@ -92,7 +84,16 @@ public class WorkloadSummaryReportRoutes extends RouteBuilderExceptionHandler {
 
                 // Calculate parts of the Workload Summary Report which depends of previous data
                 List<WorkloadsDetectedOSTypeModel> workloadsDetectedOSTypeModels = workloadsDetectedOSTypeService.calculateWorkloadsDetectedOSTypeModels(analysisId);
-                workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(new LinkedHashSet<>(workloadsDetectedOSTypeModels)); // // LinkedHashSet to preserve the order
+                workloadSummaryReportModel.setWorkloadsDetectedOSTypeModels(new LinkedHashSet<>(workloadsDetectedOSTypeModels)); // LinkedHashSet to preserve the order
+
+                List<OSInformationModel> osInformationModels = osInformationService.calculateOSFamiliesModels(analysisId);
+                workloadSummaryReportModel.setOsInformation(new LinkedHashSet<>(osInformationModels)); // LinkedList to preserve the order
+
+                List<WorkloadsJavaRuntimeDetectedModel> workloadsJavaRuntimeDetectedModels = workloadsJavaRuntimeDetectedService.calculateWorkloadsJavaRuntimeDetectedModels(analysisId);
+                workloadSummaryReportModel.setJavaRuntimes(new LinkedHashSet<>(workloadsJavaRuntimeDetectedModels)); // LinkedList to preserve the order
+
+                List<WorkloadsApplicationPlatformsDetectedModel> workloadsApplicationPlatformsDetectedModels = workloadsApplicationPlatformsDetectedService.calculateWorkloadApplicationPlatformsDetectedModels(analysisId);
+                workloadSummaryReportModel.setApplicationPlatforms(new LinkedHashSet<>(workloadsApplicationPlatformsDetectedModels)); // LinkedList to preserve the order
 
                 // Set the WorkloadSummaryReportModel into the AnalysisModel and update status to CREATED
                 analysisService.setWorkloadSummaryReportModelAndUpdateStatus(workloadSummaryReportModel, analysisId);
