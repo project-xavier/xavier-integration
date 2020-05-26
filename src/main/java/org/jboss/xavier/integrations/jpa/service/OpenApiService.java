@@ -19,7 +19,7 @@ public class OpenApiService {
     @Value("${camel.component.servlet.mapping.context-path}")
     private String contextPath;
 
-    public <T> PageResponse<?> buildResponse(Map<String, Object> headers, Page<T> page, String... queryParameters) {
+    public <T> PageResponse<T> buildResponse(Map<String, Object> headers, Page<T> page, List<String> queryParameters) {
         // Link
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicHeader("limit", String.valueOf(page.getSize())));
