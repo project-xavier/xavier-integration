@@ -16,21 +16,24 @@ import java.util.*;
 @Component
 public class OpenApiService {
 
-    @Value("${camel.component.servlet.mapping.context-path}")
-    private String contextPath;
+//    @Value("${camel.component.servlet.mapping.context-path}")
+//    private String contextPath;
 
-    public <T> PageResponse<T> buildResponse(Map<String, Object> headers, Page<T> page, List<String> queryParameters) {
+    public <T> PageResponse<T> buildResponse(Map<String, Object> headers, Page<T> page, Set<String> queryParameters) {
+        if (queryParameters == null) {
+            queryParameters = new HashSet<>();
+        }
+
+        queryParameters.add("sort_by");
+        queryParameters.add("limit");
+
         // Link
         List<NameValuePair> params = new ArrayList<>();
-        params.add(new BasicHeader("limit", String.valueOf(page.getSize())));
-
-        if (queryParameters != null) {
-            for (String key : queryParameters) {
-                Object value = headers.get(key);
-                List<String> providerList = ConversionUtils.toList(value);
-                Set<String> provider = providerList != null ? new HashSet<>(providerList) : Collections.emptySet();
-                provider.forEach(f -> params.add(new BasicNameValuePair(key, f)));
-            }
+        for (String key : queryParameters) {
+            Object value = headers.get(key);
+            List<String> providerList = ConversionUtils.toList(value);
+            Set<String> provider = providerList != null ? new HashSet<>(providerList) : Collections.emptySet();
+            provider.forEach(f -> params.add(new BasicNameValuePair(key, f)));
         }
 
         String endpointBasePath = (String) headers.get(Exchange.HTTP_PATH);
@@ -70,7 +73,7 @@ public class OpenApiService {
         List<NameValuePair> copyParams = new ArrayList<>(params);
         copyParams.add(new BasicNameValuePair("offset", String.valueOf(offset)));
 
-        String basePath = contextPath.substring(0, contextPath.length() - 1); // to remove the last * char
-        return basePath + endpointPath + "?" + URLEncodedUtils.format(copyParams, "UTF-8");
+//        String basePath = contextPath.substring(0, contextPath.length() - 1); // to remove the last * char
+        return endpointPath + "?" + URLEncodedUtils.format(copyParams, "UTF-8");
     }
 }
