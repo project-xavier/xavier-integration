@@ -229,13 +229,13 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                         })
                     .endChoice()
                     .otherwise()
-                        .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
-                        .setHeader("CamelAwsS3DownloadLinkExpiration", constant(s3DownloadLinkExpiration))
-                        .setHeader("CamelAwsS3Operation", constant("downloadLink"))
+                        .setHeader(S3Constants.KEY, simple("${header.AnalysisPayloadStorageId}"))
+                        .setHeader(S3Constants.DOWNLOAD_LINK_EXPIRATION, constant(s3DownloadLinkExpiration))
+                        .setHeader(S3Constants.S3_OPERATION, constant("downloadLink"))
                         .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client").id("aws-s3-get-download-link")
                         .process(exchange -> {
                             String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
-                            String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
+                            String downloadLink = exchange.getIn().getHeader(S3Constants.DOWNLOAD_LINK, String.class);
 
                             PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
                             exchange.getIn().setBody(payloadDownloadLinkModel);
