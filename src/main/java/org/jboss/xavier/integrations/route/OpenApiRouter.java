@@ -7,6 +7,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.xavier.integrations.route.model.PageResponse;
 import org.jboss.xavier.utils.ConversionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,9 @@ import java.util.stream.Stream;
 
 @Component
 public class OpenApiRouter extends RouteBuilder {
+
+    @Value("${camel.component.servlet.mapping.context-path}")
+    private String contextPath;
 
     @Override
     public void configure() throws Exception {
@@ -76,9 +80,11 @@ public class OpenApiRouter extends RouteBuilder {
     }
 
     private String getLink(String endpointPath, List<NameValuePair> params, int offset) {
+        String basePath = contextPath.substring(0, contextPath.length() - 2); // to remove the last * char and last '/'
+
         List<NameValuePair> copyParams = new ArrayList<>(params);
         copyParams.add(new BasicNameValuePair("offset", String.valueOf(offset)));
-        return endpointPath + "?" + URLEncodedUtils.format(copyParams, "UTF-8");
+        return basePath + endpointPath + "?" + URLEncodedUtils.format(copyParams, "UTF-8");
     }
 
     private Set<String> getQueryParameters(Object value) {
