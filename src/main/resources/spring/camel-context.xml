@@ -237,6 +237,10 @@
                     <to uri="direct:to-sortBean2"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
+
+                    <setHeader headerName="queryParameters">
+                        <constant>provider,datacenter,cluster,vmName,osName,workload,complexity,recommendedTargetIMS,flagIMS</constant>
+                    </setHeader>
                     <to uri="direct:to-openapi-paginationResponse" />
                 </route>
             </get>
