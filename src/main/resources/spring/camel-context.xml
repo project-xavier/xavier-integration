@@ -68,6 +68,8 @@
         <rest path="/mappings">
             <description>Mapping REST API</description>
             <get uri="/flag-assessment">
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the page requested" />
+                <param name="limit" type="query" defaultValue="10" required="false" description="Define the size of the requested page" /> <!-- ${{pagination.defaults.flag-assessment.limit}} -->
                 <route id="mappings-flag-assessment-findAll">
                     <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>mappings</constant></setHeader>
@@ -75,7 +77,10 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
-                    <bean ref="flagAssessmentService" method="findAll()" />
+                    <bean ref="flagAssessmentService" method="findAll(${header.offset}, ${header.limit})" />
+                    <log message="BEFORE MAP : ${body}"></log>
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/> 
+                    <log message="AFTER MAP : ${body}"></log>
                 </route>
             </get>
         </rest>

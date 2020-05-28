@@ -36,10 +36,11 @@ public abstract class RouteBuilderExceptionHandler extends RouteBuilder {
     }
 
     public void markAnalysisAsFailed(Exchange e) {
+        System.out.println("++++++++++++++ EXCEPTION : " + e);
         String analysisId = "";
         try {
              analysisId = e.getIn().getHeader(ANALYSIS_ID, "", String.class);
-            if (analysisId.isEmpty()) {
+            if (analysisId.isEmpty() && e.getIn().getHeader(MA_METADATA, Map.class) != null) {
                 analysisId = (String) e.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID);
             }
             if (StringUtils.isNotEmpty(analysisId)) {

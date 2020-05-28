@@ -15,6 +15,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.any;
+
+
 
 
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -51,7 +54,7 @@ public class XmlRoutes_RestMappingTest extends XavierCamelTest {
         restTemplate.exchange(camel_context + "mappings/flag-assessment", HttpMethod.GET, entity, String.class);
 
         //Then
-        verify(flagAssessmentService).findAll();
+        verify(flagAssessmentService).findAll(any(), any());
         camelContext.stop();
     }
 
