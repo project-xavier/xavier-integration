@@ -58,7 +58,10 @@ public class ToBeanRouter extends RouteBuilderExceptionHandler {
 
                     // create pagination header
                     Map<String, Object> headers = exchange.getIn().getHeaders();
-                    headers.put(PAGE_HEADER_NAME, new PageBean(offset / limit, limit));
+
+                    if (offset != null && limit != null) {
+                        headers.put(PAGE_HEADER_NAME, new PageBean(offset / limit, limit));
+                    }
 
                     // store the reply from the bean on the OUT message
                     exchange.getOut().setHeaders(headers);
@@ -95,7 +98,7 @@ public class ToBeanRouter extends RouteBuilderExceptionHandler {
                     Object sortByValue = exchange.getIn().getHeader("sort_by");
                     String sortBy = sortByValue != null ? (String) sortByValue : "";
 
-                    String[] split = sortBy.split(":");
+                    String[] split = sortBy.trim().split(":");
                     String fieldName = !split[0].isEmpty() ? split[0] : null;
                     boolean isAsc = split.length <= 1 || split[1].equalsIgnoreCase("asc");
 

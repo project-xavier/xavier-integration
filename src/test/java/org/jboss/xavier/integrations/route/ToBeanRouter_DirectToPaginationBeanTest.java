@@ -129,4 +129,59 @@ public class ToBeanRouter_DirectToPaginationBeanTest extends XavierCamelTest {
 
         camelContext.stop();
     }
+
+
+    @Test
+    public void paginationBean2_GivenNoOffsetNorLimitHeaders_ShouldNotAddPaginationHeader() throws Exception {
+        //Given
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("anotherHeader", "my custom header value");
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("to-paginationBean2");
+        Exchange routeExchange = camelContext.createProducerTemplate().request("direct:to-paginationBean2", exchange -> {
+            exchange.getIn().setBody("my custom body");
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        assertThat(routeExchange.getIn().getBody()).isEqualTo(routeExchange.getOut().getBody());
+        assertThat(routeExchange.getOut().getHeaders().entrySet()).containsAll(headers.entrySet());
+
+        Object paginationHeader = routeExchange.getOut().getHeaders().get(ToBeanRouter.PAGE_HEADER_NAME);
+        assertThat(paginationHeader).isNull();
+
+        camelContext.stop();
+    }
+
+    @Test
+    public void paginationBean2__GivenOffsetAndLimitHeaders_ShouldAddPaginationHeader() throws Exception {
+        //Given
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("offset", 20);
+        headers.put("limit", 10);
+        headers.put("anotherHeader", "my custom header value");
+
+        //When
+        camelContext.start();
+        camelContext.startRoute("to-paginationBean2");
+        Exchange routeExchange = camelContext.createProducerTemplate().request("direct:to-paginationBean2", exchange -> {
+            exchange.getIn().setBody("my custom body");
+            exchange.getIn().setHeaders(headers);
+        });
+
+        //Then
+        assertThat(routeExchange.getIn().getBody()).isEqualTo(routeExchange.getOut().getBody());
+        assertThat(routeExchange.getOut().getHeaders().entrySet()).containsAll(headers.entrySet());
+
+        Object paginationHeader = routeExchange.getOut().getHeaders().get(ToBeanRouter.PAGE_HEADER_NAME);
+        assertThat(paginationHeader).isInstanceOf(PageBean.class);
+
+        PageBean pageBean = (PageBean) paginationHeader;
+        assertThat(pageBean.getPage()).isEqualTo(2);
+        assertThat(pageBean.getSize()).isEqualTo(10);
+
+        camelContext.stop();
+    }
 }
