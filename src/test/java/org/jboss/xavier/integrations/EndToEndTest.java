@@ -326,14 +326,7 @@ public class EndToEndTest {
         }
     }
 
-    @After
-    public void finishTest() throws Exception {
-        //camelContext.stop();
-    }
-
     @Test
-    @Ignore
-
     public void whenRegularTestShouldAnswerInTime() throws Exception {
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
         assertThat(getStorageObjectsSize()).isEqualTo(0);
@@ -424,8 +417,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
-
     public void whenPerformanceTestShouldAnswerInTime() throws Exception {
         analysisNum++;
         // Performance test
@@ -436,8 +427,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
-
     public void whenFileWithVMWithoutHostShouldAddVMToWorkloadInventory() throws Exception {
         analysisNum++;
         // Test with a file with VM without Host
@@ -453,8 +442,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
-
     public void whenFileWithHostWithoutClusterShouldAddVMToWorkloadInventory() throws Exception {
         analysisNum++;
 
@@ -473,8 +460,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
-
     public void whenFileWithWrongCPUCoresPerSocketShouldNotFailAndFallbackTheValue() throws Exception {
         analysisNum++;
 
@@ -493,7 +478,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
     public void whenFileWith0CPUCoresPerSocketShouldNotFailAndFallbackTheValue() throws Exception {
         analysisNum++;
         // Test with a file with 0 CPU cores per socket
@@ -511,8 +495,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
-
     public void whenFileWithUsedDiskStorageShouldNotFailAndFallbackTheValue() throws Exception {
         analysisNum++;
         // Test with a file with VM.used_disk_storage
@@ -558,7 +540,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
     public void whenBigFileAnalisedItShouldEndOnTime() throws Exception {
         // Ultra Performance test
         logger.info("+++++++  Ultra Performance Test ++++++");
@@ -568,7 +549,6 @@ public class EndToEndTest {
     }
 
     @Test
-    @Ignore
     public void whenSeveralAnalysisRunningLargerShouldNotAffectSmaller() throws Exception {
         // Stress test
         // We load 3 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
@@ -602,12 +582,11 @@ public class EndToEndTest {
 
 
     @Test
-    @Ignore
     public void whenDeleteReportShouldRemoveFileInS3() throws Exception {
         // Testing the deletion of a file in S3
         logger.info("++++++++ Delete report test +++++");
         int s3ObjectsBefore = getStorageObjectsSize();
-        
+
         // we upload a file to be sure there's one report to delete, as it could be that this test is executed the first
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_with_used_disk_storage.json", "application/json"), String.class);
         analysisNum++;
