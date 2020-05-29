@@ -72,6 +72,7 @@ public class WorkloadInventoryReportService
         return reportRepository.findAll(specification, sort);
     }
 
+    @Deprecated
     public Page<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
             String analysisOwner,
             Long analysisId,
@@ -90,6 +91,16 @@ public class WorkloadInventoryReportService
         // Filtering
         Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);
 
+        return reportRepository.findAll(specification, pageable);
+    }
+
+    public Page<WorkloadInventoryReportModel> findPageByAnalysisOwnerAndAnalysisId(
+            String analysisOwner,
+            Long analysisId,
+            Pageable pageable,
+            WorkloadInventoryFilterBean filterBean
+    ) {
+        Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);
         return reportRepository.findAll(specification, pageable);
     }
 

@@ -232,15 +232,18 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
-                    <to uri="direct:to-paginationBean2"/>
-                    <to uri="direct:to-sortBean2"/>
+                    <setHeader headerName="sort_by_defaults">
+                        <constant>provider,datacenter,cluster,vmName</constant>
+                    </setHeader>
+                    <to uri="direct:add-pageable-header"/>
+
                     <to uri="direct:to-workloadInventoryFilterBean"/>
-                    <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
+                    <bean ref="workloadInventoryReportService" method="findPageByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageable}, ${header.workloadInventoryFilterBean})" />
 
                     <setHeader headerName="queryParameters">
                         <constant>provider,datacenter,cluster,vmName,osName,workload,complexity,recommendedTargetIMS,flagIMS</constant>
                     </setHeader>
-                    <to uri="direct:to-openapi-paginationResponse" />
+                    <to uri="direct:to-pageable-response" />
                 </route>
             </get>
             <get uri="/{id}/workload-inventory/filtered-csv" produces="text/csv">
