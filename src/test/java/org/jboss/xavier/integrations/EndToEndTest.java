@@ -9,15 +9,17 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.spring.CamelSpringBootRunner;
 import org.apache.camel.test.spring.UseAdviceWith;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Duration;
 import org.jboss.xavier.Application;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.AppIdentifierModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagAssessmentIdentityModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagAssessmentModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.OSInformationModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
@@ -27,13 +29,17 @@ import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetected
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsJavaRuntimeDetectedModel;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.AppIdentifierRepository;
+import org.jboss.xavier.integrations.jpa.repository.FlagAssessmentRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -50,6 +56,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -92,6 +99,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.awaitility.Awaitility.await;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
@@ -153,6 +161,9 @@ public class EndToEndTest {
 
     @Inject
     private AppIdentifierRepository appIdentifierRepository;
+
+    @Inject
+    private FlagAssessmentRepository flagAssessmentRepository;
 
     @Value("${S3_BUCKET}")
     private String bucket;
@@ -477,10 +488,53 @@ public class EndToEndTest {
                 .withIdentifier("IBM Websphere App Server") // Workload name
                 .build();
         appIdentifierRepository.save(Arrays.asList(applicationPlatform1, applicationPlatform2, applicationPlatform3, applicationPlatform4));
+
+        FlagAssessmentModel flagAssessmentModel1 = new FlagAssessmentModel();
+        flagAssessmentModel1.setAssessment("assessment1");
+        flagAssessmentModel1.setFlag("flag1");
+        flagAssessmentModel1.setFlagLabel("flaglabel1");
+        flagAssessmentModel1.setOsName("osname1");
+        FlagAssessmentIdentityModel fgId1 = new FlagAssessmentIdentityModel();
+        fgId1.setFlag("flag");
+        fgId1.setOsName("osName");
+        flagAssessmentModel1.setId(fgId1);
+
+        FlagAssessmentModel flagAssessmentModel2 = new FlagAssessmentModel();
+        flagAssessmentModel2.setAssessment("assessment2");
+        flagAssessmentModel2.setFlag("flag2");
+        flagAssessmentModel2.setFlagLabel("flaglabel2");
+        flagAssessmentModel2.setOsName("osname2");
+        FlagAssessmentIdentityModel fgId2 = new FlagAssessmentIdentityModel();
+        fgId2.setFlag("flag2");
+        fgId2.setOsName("osName2");
+        flagAssessmentModel2.setId(fgId2);
+
+        FlagAssessmentModel flagAssessmentModel3 = new FlagAssessmentModel();
+        flagAssessmentModel3.setAssessment("assessment3");
+        flagAssessmentModel3.setFlag("flag3");
+        flagAssessmentModel3.setFlagLabel("flaglabel3");
+        flagAssessmentModel3.setOsName("osname3");
+        FlagAssessmentIdentityModel fgId3 = new FlagAssessmentIdentityModel();
+        fgId3.setFlag("flag3");
+        fgId3.setOsName("osName3");
+        flagAssessmentModel3.setId(fgId3);
+
+        FlagAssessmentModel flagAssessmentModel4 = new FlagAssessmentModel();
+        flagAssessmentModel4.setAssessment("assessment4");
+        flagAssessmentModel4.setFlag("flag4");
+        flagAssessmentModel4.setFlagLabel("flaglabel4");
+        flagAssessmentModel4.setOsName("osname4");
+        FlagAssessmentIdentityModel fgId4 = new FlagAssessmentIdentityModel();
+        fgId4.setFlag("flag4");
+        fgId4.setOsName("osName4");
+        flagAssessmentModel4.setId(fgId4);
+
+        flagAssessmentRepository.save(Arrays.asList(flagAssessmentModel1, flagAssessmentModel2, flagAssessmentModel3, flagAssessmentModel4));
     }
 
-    @After
-    public void cleanUp() throws IOException {
+    @BeforeClass
+    @AfterClass
+    public static void cleanUp() throws IOException {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
@@ -493,6 +547,12 @@ public class EndToEndTest {
         int s3Size = storageClient.listObjectsV2(new ListObjectsV2Request().withBucketName(bucket)).getKeyCount();
         logger.info("S3 Objects : " + s3Size);
         return s3Size;
+    }
+
+    private void assertHttpClientError(String url, HttpMethod method, HttpStatus status) {
+        assertThatExceptionOfType(org.springframework.web.client.HttpClientErrorException.class)
+        .isThrownBy(() -> new RestTemplate().exchange(getBaseURLAPIPath() + url, method, getRequestEntity(), String.class))
+        .matches(e -> e.getStatusCode().equals(status));
     }
 
     @Test
@@ -521,6 +581,19 @@ public class EndToEndTest {
                         .to("http4:oldhost?preserveHostHeader=true");
             }
         });
+
+        // this one should give 2 pages
+        ResponseEntity<PagedResources<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<FlagAssessmentModel>>() {});
+        assertThat(responseFlaggAssessment.getBody().getContent().size()).isEqualTo(2);
+
+        // Checking errors are correctly treated
+        assertHttpClientError("/mappings/flag-assessment?limit=9999&offset=0", HttpMethod.GET, HttpStatus.PRECONDITION_FAILED);
+        assertHttpClientError("/report?limit=9999&offset=0", HttpMethod.GET,HttpStatus.PRECONDITION_FAILED);
+        assertHttpClientError("/report/99999", HttpMethod.GET,HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999", HttpMethod.DELETE, HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999/payload-link", HttpMethod.GET,HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999/payload", HttpMethod.GET,HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999/initial-savings-estimation", HttpMethod.GET, HttpStatus.NOT_FOUND);
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
@@ -613,6 +686,8 @@ public class EndToEndTest {
                     softly.assertThat(wks_scanrunmodel_actual).isEqualTo(wks_scanrunmodel_expected);
                     softly.assertThat(wks_ostypemodel_actual).isEqualTo(wks_ostypemodel_expected);
         });
+
+
         // Performance test
         logger.info("+++++++  Performance Test ++++++");
 
@@ -739,11 +814,13 @@ public class EndToEndTest {
         logger.info("++++++++ Delete report test +++++");
         int s3ObjectsBefore = getStorageObjectsSize();
 
-        ResponseEntity<String> stringEntity = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
-        assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.SC_NO_CONTENT);
+        assertHttpClientError(String.format("/report/%d", 3), HttpMethod.DELETE, HttpStatus.NO_CONTENT);
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
+
+        ResponseEntity<PagedResources<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<AnalysisModel>>() {});
+        assertThat(responseAnalysisModel.getBody().getContent().size()).isEqualTo(2);
 
         camelContext.stop();
     }

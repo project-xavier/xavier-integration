@@ -7,11 +7,14 @@ import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInvento
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 import java.util.List;
@@ -28,6 +31,9 @@ public class AnalysisService
     @Autowired
     AnalysisRepository analysisRepository;
 
+    @Value("${pagination.report.limit.max:1000}")
+    int paginationLimitMax;
+    
     // WARNING: BE CAREFUL
     // think about changing this "private" modifier
     // every time you "find" a report it should check that the
@@ -93,6 +99,7 @@ public class AnalysisService
 
     public Page<AnalysisModel> findAllByOwner(String owner, int page, int size)
     {
+        assertTrue(size <= paginationLimitMax);
         Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
         return analysisRepository.findAllByOwner(owner, pageable);
     }
@@ -104,6 +111,7 @@ public class AnalysisService
 
     public Page<AnalysisModel> findByOwnerAndReportName(String owner, String filterText, int page, int size)
     {
+        assertTrue(size <= paginationLimitMax);
         Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
         return analysisRepository.findByOwnerAndReportNameIgnoreCaseContaining(owner, filterText.trim(), pageable);
     }

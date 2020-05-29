@@ -139,15 +139,15 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.startRoute("reports-get-all");
         Map<String, Object> variables = new HashMap<>();
         int page = 2;
-        variables.put("page", page);
+        variables.put("offset", page);
         int size = 3;
-        variables.put("size", size);
+        variables.put("limit", size);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?page={page}&size={size}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?offset={offset}&limit={limit}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
         verify(analysisService).findAllByOwner("mrizzi@redhat.com", page, size);
@@ -169,9 +169,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.startRoute("reports-get-all");
         Map<String, Object> variables = new HashMap<>();
         int page = 2;
-        variables.put("page", page);
+        variables.put("offset", page);
         int size = 3;
-        variables.put("size", size);
+        variables.put("limit", size);
         String filterText = "my report name which I'm searching";
         variables.put("filterText", filterText);
 
@@ -179,7 +179,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?page={page}&size={size}&filterText={filterText}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?offset={offset}&limit={limit}&filterText={filterText}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
         verify(analysisService).findByOwnerAndReportName("mrizzi@redhat.com", filterText, page, size);
