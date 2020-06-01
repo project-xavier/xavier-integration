@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -43,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -249,8 +252,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
-        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("add-pageable-header");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
@@ -268,11 +270,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?page={page}&size={size}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        PageBean pageBean = new PageBean(page, size);
-        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
-        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
+        verify(workloadInventoryReportService).findPageByAnalysisOwnerAndAnalysisId(eq("mrizzi@redhat.com"), eq(one), isA(Pageable.class), eq(filterBean));
         assertThat(response).isNotNull();
         camelContext.stop();
     }
@@ -285,10 +285,10 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
-        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("add-pageable-header");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
+        camelContext.startRoute("to-pageable-response");
         Map<String, Object> variables = new HashMap<>();
         Long one = 1L;
         variables.put("id", one);
@@ -300,11 +300,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
-        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
+        verify(workloadInventoryReportService).findPageByAnalysisOwnerAndAnalysisId(eq("mrizzi@redhat.com"), eq(one), isA(Pageable.class), eq(filterBean));
         assertThat(response).isNotNull();
         camelContext.stop();
     }
@@ -317,8 +315,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
-        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("add-pageable-header");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
@@ -336,11 +333,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?orderBy={orderBy}&orderAsc={orderAsc}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(orderBy, orderAsc);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
-        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
+        verify(workloadInventoryReportService).findPageByAnalysisOwnerAndAnalysisId(eq("mrizzi@redhat.com"), eq(one), isA(Pageable.class), eq(filterBean));
         assertThat(response).isNotNull();
         camelContext.stop();
     }
@@ -353,8 +348,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
-        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("add-pageable-header");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
 
@@ -435,8 +429,6 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(sb.toString(), HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(null, true);
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
         filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));
         filterBean.setClusters(new HashSet<>(Arrays.asList(cluster1, cluster2)));
@@ -448,7 +440,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         filterBean.setFlagsIMS(new HashSet<>(Arrays.asList(flag1, flag2)));
         filterBean.setComplexities(new HashSet<>(Arrays.asList(complexity1, complexity2)));
 
-        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
+        verify(workloadInventoryReportService).findPageByAnalysisOwnerAndAnalysisId(eq("mrizzi@redhat.com"), eq(one), isA(Pageable.class), eq(filterBean));
         assertThat(response).isNotNull();
         camelContext.stop();
     }
@@ -490,7 +482,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         Long one = 1L;
         when(analysisService.findByOwnerAndId("mrizzi@redhat.com",one)).thenReturn(new AnalysisModel());
         doNothing().when(analysisService).deleteById(one);
-        
+
         camelContext.getRouteDefinition("report-delete").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
