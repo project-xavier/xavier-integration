@@ -58,7 +58,7 @@
             </when>
         </interceptFrom>
 
-        <restConfiguration apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
+        <restConfiguration apiContextPath="/openapi.json" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
             <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
             <apiProperty key="api.version" value="0.1"/>
