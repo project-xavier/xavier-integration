@@ -614,6 +614,28 @@ public class EndToEndTest {
                     softly.assertThat(wks_scanrunmodel_actual).isEqualTo(wks_scanrunmodel_expected);
                     softly.assertThat(wks_ostypemodel_actual).isEqualTo(wks_ostypemodel_expected);
         });
+
+        // OpenAPI Pagination Response test
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReportPagination = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getCount()).isEqualTo(14);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getOffset()).isEqualTo(0);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getLimit()).isEqualTo(100);
+
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getFirst()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?limit=100&offset=0", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?limit=100&offset=0", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrevious()).isNull();
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isNull();
+
+        workloadInventoryReportPagination = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=8", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getCount()).isEqualTo(14);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getOffset()).isEqualTo(8);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getLimit()).isEqualTo(4);
+
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getFirst()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=0", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrevious()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=4", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
+
         // Performance test
         logger.info("+++++++  Performance Test ++++++");
 
@@ -751,6 +773,10 @@ public class EndToEndTest {
 
     private String getBaseURLAPIPath() {
         return "http://localhost:" + serverPort + basePath.substring(0, basePath.length() - 1); // to remove the last * char
+    }
+
+    private String getBaseURLAPIPathWithoutHost() {
+        return basePath.substring(0, basePath.length() - 2); // to remove the last * char and last '/'
     }
 
     private Integer callSummaryReportAndCheckVMs(final String reportUrl, int timeoutMilliseconds) {

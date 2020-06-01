@@ -239,11 +239,7 @@
 
                     <to uri="direct:to-workloadInventoryFilterBean"/>
                     <bean ref="workloadInventoryReportService" method="findPageByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageable}, ${header.workloadInventoryFilterBean})" />
-
-                    <setHeader headerName="queryParameters">
-                        <constant>provider,datacenter,cluster,vmName,osName,workload,complexity,recommendedTargetIMS,flagIMS</constant>
-                    </setHeader>
-                    <to uri="direct:to-pageable-response" />
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
             </get>
             <get uri="/{id}/workload-inventory/filtered-csv" produces="text/csv">
