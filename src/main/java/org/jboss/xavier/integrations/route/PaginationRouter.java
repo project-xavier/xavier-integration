@@ -20,6 +20,7 @@ public class PaginationRouter extends RouteBuilder {
     public static final String PAGE_HEADER_NAME = "pageable";
     public static final int DEFAULT_OFFSET = 0;
     public static final int DEFAULT_LIMIT = 1000;
+    public static final int MAX_LIMIT = 1000;
 
     @Override
     public void configure() throws Exception {
@@ -69,6 +70,9 @@ public class PaginationRouter extends RouteBuilder {
                     Integer limit = ConversionUtils.toInteger(limitValue);
                     if (limit == null) {
                         limit = DEFAULT_LIMIT;
+                    }
+                    if (limit > MAX_LIMIT) {
+                        limit = MAX_LIMIT;
                     }
 
                     Pageable pageable = new OffsetLimitRequest(offset, limit, sort);
