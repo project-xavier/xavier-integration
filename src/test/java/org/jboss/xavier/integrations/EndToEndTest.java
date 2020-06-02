@@ -70,8 +70,6 @@ import org.testcontainers.utility.MountableFile;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.NotFoundException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -187,9 +185,6 @@ public class EndToEndTest {
 
     @Inject
     CamelContext camelContext;
-
-    @Inject
-    AmazonS3 amazonS3;
 
     @Inject
     private ObjectMapper objectMapper;
