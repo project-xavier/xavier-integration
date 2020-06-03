@@ -215,7 +215,7 @@
                 <description>Get the Workload Inventory Reports</description>
                 <param name="offset" type="query" defaultValue="0" required="false" description="Define the position in the dataset of the records" dataType="int" />
                 <param name="limit" type="query" defaultValue="10" required="false" description="Define the number of records that is intended to be retrieved" dataType="int" />
-                <param name="sort_by" type="query" required="false" description="Define sort field which will be use" />
+                <param name="sort_by" type="query" defaultValue="provider,datacenter,cluster,vmName" required="false" description="Define sort field which will be use" />
                 <param name="provider" type="query" required="false" description="Define a filter" />
                 <param name="datacenter" type="query" required="false" description="Define a filter" />
                 <param name="cluster" type="query" required="false" description="Define a filter" />
@@ -232,11 +232,7 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
-                    <setHeader headerName="sort_by_defaults">
-                        <constant>provider,datacenter,cluster,vmName</constant>
-                    </setHeader>
                     <to uri="direct:add-pageable-header"/>
-
                     <to uri="direct:to-workloadInventoryFilterBean"/>
                     <bean ref="workloadInventoryReportService" method="findPageByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageable}, ${header.workloadInventoryFilterBean})" />
                     <bean ref="apiService" method="mapToCustomPage(${exchange})"/>

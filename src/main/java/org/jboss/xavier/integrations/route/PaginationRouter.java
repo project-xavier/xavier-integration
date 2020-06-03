@@ -29,20 +29,15 @@ public class PaginationRouter extends RouteBuilder {
                 .process(exchange -> {
                     // Sort
                     Object sortByValue = exchange.getIn().getHeader("sort_by");
-                    String sortByDefaults = exchange.getIn().getHeader("sort_by_defaults", String.class);
 
                     Set<String> sortByList = new HashSet<>();
                     if (sortByValue instanceof String) {
-                        String stringValue = (String) sortByValue;
-                        if (!stringValue.trim().isEmpty()) {
-                            sortByList.add((String) sortByValue);
-                        }
-                    } else if (sortByValue instanceof Collection){
-                        sortByList.addAll((Collection) sortByValue);
-                    } else if (sortByValue == null && sortByDefaults != null && !sortByDefaults.trim().isEmpty()) {
-                        sortByList = Stream.of(sortByDefaults.split(","))
+                        Set<String> collect = Stream.of(((String) sortByValue).split(","))
                                 .map(String::trim)
                                 .collect(Collectors.toSet());
+                        sortByList.addAll(collect);
+                    } else if (sortByValue instanceof Collection) {
+                        sortByList.addAll((Collection) sortByValue);
                     }
 
                     List<Sort.Order> fieldSorts = sortByList.stream().map(sortBy -> {

@@ -24,10 +24,6 @@ public class WorkloadInventoryReportService
     WorkloadInventoryReportRepository reportRepository;
 
     public static Sort getWorkloadInventoryReportModelSort(SortBean sortBean) {
-        if (sortBean == null) {
-            sortBean = new SortBean(null, true);
-        }
-
         // Direction
         Sort.Direction direction;
         if (sortBean.isOrderAsc() != null) {

@@ -171,45 +171,10 @@ public class PaginationRouter_Test extends XavierCamelTest {
     }
 
     @Test
-    public void addPageableHeader_GivenSortHeadersAndDefaultSorts_shouldAddSortAndOmitDefaultSorts() throws Exception {
+    public void addPageableHeader_GivenSortHeadersUsingComma_shouldAddSort() throws Exception {
         //Given
         Map<String, Object> headers = new HashMap<>();
-        headers.put("sort_by", "myFieldName:desc");
-        headers.put("sort_by_defaults", "anotherFieldName:asc");
-        headers.put("anotherHeader", "my custom header value");
-
-        //When
-        camelContext.start();
-        camelContext.startRoute("add-pageable-header");
-        Exchange routeExchange = camelContext.createProducerTemplate().request("direct:add-pageable-header", exchange -> {
-            exchange.getIn().setBody("my custom body");
-            exchange.getIn().setHeaders(headers);
-        });
-
-        //Then
-        Object result = routeExchange.getIn().getHeaders().get(PaginationRouter.PAGE_HEADER_NAME);
-        assertThat(result).isNotNull();
-        assertThat(result).isInstanceOf(Pageable.class);
-
-        Pageable pageable = (Pageable) result;
-        assertThat(pageable.getOffset()).isEqualTo(PaginationRouter.DEFAULT_OFFSET);
-        assertThat(pageable.getPageSize()).isEqualTo(PaginationRouter.DEFAULT_LIMIT);
-
-        assertThat(pageable.getSort()).isNotNull();
-        assertThat(pageable.getSort().getOrderFor("myFieldName")).isNotNull();
-        assertThat(pageable.getSort().getOrderFor("myFieldName").getDirection()).isEqualTo(Sort.Direction.DESC);
-
-        assertThat(pageable.getSort().getOrderFor("anotherFieldName")).isNull();
-
-        camelContext.stop();
-    }
-
-    @Test
-    public void addPageableHeader_GivenNullSortHeadersAndDefaultSorts_shouldAddSortAndUsingDefaultSorts() throws Exception {
-        //Given
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("sort_by", null);
-        headers.put("sort_by_defaults", "anotherFieldName1:asc, anotherFieldName2:desc");
+        headers.put("sort_by", "anotherFieldName1:asc, anotherFieldName2:desc");
         headers.put("anotherHeader", "my custom header value");
 
         //When
