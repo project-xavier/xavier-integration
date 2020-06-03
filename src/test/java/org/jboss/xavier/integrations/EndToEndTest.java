@@ -790,7 +790,7 @@ public class EndToEndTest {
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo(numberVMsExpected_InBigFile);
 
         // Stress test
-        // We load 3 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
+        // We load 2 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
         // More or less 7 minutes each bunch of threads of Big Files
         // 1 bunch of threads for 2 big files and 1 small file, while 1 big file and 1 small file wait in the queue
         // We have 3 consumers
@@ -815,7 +815,7 @@ public class EndToEndTest {
         int s3ObjectsBefore = getStorageObjectsSize();
 
         ResponseEntity<String> stringEntity = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d", 3), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
-        assertThat(stringEntity.getStatusCodeValue()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(stringEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
