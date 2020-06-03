@@ -332,24 +332,17 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         Long one = 1L;
         variables.put("id", one);
         String orderBy = "vmName";
-        variables.put("orderBy", orderBy);
-        Boolean orderAsc = true;
-        variables.put("orderAsc", orderAsc);
+        variables.put("sort_by", orderBy);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?orderBy={orderBy}&orderAsc={orderAsc}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?sort_by={sort_by}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        List<SortBean> sortBean = Arrays.asList(
-                new SortBean("provider", true),
-                new SortBean("datacenter", true),
-                new SortBean("cluster", true),
-                new SortBean("vmName", true)
-        );
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("vmName", true));
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
@@ -750,9 +743,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         variables.put("id", analysisModel.getId());
 
         String orderBy = "provider";
-        variables.put("orderBy", orderBy);
-        Boolean orderAsc = true;
-        variables.put("orderAsc", orderAsc);
+        variables.put("sort_by", orderBy);
 
         String provider1 = "my provider1";
         variables.put("provider1", provider1);
@@ -800,8 +791,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         variables.put("complexity2", complexity2);
 
         StringBuilder sb = new StringBuilder("")
-                .append("orderBy={orderBy}&")
-                .append("orderAsc={orderAsc}&")
+                .append("sort_by={sort_by}&")
                 .append("provider={provider1}&")
                 .append("provider={provider2}&")
                 .append("cluster={cluster1}&")
@@ -837,12 +827,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv?" + sb.toString(), HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        List<SortBean> sortBean = Arrays.asList(
-                new SortBean("provider", true),
-                new SortBean("datacenter", true),
-                new SortBean("cluster", true),
-                new SortBean("vmName", true)
-        );
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("provider", true));
 
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
         filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));

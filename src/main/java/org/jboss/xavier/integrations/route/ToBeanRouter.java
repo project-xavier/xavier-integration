@@ -34,7 +34,6 @@ public class ToBeanRouter extends RouteBuilderExceptionHandler {
         from("direct:to-pageBean")
                 .routeId("to-pageBean")
                 .process(exchange -> {
-                    // Pageable
                     Object offsetValue = exchange.getIn().getHeader("offset");
                     Integer offset = ConversionUtils.toInteger(offsetValue);
                     if (offset == null || offset < 0) {
