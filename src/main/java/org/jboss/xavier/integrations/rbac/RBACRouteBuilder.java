@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
 
+import javax.inject.Inject;
+
 @Component
 public class RBACRouteBuilder extends RouteBuilder {
 
@@ -37,6 +39,9 @@ public class RBACRouteBuilder extends RouteBuilder {
     private final BiPredicate<UserPermission, UserPermission> isRequestAllowed = (userPermission, requiredPermission) ->
             userPermission.equalsWildcardPermissions(requiredPermission) ||
             userPermission.equals(requiredPermission);
+
+    @Inject
+    private ObjectMapper objectMapper;
 
     public void configure() throws Exception {
         from("direct:fetch-and-process-rbac-user-access")
@@ -85,7 +90,7 @@ public class RBACRouteBuilder extends RouteBuilder {
                             .convertBodyTo(String.class)
                             .process(exchange -> {
                                 String body = exchange.getIn().getBody(String.class);
-                                RbacResponse rbacResponse = new ObjectMapper().readValue(body, RbacResponse.class);
+                                RbacResponse rbacResponse = objectMapper.readValue(body, RbacResponse.class);
                                 List<Acl> access = rbacResponse.getData();
                                 exchange.getIn().getHeader(RBAC_USER_ACCESS, List.class).addAll(access);
 
