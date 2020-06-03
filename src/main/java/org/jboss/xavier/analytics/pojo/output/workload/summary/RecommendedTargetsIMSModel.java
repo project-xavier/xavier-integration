@@ -15,7 +15,9 @@ import javax.persistence.*;
                         @ColumnResult(name = "rhv", type = Integer.class),
                         @ColumnResult(name = "osp", type = Integer.class),
                         @ColumnResult(name = "rhel", type = Integer.class),
-                        @ColumnResult(name = "ocp", type = Integer.class)
+                        @ColumnResult(name = "ocp", type = Integer.class),
+                        @ColumnResult(name = "openjdk", type = Integer.class),
+                        @ColumnResult(name = "jbosseap", type = Integer.class)
                 }
         )
 )
@@ -26,7 +28,9 @@ import javax.persistence.*;
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='rhv' then 1 else 0 end), 0) as rhv, " +
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='osp' then 1 else 0 end), 0) as osp, " +
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='rhel' then 1 else 0 end), 0) as rhel, " +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='ocp' then 1 else 0 end), 0) as ocp " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='ocp' then 1 else 0 end), 0) as ocp, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='openjdk' then 1 else 0 end), 0) as openjdk, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='red hat jboss eap' then 1 else 0 end), 0) as jbosseap " +
                 "from workload_inventory_report_model_recommended_targetsims rt " +
                 "right join workload_inventory_report_model wi on rt.workload_inventory_report_model_id=wi.id " +
                 "where wi.analysis_id = :analysisId",
@@ -58,15 +62,19 @@ public class RecommendedTargetsIMSModel
     private Integer rhel;
     private Integer osp;
     private Integer ocp;
+    private Integer openjdk;
+    private Integer jbosseap;
 
     public RecommendedTargetsIMSModel() {}
 
-    public RecommendedTargetsIMSModel(Integer total, Integer rhv, Integer osp, Integer rhel, Integer ocp) {
+    public RecommendedTargetsIMSModel(Integer total, Integer rhv, Integer osp, Integer rhel, Integer ocp, Integer openjdk, Integer jbosseap) {
         this.total = total;
         this.rhv = rhv;
         this.osp = osp;
         this.rhel = rhel;
         this.ocp = ocp;
+        this.openjdk = openjdk;
+        this.jbosseap = jbosseap;
     }
 
     public Long getId() {
@@ -125,16 +133,34 @@ public class RecommendedTargetsIMSModel
         this.ocp = ocp;
     }
 
+    public Integer getOpenjdk() {
+        return openjdk;
+    }
+
+    public void setOpenjdk(Integer openjdk) {
+        this.openjdk = openjdk;
+    }
+
+    public Integer getJbosseap() {
+        return jbosseap;
+    }
+
+    public void setJbosseap(Integer jbosseap) {
+        this.jbosseap = jbosseap;
+    }
+
     @Override
     public String toString() {
         return "RecommendedTargetsIMSModel{" +
                 "id=" + id +
                 ", report=" + report +
-                ", rhv='" + rhv +
+                ", total=" + total +
+                ", rhv=" + rhv +
                 ", rhel=" + rhel +
                 ", osp=" + osp +
                 ", ocp=" + ocp +
+                ", openjdk=" + openjdk +
+                ", jbosseap=" + jbosseap +
                 '}';
     }
-
 }

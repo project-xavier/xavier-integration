@@ -223,7 +223,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("reports-get-details");
+        camelContext.startRoute("initial-saving-estimation-report-get-details");
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
