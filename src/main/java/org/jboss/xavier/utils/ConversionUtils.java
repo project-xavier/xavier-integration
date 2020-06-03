@@ -1,12 +1,16 @@
 package org.jboss.xavier.utils;
 
+import org.jboss.xavier.integrations.route.model.SortBean;
+import org.springframework.data.domain.Sort;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConversionUtils {
 
-    private ConversionUtils(){
+    private ConversionUtils() {
         // TODO declared private constructor because this should contains just static methods
     }
 
@@ -51,5 +55,17 @@ public class ConversionUtils {
             throw new IllegalStateException("Value must be String or List");
         }
         return result;
+    }
+
+    public static Sort toSort(List<SortBean> sortBeans) {
+        List<Sort.Order> fieldSorts = sortBeans.stream().map(sortBy -> {
+            Sort.Direction direction = sortBy.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
+            return new Sort.Order(direction, sortBy.getOrderBy());
+        }).collect(Collectors.toList());
+
+        if (fieldSorts.isEmpty()) {
+            return null;
+        }
+        return new Sort(fieldSorts);
     }
 }
