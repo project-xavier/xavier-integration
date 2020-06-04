@@ -26,7 +26,9 @@
       "rhv": 13,
       "rhel": 4,
       "osp": 11,
-      "ocp": 9
+      "ocp": 9,
+      "openjdk": 0,
+      "jbosseap": 2
     },
     "workloadsDetectedOSTypeModels": [
       {
@@ -47,5 +49,66 @@
         "date": 1568239200000,
         "smartStateEnabled": "Virt Platform + SmartState"
       }
+    ],
+    "osInformation": [
+      {
+        "id": 10,
+        "osFamily": "Other",
+        "version": null,
+        "priority": 20,
+        "total": 1
+      },
+      {
+        "id": 11,
+        "osFamily": "RHEL",
+        "version": null,
+        "priority": 100,
+        "total": 8
+      },
+      {
+        "id": 12,
+        "osFamily": "Windows Server",
+        "version": null,
+        "priority": 90,
+        "total": 1
+      },
+      {
+        "id": 9,
+        "osFamily": "CentOS",
+        "version": null,
+        "priority": 60,
+        "total": 4
+      }
+    ],
+    "javaRuntimes": [],
+    "applicationPlatforms": [
+      {
+        "id": 34,
+        "name": "Oracle Weblogic",
+        "version": null,
+        "priority": null,
+        "total": 1
+      },
+      {
+        "id": 35,
+        "name": "Tomcat",
+        "version": null,
+        "priority": null,
+        "total": 1
+      },
+      {
+        "id": 32,
+        "name": "IBM WebSphere",
+        "version": null,
+        "priority": null,
+        "total": 1
+      },
+      {
+        "id": 33,
+        "name": "JBoss EAP",
+        "version": null,
+        "priority": null,
+        "total": 2
+      }
     ]
-  }
+}

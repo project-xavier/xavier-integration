@@ -155,6 +155,10 @@ public class WorkloadInventoryReportModel
 
     private Boolean ssaEnabled;
 
+    private Boolean insightsEnabled;
+
+    private String osFamily;
+
     public WorkloadInventoryReportModel() {}
 
     public static long getSerialVersionUID() {
@@ -339,4 +343,19 @@ public class WorkloadInventoryReportModel
         this.ssaEnabled = ssaEnabled;
     }
 
+    public Boolean getInsightsEnabled() {
+        return insightsEnabled;
+    }
+
+    public void setInsightsEnabled(Boolean insightsEnabled) {
+        this.insightsEnabled = insightsEnabled;
+    }
+
+    public String getOsFamily() {
+        return osFamily;
+    }
+
+    public void setOsFamily(String osFamily) {
+        this.osFamily = osFamily;
+    }
 }

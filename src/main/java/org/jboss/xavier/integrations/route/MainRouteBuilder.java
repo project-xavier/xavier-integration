@@ -23,6 +23,7 @@ import org.jboss.xavier.analytics.pojo.PayloadDownloadLinkModel;
 import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.integrations.jpa.service.UserService;
+import org.jboss.xavier.integrations.rbac.RBACRouteBuilder;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.utils.Utils;
@@ -78,6 +79,9 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     private List<Integer> httpSuccessCodes = Arrays.asList(HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_ACCEPTED, HttpStatus.SC_NO_CONTENT);
 
+    @Inject
+    ObjectMapper objectMapper;
+
     public Processor xRhIdentityHeaderProcessor = exchange -> {
         String xRhIdentityEncoded = exchange.getIn().getHeader(X_RH_IDENTITY, String.class);
         if (xRhIdentityEncoded != null) {
@@ -85,7 +89,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
             JsonNode xRhIdentityJsonNode;
             try {
-                xRhIdentityJsonNode = new ObjectMapper().reader().readTree(xRhIdentityDecoded);
+                xRhIdentityJsonNode = objectMapper.reader().readTree(xRhIdentityDecoded);
             } catch (JsonParseException e) {
                 log.error("x-rh-identity could not be parsed to JSON Object");
                 return;
@@ -108,6 +112,12 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
         from("rest:post:/upload?consumes=multipart/form-data")
                 .routeId("rest-upload")
                 .to("direct:check-authenticated-request")
+                .to("direct:fetch-and-process-rbac-user-access")
+                // RBAC check start: check min user permissions
+                .setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME, constant("payload"))
+                .setHeader(RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION, constant("write"))
+                .to("direct:check-rbac-permissions")
+                // RBAC check end
                 .to("direct:upload");
 
         from("direct:upload").routeId("direct-upload")
@@ -222,13 +232,13 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
                         })
                     .endChoice()
                     .otherwise()
-                        .setHeader("CamelAwsS3Key", simple("${header.AnalysisPayloadStorageId}"))
-                        .setHeader("CamelAwsS3DownloadLinkExpiration", constant(s3DownloadLinkExpiration))
-                        .setHeader("CamelAwsS3Operation", constant("downloadLink"))
+                        .setHeader(S3Constants.KEY, simple("${header.AnalysisPayloadStorageId}"))
+                        .setHeader(S3Constants.DOWNLOAD_LINK_EXPIRATION, constant(s3DownloadLinkExpiration))
+                        .setHeader(S3Constants.S3_OPERATION, constant("downloadLink"))
                         .to("aws-s3:{{S3_BUCKET}}?amazonS3Client=#s3client").id("aws-s3-get-download-link")
                         .process(exchange -> {
                             String fileName = exchange.getIn().getHeader("AnalysisPayloadName", String.class);
-                            String downloadLink = exchange.getIn().getHeader("CamelAwsS3DownloadLink", String.class);
+                            String downloadLink = exchange.getIn().getHeader(S3Constants.DOWNLOAD_LINK, String.class);
 
                             PayloadDownloadLinkModel payloadDownloadLinkModel = new PayloadDownloadLinkModel(fileName, downloadLink);
                             exchange.getIn().setBody(payloadDownloadLinkModel);
@@ -325,7 +335,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
     public Map<String,String> extractMAmetadataHeaderFromIdentity(FilePersistedNotification filePersistedNotification) throws IOException {
         String identity_json = new String(Base64.getDecoder().decode(filePersistedNotification.getB64_identity()));
-        JsonNode node= new ObjectMapper().reader().readTree(identity_json);
+        JsonNode node= objectMapper.reader().readTree(identity_json);
 
         Map header = new HashMap<String, String>();
         JsonNode internalNode = node.get("identity").get("internal");
@@ -376,7 +386,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
     }
 
     public String getRHIdentity(String x_rh_identity_base64, String filename, Map<String, Object> headers) throws IOException {
-        JsonNode node= new ObjectMapper().reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
+        JsonNode node= objectMapper.reader().readTree(new String(Base64.getDecoder().decode(x_rh_identity_base64)));
 
         ObjectNode internalNode = (ObjectNode) node.get("identity").get("internal");
         internalNode.put("filename", filename);

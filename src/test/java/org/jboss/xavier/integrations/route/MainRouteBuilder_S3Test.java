@@ -47,7 +47,7 @@ public class MainRouteBuilder_S3Test {
                 String uri = "aws-s3:xavier-dev?region=US_EAST_1&accessKey=accesskey&secretKey=RAW(secretkey)&fileName=" + keyValue + "&deleteAfterRead=false";
                 from(uri).routeId("s3route-consumer")
                         .process(e -> {
-                            String camelAwsS3ContentDisposition = e.getIn().getHeader("CamelAwsS3ContentDisposition", String.class);
+                            String camelAwsS3ContentDisposition = e.getIn().getHeader(S3Constants.CONTENT_DISPOSITION, String.class);
                             String filename = camelAwsS3ContentDisposition.substring(camelAwsS3ContentDisposition.indexOf("filename=") + 10, camelAwsS3ContentDisposition.length() - 1);
                             e.getIn().setHeader("filename", filename );
                         })

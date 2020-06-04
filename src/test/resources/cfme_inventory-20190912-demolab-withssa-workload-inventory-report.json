@@ -24,7 +24,9 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": false
+        "ssaEnabled": false,
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48034,
@@ -51,7 +53,9 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": false
+        "ssaEnabled": false,
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48029,
@@ -76,7 +80,9 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48023,
@@ -99,7 +105,9 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": false
+        "ssaEnabled": false,
+        "insightsEnabled": false,
+        "osFamily": "Other"
       },
       {
         "id": 48025,
@@ -126,7 +134,9 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48028,
@@ -154,7 +164,9 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48035,
@@ -182,7 +194,9 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48036,
@@ -207,7 +221,9 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48030,
@@ -234,7 +250,9 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48031,
@@ -261,7 +279,9 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48026,
@@ -288,7 +308,9 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "CentOS"
       },
       {
         "id": 48032,
@@ -306,6 +328,7 @@
         ],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
+          "Red Hat JBoss EAP",
           "RHV",
           "OCP",
           "OSP"
@@ -315,7 +338,9 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48024,
@@ -333,6 +358,7 @@
         ],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
+          "Red Hat JBoss EAP",
           "RHV",
           "OCP",
           "OSP"
@@ -342,7 +368,9 @@
         "version": "6.7.2",
         "host_name": "host-47",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "RHEL"
       },
       {
         "id": 48027,
@@ -369,6 +397,8 @@
         "version": "6.7.2",
         "host_name": "host-31",
         "creationDate": 1568305947979,
-        "ssaEnabled": true
+        "ssaEnabled": true,
+        "insightsEnabled": false,
+        "osFamily": "Windows Server"
       }
 ]
