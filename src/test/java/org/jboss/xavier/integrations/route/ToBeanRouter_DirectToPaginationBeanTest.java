@@ -3,6 +3,7 @@ package org.jboss.xavier.integrations.route;
 import org.apache.camel.Exchange;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class ToBeanRouter_DirectToPaginationBeanTest extends XavierCamelTest {
+
+    @Value("${pagination.limit.max}")
+    int MAX_LIMIT;
 
     @Test
     public void ToBeanRouterBuilder_routeToPaginationBean_GivenNoHeaders_ShouldUseDefaultOffsetAndMaxLimit() throws Exception {
@@ -33,7 +37,7 @@ public class ToBeanRouter_DirectToPaginationBeanTest extends XavierCamelTest {
 
         PageBean pageBean = (PageBean) paginationHeader;
         assertThat(pageBean.getOffset()).isEqualTo(ToBeanRouter.DEFAULT_OFFSET);
-        assertThat(pageBean.getLimit()).isEqualTo(ToBeanRouter.MAX_LIMIT);
+        assertThat(pageBean.getLimit()).isEqualTo(MAX_LIMIT);
 
         camelContext.stop();
     }
@@ -88,7 +92,7 @@ public class ToBeanRouter_DirectToPaginationBeanTest extends XavierCamelTest {
 
         PageBean pageBean = (PageBean) paginationHeader;
         assertThat(pageBean.getOffset()).isEqualTo(ToBeanRouter.DEFAULT_OFFSET);
-        assertThat(pageBean.getLimit()).isEqualTo(ToBeanRouter.MAX_LIMIT);
+        assertThat(pageBean.getLimit()).isEqualTo(MAX_LIMIT);
 
         camelContext.stop();
     }
