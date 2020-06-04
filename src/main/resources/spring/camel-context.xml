@@ -56,9 +56,14 @@
 
         <onException>
             <exception>java.lang.Exception</exception>
+            <exception>java.lang.Error</exception>
+            <exception>java.lang.RuntimeException</exception>
             <handled><constant>true</constant></handled>
             <setHeader headerName="exception">
                 <simple>${exception.stacktrace}</simple>
+            </setHeader>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR}</simple>
             </setHeader>
             <bean ref="mainRouteBuilder" method="markAnalysisAsFailed(${exchange})"/>
             <stop/>
