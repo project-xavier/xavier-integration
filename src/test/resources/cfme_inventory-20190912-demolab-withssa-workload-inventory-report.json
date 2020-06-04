@@ -328,6 +328,7 @@
         ],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
+          "Red Hat JBoss EAP",
           "RHV",
           "OCP",
           "OSP"
@@ -357,6 +358,7 @@
         ],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
+          "Red Hat JBoss EAP",
           "RHV",
           "OCP",
           "OSP"

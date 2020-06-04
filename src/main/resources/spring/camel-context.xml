@@ -40,6 +40,21 @@
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 
         <onException>
+            <exception>java.util.NoSuchElementException</exception>
+            <handled><constant>true</constant></handled>
+            <setHeader headerName="exception">
+                <simple>${exception.stacktrace}</simple>
+            </setHeader>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_NOT_FOUND}</simple>
+            </setHeader>
+            <setBody>
+                <simple>${exception.message}</simple>
+            </setBody>
+            <stop/>
+        </onException>
+
+        <onException>
             <exception>java.lang.Exception</exception>
             <handled><constant>true</constant></handled>
             <setHeader headerName="exception">
@@ -58,7 +73,7 @@
             </when>
         </interceptFrom>
 
-        <restConfiguration apiContextPath="/api-doc" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
+        <restConfiguration apiContextPath="/openapi.json" apiContextRouteId="doc-api" component="servlet" bindingMode="json">
             <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
             <apiProperty key="api.version" value="0.1"/>
@@ -201,7 +216,7 @@
             </delete>
             <get uri="/{id}/initial-saving-estimation">
                 <description>Get the Initial Cost Saving report</description>
-                <route id="reports-get-details">
+                <route id="initial-saving-estimation-report-get-details">
                     <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.initialSavingEstimation</constant></setHeader>
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
@@ -209,6 +224,12 @@
                     <!-- RBAC check end-->
 
                     <bean ref="initialSavingsEstimationReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                 </route>
             </get>
             <get uri="/{id}/workload-inventory">
