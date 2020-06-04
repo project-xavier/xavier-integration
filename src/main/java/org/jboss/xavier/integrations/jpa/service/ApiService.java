@@ -16,6 +16,10 @@ public class ApiService {
     @Value("${camel.component.servlet.mapping.context-path}")
     String contextPath;
 
+    public <T> PageResponse<T> mapToCustomPage(Exchange exchange, Class<T> tClass) {
+        return (PageResponse<T>) mapToCustomPage(exchange);
+    }
+
     public PageResponse<Object> mapToCustomPage(Exchange exchange) {
         Page<Object> page = (Page<Object>) exchange.getIn().getBody();
 
