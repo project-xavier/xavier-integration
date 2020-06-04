@@ -6,6 +6,7 @@ import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
 import org.jboss.xavier.utils.ConversionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -25,7 +26,9 @@ public class ToBeanRouter extends RouteBuilderExceptionHandler {
     public static final String WORKLOAD_INVENTORY_FILTER_HEADER_NAME = "workloadInventoryFilterBean";
 
     public static final int DEFAULT_OFFSET = 0;
-    public static final int MAX_LIMIT = 1000;
+
+    @Value("${pagination.limit.max}")
+    int MAX_LIMIT;
 
     @Override
     public void configure() throws Exception {

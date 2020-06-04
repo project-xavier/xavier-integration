@@ -256,6 +256,13 @@
                     <to uri="direct:to-pageBean"/>
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
                     <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
@@ -281,6 +288,13 @@
 
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
                     <to uri="direct:toWorkloadInventoryReportCsv" />
                     <setHeader headerName="${type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
@@ -358,6 +372,13 @@
 
                     <to uri="direct:to-pageBean"/>
                     <to uri="direct:to-sortBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
                 </route>
             </get>
@@ -375,6 +396,13 @@
 
                     <to uri="direct:to-pageBean"/>
                     <to uri="direct:to-sortBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="flagService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
                 </route>
             </get>
