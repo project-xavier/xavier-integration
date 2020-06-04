@@ -59,6 +59,37 @@ public class WorkloadInventoryReportModel
     public static final String DATACENTER_FIELD = "datacenter";
     public static final String CLUSTER_FIELD = "cluster";
     public static final String VM_NAME_FIELD = "vmName";
+    public static final String OS_NAME_FIELD = "osName";
+    public static final String OS_DESCRIPTION_FIELD = "osDescription";
+    public static final String DISK_SPACE_FIELD = "diskSpace";
+    public static final String MEMORY_FIELD = "memory";
+    public static final String CPU_CORES_FIELD = "cpuCores";
+    public static final String COMPLEXITY_NAME_FIELD = "complexity";
+    public static final String PRODUCT_FIELD = "product";
+    public static final String VERSION_FIELD = "version";
+    public static final String CREATION_DATE_FIELD = "creationDate";
+    public static final String SSA_ENABLED_FIELD = "ssaEnabled";
+    public static final String INSIGHTS_ENABLED_FIELD = "insightsEnabled";
+    public static final String OS_FAMILY_FIELD = "osFamily";
+
+    public static final String[] SUPPORTED_SORT_FIELDS = {
+            PROVIDER_FIELD,
+            DATACENTER_FIELD,
+            CLUSTER_FIELD,
+            VM_NAME_FIELD,
+            OS_NAME_FIELD,
+            OS_DESCRIPTION_FIELD,
+            DISK_SPACE_FIELD,
+            MEMORY_FIELD,
+            CPU_CORES_FIELD,
+            COMPLEXITY_NAME_FIELD,
+            PRODUCT_FIELD,
+            VERSION_FIELD,
+            CREATION_DATE_FIELD,
+            SSA_ENABLED_FIELD,
+            INSIGHTS_ENABLED_FIELD,
+            OS_FAMILY_FIELD
+    };
 
     @Id
     @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO, generator = "WORKLOADINVENTORYREPORTMODEL_ID_GENERATOR")

@@ -2,14 +2,15 @@ package org.jboss.xavier.integrations.jpa.service;
 
 import org.jboss.xavier.analytics.pojo.output.WorkloadInventoryReportFiltersModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
+import org.jboss.xavier.integrations.jpa.OffsetLimitRequest;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportRepository;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadInventoryReportSpecs;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
+import org.jboss.xavier.utils.ConversionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,32 +24,6 @@ public class WorkloadInventoryReportService
     @Autowired
     WorkloadInventoryReportRepository reportRepository;
 
-    public static Sort getWorkloadInventoryReportModelSort(SortBean sortBean) {
-        // Direction
-        Sort.Direction direction;
-        if (sortBean.isOrderAsc() != null) {
-            direction = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
-        } else {
-            direction = Sort.Direction.ASC;
-        }
-
-        // Sort
-        Sort sort;
-        if (sortBean.getOrderBy() != null) {
-            sort = new Sort(direction, sortBean.getOrderBy());
-        } else {
-            // Default sort
-            sort = new Sort(direction,
-                    WorkloadInventoryReportModel.PROVIDER_FIELD,
-                    WorkloadInventoryReportModel.DATACENTER_FIELD,
-                    WorkloadInventoryReportModel.CLUSTER_FIELD,
-                    WorkloadInventoryReportModel.VM_NAME_FIELD
-            );
-        }
-
-        return sort;
-    }
-
     public List<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(String analysisOwner, Long analysisId) {
         return reportRepository.findByAnalysisOwnerAndAnalysisId(analysisOwner, analysisId);
     }
@@ -56,11 +31,11 @@ public class WorkloadInventoryReportService
     public List<WorkloadInventoryReportModel> findByAnalysisOwnerAndAnalysisId(
             String analysisOwner,
             Long analysisId,
-            SortBean sortBean,
+            List<SortBean> sortBean,
             WorkloadInventoryFilterBean filterBean
     ) {
         // Sort
-        Sort sort = getWorkloadInventoryReportModelSort(sortBean);
+        Sort sort = ConversionUtils.toSort(sortBean, WorkloadInventoryReportModel.SUPPORTED_SORT_FIELDS);
 
         // Filtering
         Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);
@@ -72,16 +47,16 @@ public class WorkloadInventoryReportService
             String analysisOwner,
             Long analysisId,
             PageBean pageBean,
-            SortBean sortBean,
+            List<SortBean> sortBean,
             WorkloadInventoryFilterBean filterBean
     ) {
         // Sort
-        Sort sort = getWorkloadInventoryReportModelSort(sortBean);
+        Sort sort = ConversionUtils.toSort(sortBean, WorkloadInventoryReportModel.SUPPORTED_SORT_FIELDS);
 
         // Pagination
-        int page = pageBean.getPage();
-        int size = pageBean.getSize();
-        Pageable pageable = new PageRequest(page, size, sort);
+        int offset = pageBean.getOffset();
+        int limit = pageBean.getLimit();
+        Pageable pageable = new OffsetLimitRequest(offset, limit, sort);
 
         // Filtering
         Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);

@@ -56,9 +56,14 @@
 
         <onException>
             <exception>java.lang.Exception</exception>
+            <exception>java.lang.Error</exception>
+            <exception>java.lang.RuntimeException</exception>
             <handled><constant>true</constant></handled>
             <setHeader headerName="exception">
                 <simple>${exception.stacktrace}</simple>
+            </setHeader>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR}</simple>
             </setHeader>
             <bean ref="mainRouteBuilder" method="markAnalysisAsFailed(${exchange})"/>
             <stop/>
@@ -234,10 +239,9 @@
             </get>
             <get uri="/{id}/workload-inventory">
                 <description>Get the Workload Inventory Reports</description>
-                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
-                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
-                <param name="orderBy" type="query" required="false" description="Define sort field which will be use" />
-                <param name="orderAsc" type="query" defaultValue="true" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the position in the dataset of the records" dataType="int" />
+                <param name="limit" type="query" defaultValue="10" required="false" description="Define the number of records that is intended to be retrieved" dataType="int" />
+                <param name="sort_by" type="query" defaultValue="provider,datacenter,cluster,vmName" required="false" description="Define sort field which will be use" />
                 <param name="provider" type="query" required="false" description="Define a filter" />
                 <param name="datacenter" type="query" required="false" description="Define a filter" />
                 <param name="cluster" type="query" required="false" description="Define a filter" />
@@ -254,16 +258,23 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
-                    <to uri="direct:to-paginationBean"/>
+                    <to uri="direct:to-pageBean"/>
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
             </get>
             <get uri="/{id}/workload-inventory/filtered-csv" produces="text/csv">
                 <description>Get the filtered Workload Inventory Reports in CSV format</description>
-                <param name="orderBy" type="query" required="false" description="Define sort field which will be use" />
-                <param name="orderAsc" type="query" defaultValue="true" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <param name="sort_by" type="query" defaultValue="provider,datacenter,cluster,vmName" required="false" description="Define sort field which will be use" />
                 <param name="provider" type="query" required="false" description="Define a filter" />
                 <param name="datacenter" type="query" required="false" description="Define a filter" />
                 <param name="cluster" type="query" required="false" description="Define a filter" />
@@ -282,6 +293,13 @@
 
                     <to uri="direct:to-sortBean"/>
                     <to uri="direct:to-workloadInventoryFilterBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadInventoryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.sortBean}, ${header.workloadInventoryFilterBean})" />
                     <to uri="direct:toWorkloadInventoryReportCsv" />
                     <setHeader headerName="${type:org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat.CONTENT_DISPOSITION}">
@@ -347,10 +365,9 @@
             </get>
             <get uri="/{id}/workload-summary/workloads">
                 <description>Get the Workloads detected</description>
-                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
-                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
-                <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
-                <param name="orderAsc" type="query" defaultValue="false" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the position in the dataset of the records" dataType="int" />
+                <param name="limit" type="query" defaultValue="10" required="false" description="Define the number of records that is intended to be retrieved" dataType="int" />
+                <param name="sort_by" type="query" defaultValue="id:desc" required="false" description="Define sort field which will be use" />
                 <route id="workload-summary-workloads-report-get">
                     <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadSummary</constant></setHeader>
@@ -358,17 +375,23 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
-                    <to uri="direct:to-paginationBean"/>
+                    <to uri="direct:to-pageBean"/>
                     <to uri="direct:to-sortBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
                 </route>
             </get>
             <get uri="/{id}/workload-summary/flags">
                 <description>Get the Workloads detected</description>
-                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" dataType="int" />
-                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" dataType="int" />
-                <param name="orderBy" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
-                <param name="orderAsc" type="query" defaultValue="true" required="false" description="Define if sort is ascending" dataType="boolean" />
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the position in the dataset of the records" dataType="int" />
+                <param name="limit" type="query" defaultValue="10" required="false" description="Define the number of records that is intended to be retrieved" dataType="int" />
+                <param name="sort_by" type="query" defaultValue="id" required="false" description="Define sort field which will be use" />
                 <route id="workload-summary-flags-report-get">
                     <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>analysis.workloadSummary</constant></setHeader>
@@ -376,8 +399,15 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
-                    <to uri="direct:to-paginationBean"/>
+                    <to uri="direct:to-pageBean"/>
                     <to uri="direct:to-sortBean"/>
+                    <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="flagService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
                 </route>
             </get>
