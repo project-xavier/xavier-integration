@@ -1,5 +1,7 @@
 package org.jboss.xavier.integrations;
 
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,12 +17,8 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.ClassRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.util.EnvironmentTestUtils;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -35,8 +33,6 @@ import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
-
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 public class TestContainersInfrastructure {
     private Logger logger = LoggerFactory.getLogger(TestContainersInfrastructure.class);
