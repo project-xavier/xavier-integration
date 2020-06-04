@@ -100,11 +100,11 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @UseAdviceWith // Disables automatic start of Camel context
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@ContextConfiguration(initializers = EndToEndTest.Initializer.class)
+@ContextConfiguration(initializers = UploadPayloadEndToEndIT.Initializer.class)
 @Import(TestConfigurationS3.class)
 @ActiveProfiles("test")
-public class EndToEndTest {
-    private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
+public class UploadPayloadEndToEndIT {
+    private static Logger logger = LoggerFactory.getLogger(UploadPayloadEndToEndIT.class);
 
     @ClassRule
     public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
@@ -565,7 +565,7 @@ public class EndToEndTest {
         ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
 
         // Checks on Initial Savings Report
-        InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
+        InitialSavingsEstimationReportModel initialSavingsEstimationReport_Expected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-initial-cost-savings-report.json", StandardCharsets.UTF_8, UploadPayloadEndToEndIT.class.getClassLoader()), InitialSavingsEstimationReportModel.class);
         SoftAssertions.assertSoftly(softly -> softly.assertThat(initialCostSavingsReport.getBody())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*", ".*report.*")
@@ -590,14 +590,14 @@ public class EndToEndTest {
             softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
         });
 
-        WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel[].class);
+        WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, UploadPayloadEndToEndIT.class.getClassLoader()), WorkloadInventoryReportModel[].class);
         assertThat(workloadInventoryReport.getBody().getContent().toArray())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
                 .isEqualTo(workloadInventoryReportModelExpected);
 
         // Checks on Workload Summary Report
-        WorkloadSummaryReportModel workloadSummaryReport_Expected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
+        WorkloadSummaryReportModel workloadSummaryReport_Expected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-summary-report.json", StandardCharsets.UTF_8, UploadPayloadEndToEndIT.class.getClassLoader()), WorkloadSummaryReportModel.class);
 
         assertThat(workloadSummaryReport.getBody())
                 .usingRecursiveComparison()
@@ -716,7 +716,7 @@ public class EndToEndTest {
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(14);
 
         ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReportJavaRuntimes = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
-        WorkloadSummaryReportModel workloadSummaryReport_JavaRuntimesExpected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20200304-Linux_JDK-summary-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadSummaryReportModel.class);
+        WorkloadSummaryReportModel workloadSummaryReport_JavaRuntimesExpected = new ObjectMapper().readValue(IOUtils.resourceToString("cfme_inventory-20200304-Linux_JDK-summary-report.json", StandardCharsets.UTF_8, UploadPayloadEndToEndIT.class.getClassLoader()), WorkloadSummaryReportModel.class);
 
         assertThat(workloadSummaryReportJavaRuntimes.getBody())
                 .usingRecursiveComparison()
@@ -817,7 +817,7 @@ public class EndToEndTest {
         LinkedMultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
         fileMap.add(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=filex; filename=" + filename);
         fileMap.add("Content-type", content_type_header);
-        body.add("file", new HttpEntity<>(IOUtils.resourceToByteArray(filename, EndToEndTest.class.getClassLoader()), fileMap));
+        body.add("file", new HttpEntity<>(IOUtils.resourceToByteArray(filename, UploadPayloadEndToEndIT.class.getClassLoader()), fileMap));
 
         // params Body parts
         body.add("percentageOfHypervisorsMigratedOnYear1", "50");
