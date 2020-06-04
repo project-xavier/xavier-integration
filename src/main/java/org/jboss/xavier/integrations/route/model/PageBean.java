@@ -4,28 +4,28 @@ import java.util.Objects;
 
 public class PageBean {
 
-    private Integer page;
-    private Integer size;
+    private Integer offset;
+    private Integer limit;
 
-    public PageBean(Integer page, Integer size) {
-        this.page = page;
-        this.size = size;
+    public PageBean(Integer offset, Integer limit) {
+        this.offset = offset;
+        this.limit = limit;
     }
 
-    public Integer getPage() {
-        return page;
+    public Integer getOffset() {
+        return offset;
     }
 
-    public void setPage(Integer page) {
-        this.page = page;
+    public void setOffset(Integer offset) {
+        this.offset = offset;
     }
 
-    public Integer getSize() {
-        return size;
+    public Integer getLimit() {
+        return limit;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
     @Override
@@ -33,12 +33,20 @@ public class PageBean {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PageBean pageBean = (PageBean) o;
-        return Objects.equals(page, pageBean.page) &&
-                Objects.equals(size, pageBean.size);
+        return Objects.equals(offset, pageBean.offset) &&
+                Objects.equals(limit, pageBean.limit);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(page, size);
+        return Objects.hash(offset, limit);
+    }
+
+    @Override
+    public String toString() {
+        return "PageBean{" +
+                "offset=" + offset +
+                ", limit=" + limit +
+                '}';
     }
 }

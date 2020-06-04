@@ -6,12 +6,17 @@ import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
 import org.jboss.xavier.integrations.route.model.WorkloadInventoryFilterBean;
 import org.jboss.xavier.utils.ConversionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class ToBeanRouter extends RouteBuilderExceptionHandler {
@@ -20,52 +25,58 @@ public class ToBeanRouter extends RouteBuilderExceptionHandler {
     public static final String SORT_HEADER_NAME = "sortBean";
     public static final String WORKLOAD_INVENTORY_FILTER_HEADER_NAME = "workloadInventoryFilterBean";
 
+    public static final int DEFAULT_OFFSET = 0;
+
+    @Value("${pagination.limit.max}")
+    int MAX_LIMIT;
+
     @Override
     public void configure() throws Exception {
         super.configure();
 
-        from("direct:to-paginationBean")
-                .routeId("to-paginationBean")
-                .process(new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        // extract the name parameter from the Camel message which we want to use
-                        Object pageHeader = exchange.getIn().getHeader("page");
-                        Integer page = ConversionUtils.toInteger(pageHeader);
-
-                        Object sizeHeader = exchange.getIn().getHeader("size");
-                        Integer size = ConversionUtils.toInteger(sizeHeader);
-
-                        // create pagination header
-                        Map<String, Object> headers = exchange.getIn().getHeaders();
-                        headers.put(PAGE_HEADER_NAME, new PageBean(page, size));
-
-                        // store the reply from the bean on the OUT message
-                        exchange.getOut().setHeaders(headers);
-                        exchange.getOut().setBody(exchange.getIn().getBody());
-                        exchange.getOut().setAttachments(exchange.getIn().getAttachments());
+        from("direct:to-pageBean")
+                .routeId("to-pageBean")
+                .process(exchange -> {
+                    Object offsetValue = exchange.getIn().getHeader("offset");
+                    Integer offset = ConversionUtils.toInteger(offsetValue);
+                    if (offset == null || offset < 0) {
+                        offset = DEFAULT_OFFSET;
                     }
+
+                    Object limitValue = exchange.getIn().getHeader("limit");
+                    Integer limit = ConversionUtils.toInteger(limitValue);
+                    if (limit == null || limit > MAX_LIMIT) {
+                        limit = MAX_LIMIT;
+                    }
+
+                    exchange.getIn().setHeader(PAGE_HEADER_NAME, new PageBean(offset, limit));
                 });
 
         from("direct:to-sortBean")
                 .routeId("to-sortBean")
-                .process(new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        // extract the name parameter from the Camel message which we want to use
-                        Object orderByHeader = exchange.getIn().getHeader("orderBy");
-                        String orderBy = orderByHeader != null ? (String) orderByHeader : null;
+                .process(exchange -> {
+                    // Sort
+                    Object sortByValue = exchange.getIn().getHeader("sort_by");
 
-                        Object orderAscHeader = exchange.getIn().getHeader("orderAsc");
-                        Boolean orderAsc = ConversionUtils.toBoolean(orderAscHeader);
-
-                        // create pagination header
-                        Map<String, Object> headers = exchange.getIn().getHeaders();
-                        headers.put(SORT_HEADER_NAME, new SortBean(orderBy, orderAsc));
-
-                        // store the reply from the bean on the OUT message
-                        exchange.getOut().setHeaders(headers);
-                        exchange.getOut().setBody(exchange.getIn().getBody());
-                        exchange.getOut().setAttachments(exchange.getIn().getAttachments());
+                    // We need to keep the order in which sort_by was defined
+                    LinkedHashSet<String> sortByList = new LinkedHashSet<>();
+                    if (sortByValue instanceof String) {
+                        List<String> collect = Stream.of(((String) sortByValue).split(","))
+                                .map(String::trim)
+                                .collect(Collectors.toList());
+                        sortByList.addAll(collect);
+                    } else if (sortByValue instanceof Collection) {
+                        sortByList.addAll((Collection) sortByValue);
                     }
+
+                    List<SortBean> sortByBeans = sortByList.stream().map(sortBy -> {
+                        String[] split = sortBy.trim().split(":");
+                        String fieldName = !split[0].isEmpty() ? split[0] : null;
+                        boolean isAsc = split.length <= 1 || split[1].equalsIgnoreCase("asc");
+                        return new SortBean(fieldName, isAsc);
+                    }).collect(Collectors.toList());
+
+                    exchange.getIn().setHeader(SORT_HEADER_NAME, sortByBeans);
                 });
 
         from("direct:to-workloadInventoryFilterBean")

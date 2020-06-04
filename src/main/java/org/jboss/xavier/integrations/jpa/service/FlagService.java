@@ -1,12 +1,13 @@
 package org.jboss.xavier.integrations.jpa.service;
 
 import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagModel;
+import org.jboss.xavier.integrations.jpa.OffsetLimitRequest;
 import org.jboss.xavier.integrations.jpa.repository.FlagRepository;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
+import org.jboss.xavier.utils.ConversionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -24,17 +25,15 @@ public class FlagService
         return flagRepository.calculateFlagModels(analysisId);
     }
 
-    public Page<FlagModel> findByReportAnalysisOwnerAndReportAnalysisId(String analysisOwner, Long analysisId, PageBean pageBean, SortBean sortBean)
+    public Page<FlagModel> findByReportAnalysisOwnerAndReportAnalysisId(String analysisOwner, Long analysisId, PageBean pageBean, List<SortBean> sortBean)
     {
         // Sort
-        Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
-        String orderBy = FlagModel.SUPPORTED_SORT_FIELDS.contains(sortBean.getOrderBy()) ? sortBean.getOrderBy() : FlagModel.DEFAULT_SORT_FIELD;
-        Sort sort = new Sort(sortDirection, orderBy);
+        Sort sort = ConversionUtils.toSort(sortBean, FlagModel.SUPPORTED_SORT_FIELDS);
 
         // Pagination
-        int page = pageBean.getPage();
-        int size = pageBean.getSize();
-        Pageable pageable = new PageRequest(page, size, sort);
+        int offset = pageBean.getOffset();
+        int limit = pageBean.getLimit();
+        Pageable pageable = new OffsetLimitRequest(offset, limit, sort);
 
         return flagRepository.findByReportAnalysisOwnerAndReportAnalysisId(analysisOwner, analysisId, pageable);
     }

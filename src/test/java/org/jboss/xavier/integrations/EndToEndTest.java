@@ -16,17 +16,11 @@ import org.awaitility.Duration;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.AppIdentifierModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.OSInformationModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsApplicationPlatformsDetectedModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsJavaRuntimeDetectedModel;
-import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
 import org.jboss.xavier.integrations.jpa.repository.AppIdentifierRepository;
+import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
+import org.jboss.xavier.integrations.route.model.PageResponse;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +39,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -70,7 +63,6 @@ import org.testcontainers.utility.MountableFile;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -559,7 +551,7 @@ public class EndToEndTest {
         ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
 
         // Call workloadInventoryReport
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
 
         // Call workloadSummaryReport
         ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-summary", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {});
@@ -573,25 +565,25 @@ public class EndToEndTest {
 
         // Checks on Workload Inventory Report
         SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(workloadInventoryReport.getBody().getContent().size()).isEqualTo(14);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getWorkloads().stream()).distinct().count()).isEqualTo(7);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getWorkloads().contains("Red Hat JBoss EAP")).count()).isEqualTo(2);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getOsName).distinct().count()).isEqualTo(4);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("CentOS 7 (64-bit)")).count()).isEqualTo(2);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().map(WorkloadInventoryReportModel::getComplexity).distinct().count()).isEqualTo(4);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(0);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getComplexity().contains("Unsupported")).count()).isEqualTo(1);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(6);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getRecommendedTargetsIMS().contains("OSP")).count()).isEqualTo(11);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getRecommendedTargetsIMS().contains("RHEL")).count()).isEqualTo(4);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getRecommendedTargetsIMS().contains("None")).count()).isEqualTo(1);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
-            softly.assertThat(workloadInventoryReport.getBody().getContent().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
+            softly.assertThat(workloadInventoryReport.getBody().getData().size()).isEqualTo(14);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getWorkloads().stream()).distinct().count()).isEqualTo(7);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getWorkloads().contains("Red Hat JBoss EAP")).count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().map(WorkloadInventoryReportModel::getOsName).distinct().count()).isEqualTo(4);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getOsName().contains("CentOS 7 (64-bit)")).count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().map(WorkloadInventoryReportModel::getComplexity).distinct().count()).isEqualTo(4);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(0);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getComplexity().contains("Unsupported")).count()).isEqualTo(1);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(6);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("OSP")).count()).isEqualTo(11);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("RHEL")).count()).isEqualTo(4);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("None")).count()).isEqualTo(1);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
         });
 
         WorkloadInventoryReportModel[] workloadInventoryReportModelExpected = objectMapper.readValue(IOUtils.resourceToString("cfme_inventory-20190912-demolab-withssa-workload-inventory-report.json", StandardCharsets.UTF_8, EndToEndTest.class.getClassLoader()), WorkloadInventoryReportModel[].class);
-        assertThat(workloadInventoryReport.getBody().getContent().toArray())
+        assertThat(workloadInventoryReport.getBody().getData().toArray())
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*")
                 .isEqualTo(workloadInventoryReportModelExpected);
@@ -627,6 +619,27 @@ public class EndToEndTest {
           .matches(e -> e.getStatusCode().equals(HttpStatus.NOT_FOUND))
           .matches(e -> e.getResponseBodyAsString().equalsIgnoreCase("Report not found"));
 
+        // OpenAPI Pagination Response test
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReportPagination = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getCount()).isEqualTo(14);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getOffset()).isEqualTo(0);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getLimit()).isEqualTo(100);
+
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getFirst()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?limit=100&offset=0", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?limit=100&offset=0", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrev()).isNull();
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isNull();
+
+        workloadInventoryReportPagination = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=8", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getCount()).isEqualTo(14);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getOffset()).isEqualTo(8);
+        assertThat(workloadInventoryReportPagination.getBody().getMeta().getLimit()).isEqualTo(4);
+
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getFirst()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=0", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrev()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=4", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
+
         // Performance test
         logger.info("+++++++  Performance Test ++++++");
 
@@ -639,23 +652,23 @@ public class EndToEndTest {
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_without_host.json", "application/json"), String.class);
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(8);
 
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_vm_without_host = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().size()).isEqualTo(8);
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(2);
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(6);
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_file_vm_without_host = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().size()).isEqualTo(8);
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(2);
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(6);
 
         // Test with a file with Host without Cluster
         logger.info("+++++++  Test with a file with Host without Cluster ++++++");
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-host_without_cluster.json", "application/json"), String.class);
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(8);
 
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_host_without_cluster = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_file_host_without_cluster = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
         // Total VMs
-        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getContent().size()).isEqualTo(8);
+        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getData().size()).isEqualTo(8);
         // Wrong VMs
-        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getContent().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(3);
+        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getData().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(3);
         // Right VMs
-        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getContent().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(5);
+        assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getData().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(5);
 
         // Test with a file with Wrong CPU cores per socket
         logger.info("+++++++  Test with a file with Wrong CPU cores per socket ++++++");
@@ -665,10 +678,10 @@ public class EndToEndTest {
         ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport_wrong_cpu_cores = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
         assertThat(initialCostSavingsReport_wrong_cpu_cores.getBody().getEnvironmentModel().getHypervisors()).isEqualTo(2);
 
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_wrong_cpu_cores = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
-        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(5);
-        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getContent().size()).isEqualTo(5);
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_file_wrong_cpu_cores = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
+        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(5);
+        assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getData().size()).isEqualTo(5);
 
         // Test with a file with 0 CPU cores per socket
         logger.info("+++++++  Test with a file with 0 CPU cores per socket ++++++");
@@ -678,10 +691,10 @@ public class EndToEndTest {
         ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport_zero_cpu_cores = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
         assertThat(initialCostSavingsReport_zero_cpu_cores.getBody().getEnvironmentModel().getHypervisors()).isEqualTo(2);
 
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_zero_cpu_cores = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
-        assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(8);
-        assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getContent().size()).isEqualTo(8);
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_file_zero_cpu_cores = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
+        assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(8);
+        assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getData().size()).isEqualTo(8);
 
         // Test with a file with VM.used_disk_storage
         logger.info("+++++++  Test with a file with VM.used_disk_storage ++++++");
@@ -691,14 +704,14 @@ public class EndToEndTest {
         ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport_vm_with_used_disk = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
         assertThat(initialCostSavingsReport_vm_with_used_disk.getBody().getEnvironmentModel().getHypervisors()).isEqualTo(4);
 
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_vm_with_used_disk = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().size()).isEqualTo(8);
-        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_vm_with_used_disk = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getData().size()).isEqualTo(8);
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getData().stream()
                 .filter(e -> ("tomcat".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2159550464L)).count()).isEqualTo(1);
-        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getData().stream()
                 .filter(e -> ("lb".equalsIgnoreCase(e.getVmName())) && (e.getDiskSpace() == 2620260352L + 5000L)).count()).isEqualTo(1);
         //NICs flag test
-        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getContent().stream()
+        assertThat(workloadInventoryReport_vm_with_used_disk.getBody().getData().stream()
                 .filter(e -> e.getFlagsIMS().contains(">4 vNICs")).count()).isEqualTo(0);
 
         // Test Insights Enabled
@@ -706,9 +719,9 @@ public class EndToEndTest {
 
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(14);
 
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_with_insights_enabled = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().size()).isEqualTo(14);
-        assertThat(workloadInventoryReport_with_insights_enabled.getBody().getContent().stream().filter(e -> e.getInsightsEnabled()).count()).isEqualTo(2);
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_with_insights_enabled = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_with_insights_enabled.getBody().getData().size()).isEqualTo(14);
+        assertThat(workloadInventoryReport_with_insights_enabled.getBody().getData().stream().filter(e -> e.getInsightsEnabled()).count()).isEqualTo(2);
 
         // Test OSInformation, JavaRuntimes, and ApplicationPlatforms in WMS
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20200304-Linux_JDK.tar.gz", "application/zip"), String.class);
@@ -764,6 +777,10 @@ public class EndToEndTest {
 
     private String getBaseURLAPIPath() {
         return "http://localhost:" + serverPort + basePath.substring(0, basePath.length() - 1); // to remove the last * char
+    }
+
+    private String getBaseURLAPIPathWithoutHost() {
+        return basePath.substring(0, basePath.length() - 2); // to remove the last * char and last '/'
     }
 
     private Integer callSummaryReportAndCheckVMs(final String reportUrl, int timeoutMilliseconds) {

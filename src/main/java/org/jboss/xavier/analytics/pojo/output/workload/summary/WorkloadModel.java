@@ -52,9 +52,12 @@ import java.util.Set;
 public class WorkloadModel
 {
     public static final String DEFAULT_SORT_FIELD = "id";
-    public static final Set<String> SUPPORTED_SORT_FIELDS = new HashSet<>(
-            Arrays.asList(WorkloadModel.DEFAULT_SORT_FIELD, WorkloadModel.WORKLOAD, WorkloadModel.OS_NAME, WorkloadModel.VMS)
-    );
+    public static final String[] SUPPORTED_SORT_FIELDS = {
+            WorkloadModel.DEFAULT_SORT_FIELD,
+            WorkloadModel.WORKLOAD,
+            WorkloadModel.OS_NAME,
+            WorkloadModel.VMS
+    };
 
     static final String REPORT_ID = "report_id";
     static final String WORKLOAD = "workload";
