@@ -64,7 +64,7 @@ public class PageResponse<T> {
     public static class Links {
         private String first;
         private String next;
-        private String previous;
+        private String prev;
         private String last;
 
         public String getFirst() {
@@ -83,12 +83,12 @@ public class PageResponse<T> {
             this.next = next;
         }
 
-        public String getPrevious() {
-            return previous;
+        public String getPrev() {
+            return prev;
         }
 
-        public void setPrevious(String previous) {
-            this.previous = previous;
+        public void setPrev(String prev) {
+            this.prev = prev;
         }
 
         public String getLast() {

@@ -44,7 +44,7 @@ public class ApiService {
         // Previous
         int offsetPrevious = (page.getNumber() - 1) * page.getSize();
         if (offsetPrevious >= 0) {
-            links.setPrevious(getURLLink(basePath, queryParametersWithoutLimitNorOffset, page.getSize(), offsetPrevious));
+            links.setPrev(getURLLink(basePath, queryParametersWithoutLimitNorOffset, page.getSize(), offsetPrevious));
         }
 
         // Next
@@ -75,9 +75,9 @@ public class ApiService {
     private String getURLLink(String basePath, String queryParameters, int limit, int offset) {
         String url = basePath + "?" + queryParameters;
         if (url.endsWith("?")) {
-            return MessageFormat.format("{0}limit={1}&offset={2}", url, limit, offset);
+            return MessageFormat.format("{0}limit={1}&offset={2}", url, String.valueOf(limit), String.valueOf(offset));
         } else {
-            return MessageFormat.format("{0}&limit={1}&offset={2}", url, limit, offset);
+            return MessageFormat.format("{0}&limit={1}&offset={2}", url, String.valueOf(limit), String.valueOf(offset));
         }
     }
 

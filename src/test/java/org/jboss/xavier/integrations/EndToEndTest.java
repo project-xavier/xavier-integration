@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -628,7 +627,7 @@ public class EndToEndTest {
 
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getFirst()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?limit=100&offset=0", analysisNum));
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?limit=100&offset=0", analysisNum));
-        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrevious()).isNull();
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrev()).isNull();
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isNull();
 
         workloadInventoryReportPagination = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=8", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
@@ -638,7 +637,7 @@ public class EndToEndTest {
 
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getFirst()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=0", analysisNum));
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
-        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrevious()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=4", analysisNum));
+        assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrev()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=4", analysisNum));
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
 
         // Performance test
