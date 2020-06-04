@@ -571,28 +571,23 @@ public class EndToEndTest {
         // To process the first small file it should take 10 seconds
         // To process the second small file it should take 7 minutes of the first bunch of big files plus 10 seconds of the small file
         logger.info("+++++++  Stress Test ++++++");
+        int firstupload = ++analysisNum;
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
+        analysisNum++;
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
+        analysisNum++;
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
+        analysisNum++;
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
 
         // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
-        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum + 2), timeoutMilliseconds_SmallFileSummaryReport)).isEqualTo(8);
-        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum + 1), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo(numberVMsExpected_InBigFile);
-        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum + 3), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo( numberVMsExpected_InBigFile);
+        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", firstupload + 1), timeoutMilliseconds_SmallFileSummaryReport)).isEqualTo(8);
+        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", firstupload), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo(numberVMsExpected_InBigFile);
+        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", firstupload + 2), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo( numberVMsExpected_InBigFile);
 
         int timeoutMilliseconds_secondSmallFile = timeoutMilliseconds_UltraPerformaceTest + timeoutMilliseconds_SmallFileSummaryReport;
-        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum + 4), timeoutMilliseconds_secondSmallFile)).isEqualTo( 8);
+        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", firstupload + 3), timeoutMilliseconds_secondSmallFile)).isEqualTo( 8);
     }
-
-    @Test
-    public void testCustomPage() {
-        ResponseEntity<String> response = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=10&offset=0", HttpMethod.GET, getRequestEntity(), String.class);
-        assertThat(response.getBody()).contains("\"first\":\"/api/xavier/v1.0/mappings/flag-assessment?limit=10&offset=0\"");
-        assertThat(response.getBody()).contains("\"last\":\"/api/xavier/v1.0/mappings/flag-assessment?limit=10&offset=0\"");
-        logger.info("RESPONSE PAGINATION : " + response.getBody());
-    }
-
 
     @Test
     public void whenDeleteReportShouldRemoveFileInS3() throws Exception {
