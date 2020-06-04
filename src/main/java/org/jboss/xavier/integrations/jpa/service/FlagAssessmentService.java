@@ -4,12 +4,10 @@ import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagAssessmentMod
 import org.jboss.xavier.integrations.jpa.repository.FlagAssessmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import static org.junit.Assert.assertTrue;
+import org.springframework.stereotype.Component;
 
 @Component
 public class FlagAssessmentService
@@ -21,9 +19,7 @@ public class FlagAssessmentService
     int paginationLimitMax;
 
     public Page<FlagAssessmentModel> findAll(int page, int size) {
-        assertTrue(size <= paginationLimitMax);
-
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = new PageRequest(page, (size <= paginationLimitMax) ? size : paginationLimitMax);
         Page<FlagAssessmentModel> result = flagAssessmentRepository.findAll(pageable);
         return result;
     }
