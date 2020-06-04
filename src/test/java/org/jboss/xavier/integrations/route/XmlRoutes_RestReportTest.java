@@ -7,12 +7,7 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
-import org.jboss.xavier.integrations.jpa.service.AnalysisService;
-import org.jboss.xavier.integrations.jpa.service.FlagService;
-import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
-import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
-import org.jboss.xavier.integrations.jpa.service.WorkloadService;
-import org.jboss.xavier.integrations.jpa.service.WorkloadSummaryReportService;
+import org.jboss.xavier.integrations.jpa.service.*;
 import org.jboss.xavier.integrations.route.dataformat.CustomizedMultipartDataFormat;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
@@ -37,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -244,34 +240,41 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_PageParamGiven_SizeParamGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
-        int page = 2;
-        variables.put("page", page);
-        int size = 3;
-        variables.put("size", size);
+        int offset = 2;
+        variables.put("offset", offset);
+        int limit = 3;
+        variables.put("limit", limit);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?page={page}&size={size}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?offset={offset}&limit={limit}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        PageBean pageBean = new PageBean(page, size);
-        SortBean sortBean = new SortBean(null, true);
+        PageBean pageBean = new PageBean(offset, limit);
+        List<SortBean> sortBean = Arrays.asList(
+                new SortBean("provider", true),
+                new SortBean("datacenter", true),
+                new SortBean("cluster", true),
+                new SortBean("vmName", true)
+        );
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -280,17 +283,19 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
+        camelContext.startRoute("to-pageable-response");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
 
         HttpHeaders headers = new HttpHeaders();
@@ -301,9 +306,15 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(null, true);
+        List<SortBean> sortBean = Arrays.asList(
+                new SortBean("provider", true),
+                new SortBean("datacenter", true),
+                new SortBean("cluster", true),
+                new SortBean("vmName", true)
+        );
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -312,34 +323,34 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_SortParamGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
         String orderBy = "vmName";
-        variables.put("orderBy", orderBy);
-        Boolean orderAsc = true;
-        variables.put("orderAsc", orderAsc);
+        variables.put("sort_by", orderBy);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?orderBy={orderBy}&orderAsc={orderAsc}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory?sort_by={sort_by}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(orderBy, orderAsc);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("vmName", true));
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -348,19 +359,19 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGiven_FiltersGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("to-workloadInventoryFilterBean");
         camelContext.startRoute("workload-inventory-report-get-details");
 
         Map<String, Object> variables = new HashMap<>();
-
-        Long one = 1L;
         variables.put("id", one);
 
         String provider1 = "my provider1";
@@ -436,7 +447,12 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(null, true);
+        List<SortBean> sortBean = Arrays.asList(
+                new SortBean("provider", true),
+                new SortBean("datacenter", true),
+                new SortBean("cluster", true),
+                new SortBean("vmName", true)
+        );
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
         filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));
         filterBean.setClusters(new HashSet<>(Arrays.asList(cluster1, cluster2)));
@@ -448,6 +464,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         filterBean.setFlagsIMS(new HashSet<>(Arrays.asList(flag1, flag2)));
         filterBean.setComplexities(new HashSet<>(Arrays.asList(complexity1, complexity2)));
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -490,7 +507,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         Long one = 1L;
         when(analysisService.findByOwnerAndId("mrizzi@redhat.com",one)).thenReturn(new AnalysisModel());
         doNothing().when(analysisService).deleteById(one);
-        
+
         camelContext.getRouteDefinition("report-delete").adviceWith(camelContext, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
@@ -602,7 +619,12 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        SortBean sortBean = new SortBean(null, true);
+        List<SortBean> sortBean = Arrays.asList(
+                new SortBean("provider", true),
+                new SortBean("datacenter", true),
+                new SortBean("cluster", true),
+                new SortBean("vmName", true)
+        );
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
 
         verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId(analysisModel.getOwner(), analysisModel.getId(), sortBean, filterBean);
@@ -656,9 +678,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         variables.put("id", analysisModel.getId());
 
         String orderBy = "provider";
-        variables.put("orderBy", orderBy);
-        Boolean orderAsc = true;
-        variables.put("orderAsc", orderAsc);
+        variables.put("sort_by", orderBy);
 
         String datacenter1 = "my datacenter1";
         variables.put("datacenter1", datacenter1);
@@ -666,8 +686,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         variables.put("datacenter2", datacenter2);
 
         StringBuilder sb = new StringBuilder("")
-                .append("orderBy={orderBy}&")
-                .append("orderAsc={orderAsc}&")
+                .append("sort_by={sort_by}&")
                 .append("datacenter={datacenter1}&")
                 .append("datacenter={datacenter2}");
 
@@ -687,7 +706,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv?" + sb.toString(), HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        SortBean sortBean = new SortBean(orderBy, orderAsc);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean(orderBy, true));
 
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
         filterBean.setDatacenters(new HashSet<>(Arrays.asList(datacenter1, datacenter2)));
@@ -731,9 +750,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         variables.put("id", analysisModel.getId());
 
         String orderBy = "provider";
-        variables.put("orderBy", orderBy);
-        Boolean orderAsc = true;
-        variables.put("orderAsc", orderAsc);
+        variables.put("sort_by", orderBy);
 
         String provider1 = "my provider1";
         variables.put("provider1", provider1);
@@ -781,8 +798,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         variables.put("complexity2", complexity2);
 
         StringBuilder sb = new StringBuilder("")
-                .append("orderBy={orderBy}&")
-                .append("orderAsc={orderAsc}&")
+                .append("sort_by={sort_by}&")
                 .append("provider={provider1}&")
                 .append("provider={provider2}&")
                 .append("cluster={cluster1}&")
@@ -818,7 +834,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory/filtered-csv?" + sb.toString(), HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        SortBean sortBean = new SortBean(orderBy, orderAsc);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("provider", true));
 
         WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
         filterBean.setProviders(new HashSet<>(Arrays.asList(provider1, provider2)));
@@ -897,16 +913,17 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadSummaryWorkloads_IdParamGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("workload-summary-workloads-report-get");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
 
         HttpHeaders headers = new HttpHeaders();
@@ -917,8 +934,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", false);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", false));
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -927,32 +945,34 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadSummaryWorkloads_IdParamGiven_PaginationGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("workload-summary-workloads-report-get");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
-        int page = 2;
-        variables.put("page", page);
-        int size = 3;
-        variables.put("size", size);
+        int offset = 2;
+        variables.put("offset", offset);
+        int limit = 3;
+        variables.put("limit", limit);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/workloads?page={page}&size={size}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/workloads?offset={offset}&limit={limit}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        PageBean pageBean = new PageBean(page, size);
-        SortBean sortBean = new SortBean("id", false);
+        PageBean pageBean = new PageBean(offset, limit);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", false));
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -961,32 +981,32 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadSummaryWorkloads_IdParamGiven_SortGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("workload-summary-workloads-report-get");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
         String orderBy = "workload";
-        variables.put("orderBy", orderBy);
-        Boolean orderAsc = true;
-        variables.put("orderAsc", orderAsc);
+        variables.put("sort_by", orderBy);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/workloads?orderBy={orderBy}&orderAsc={orderAsc}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/workloads?sort_by={sort_by}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(orderBy, orderAsc);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean(orderBy, true));
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -995,16 +1015,17 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadSummaryFlags_IdParamGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("workload-summary-flags-report-get");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
 
         HttpHeaders headers = new HttpHeaders();
@@ -1015,8 +1036,9 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", true);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", true));
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -1025,32 +1047,34 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadSummaryFlags_IdParamGiven_PaginationGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("workload-summary-flags-report-get");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
-        int page = 2;
-        variables.put("page", page);
-        int size = 3;
-        variables.put("size", size);
+        int offset = 2;
+        variables.put("offset", offset);
+        int limit = 3;
+        variables.put("limit", limit);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/flags?page={page}&size={size}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/flags?offset={offset}&limit={limit}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        PageBean pageBean = new PageBean(page, size);
-        SortBean sortBean = new SortBean("id", true);
+        PageBean pageBean = new PageBean(offset, limit);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", true));
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -1059,32 +1083,32 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
     @Test
     public void xmlRouteBuilder_RestReportIdWorkloadSummaryFlags_IdParamGiven_SortGiven_ShouldCallFindByAnalysisId() throws Exception {
         //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
 
         //When
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
-        camelContext.startRoute("to-paginationBean");
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("to-sortBean");
         camelContext.startRoute("workload-summary-flags-report-get");
         Map<String, Object> variables = new HashMap<>();
-        Long one = 1L;
         variables.put("id", one);
         String orderBy = "workload";
-        variables.put("orderBy", orderBy);
-        Boolean orderAsc = true;
-        variables.put("orderAsc", orderAsc);
+        variables.put("sort_by", orderBy);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
         HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/flags?orderBy={orderBy}&orderAsc={orderAsc}", HttpMethod.GET, entity, String.class, variables);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-summary/flags?sort_by={sort_by}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(orderBy, orderAsc);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean(orderBy, true));
 
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
         assertThat(response).isNotNull();
         camelContext.stop();
@@ -1245,6 +1269,79 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         //Then
         assertThat(answer.getBody()).isEqualTo("{\"filename\":\"cloudforms-export-v1_0_0.json\",\"downloadLink\":null}");
 
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGivenExists_ShouldReturn200() throws Exception {
+        //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(new AnalysisModel());
+
+        //When
+        camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("to-pageBean");
+        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
+        camelContext.startRoute("workload-inventory-report-get-details");
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("id", one);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("whatever", "this header should not be copied");
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory" , HttpMethod.GET, entity, String.class, variables);
+
+        //Then
+        WorkloadInventoryFilterBean filterBean = new WorkloadInventoryFilterBean();
+        PageBean pageBean = new PageBean(0, 10);
+        List<SortBean> sortBean = Arrays.asList(
+                new SortBean("provider", true),
+                new SortBean("datacenter", true),
+                new SortBean("cluster", true),
+                new SortBean("vmName", true)
+        );
+
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
+        verify(workloadInventoryReportService).findByAnalysisOwnerAndAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean, filterBean);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpServletResponse.SC_OK);
+        camelContext.stop();
+    }
+
+    @Test
+    public void xmlRouteBuilder_RestReportIdWorkloadInventory_IdParamGivenNotExists_ShouldReturn404() throws Exception {
+        //Given
+        Long one = 1L;
+        when(analysisService.findByOwnerAndId("mrizzi@redhat.com", one)).thenReturn(null);
+
+        //When
+        camelContext.start();
+        TestUtil.mockRBACResponse(camelContext);
+        TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("to-pageBean");
+        camelContext.startRoute("to-sortBean");
+        camelContext.startRoute("to-workloadInventoryFilterBean");
+        camelContext.startRoute("workload-inventory-report-get-details");
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("id", one);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("whatever", "this header should not be copied");
+        headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
+
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+        ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/{id}/workload-inventory" , HttpMethod.GET, entity, String.class, variables);
+
+        //Then
+        verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().value()).isEqualTo(HttpServletResponse.SC_NOT_FOUND);
         camelContext.stop();
     }
 
