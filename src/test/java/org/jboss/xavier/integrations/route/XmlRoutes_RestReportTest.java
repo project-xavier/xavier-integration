@@ -934,7 +934,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", false);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", false));
 
         verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
@@ -970,7 +970,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(offset, limit);
-        SortBean sortBean = new SortBean("id", false);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", false));
 
         verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
@@ -1004,7 +1004,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(orderBy, true);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean(orderBy, true));
 
         verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(workloadService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
@@ -1036,7 +1036,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean("id", true);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", true));
 
         verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
@@ -1072,7 +1072,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(offset, limit);
-        SortBean sortBean = new SortBean("id", true);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", true));
 
         verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);
@@ -1106,7 +1106,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
 
         //Then
         PageBean pageBean = new PageBean(0, 10);
-        SortBean sortBean = new SortBean(orderBy, true);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean(orderBy, true));
 
         verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(flagService).findByReportAnalysisOwnerAndReportAnalysisId("mrizzi@redhat.com", one, pageBean, sortBean);

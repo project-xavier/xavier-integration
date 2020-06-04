@@ -35,7 +35,7 @@ public class WorkloadInventoryReportService
             WorkloadInventoryFilterBean filterBean
     ) {
         // Sort
-        Sort sort = ConversionUtils.toSort(sortBean);
+        Sort sort = ConversionUtils.toSort(sortBean, WorkloadInventoryReportModel.SUPPORTED_SORT_FIELDS);
 
         // Filtering
         Specification<WorkloadInventoryReportModel> specification = WorkloadInventoryReportSpecs.getByAnalysisOwnerAndAnalysisIdAndFilterBean(analysisOwner, analysisId, filterBean);
@@ -51,7 +51,7 @@ public class WorkloadInventoryReportService
             WorkloadInventoryFilterBean filterBean
     ) {
         // Sort
-        Sort sort = ConversionUtils.toSort(sortBean);
+        Sort sort = ConversionUtils.toSort(sortBean, WorkloadInventoryReportModel.SUPPORTED_SORT_FIELDS);
 
         // Pagination
         int offset = pageBean.getOffset();

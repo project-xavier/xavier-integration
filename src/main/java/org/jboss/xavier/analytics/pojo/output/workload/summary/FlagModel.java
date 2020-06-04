@@ -53,9 +53,9 @@ public class FlagModel
 {
 
     public static final String DEFAULT_SORT_FIELD = "id";
-    public static final Set<String> SUPPORTED_SORT_FIELDS = new HashSet<>(
-            Arrays.asList(FlagModel.DEFAULT_SORT_FIELD, FlagModel.FLAG, FlagModel.OS_NAME, FlagModel.VMS)
-    );
+    public static final String[] SUPPORTED_SORT_FIELDS = {
+            FlagModel.DEFAULT_SORT_FIELD, FlagModel.FLAG, FlagModel.OS_NAME, FlagModel.VMS
+    };
 
     static final String REPORT_ID = "report_id";
     static final String FLAG = "flag";

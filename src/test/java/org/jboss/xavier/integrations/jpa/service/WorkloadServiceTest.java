@@ -18,6 +18,8 @@ import org.springframework.test.context.ActiveProfiles;
 import javax.inject.Inject;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -48,7 +50,7 @@ public class WorkloadServiceTest {
         analysisService.setWorkloadSummaryReportModel(reportModel, analysisModel.getId());
 
         PageBean pageBean = new PageBean(0, 5);
-        SortBean sortBean = new SortBean("id", false);
+        List<SortBean> sortBean = Collections.singletonList(new SortBean("id", false));
 
         Page<WorkloadModel> result = reportService.findByReportAnalysisOwnerAndReportAnalysisId("user name", analysisModel.getId(), pageBean, sortBean);
         assertThat(result.getContent().size()).isEqualTo(1);

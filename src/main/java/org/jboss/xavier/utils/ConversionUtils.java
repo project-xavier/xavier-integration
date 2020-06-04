@@ -4,7 +4,9 @@ import org.jboss.xavier.integrations.route.model.SortBean;
 import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,11 +59,14 @@ public class ConversionUtils {
         return result;
     }
 
-    public static Sort toSort(List<SortBean> sortBeans) {
-        List<Sort.Order> fieldSorts = sortBeans.stream().map(sortBy -> {
-            Sort.Direction direction = sortBy.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
-            return new Sort.Order(direction, sortBy.getOrderBy());
-        }).collect(Collectors.toList());
+    public static Sort toSort(List<SortBean> sortBeans, String... filterFields) {
+        List<String> filterFieldsList = filterFields != null ? Arrays.asList(filterFields) : Collections.emptyList();
+        List<Sort.Order> fieldSorts = sortBeans.stream()
+                .filter(f -> filterFieldsList.contains(f.getOrderBy()))
+                .map(sortBy -> {
+                    Sort.Direction direction = sortBy.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
+                    return new Sort.Order(direction, sortBy.getOrderBy());
+                }).collect(Collectors.toList());
 
         if (fieldSorts.isEmpty()) {
             return null;

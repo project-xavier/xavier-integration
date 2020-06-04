@@ -5,6 +5,7 @@ import org.jboss.xavier.integrations.jpa.OffsetLimitRequest;
 import org.jboss.xavier.integrations.jpa.repository.WorkloadRepository;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.route.model.SortBean;
+import org.jboss.xavier.utils.ConversionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +25,9 @@ public class WorkloadService
         return workloadRepository.calculateWorkloadsModels(analysisId);
     }
 
-    public Page<WorkloadModel> findByReportAnalysisOwnerAndReportAnalysisId(String analysisOwner, Long analysisId, PageBean pageBean, SortBean sortBean) {
+    public Page<WorkloadModel> findByReportAnalysisOwnerAndReportAnalysisId(String analysisOwner, Long analysisId, PageBean pageBean, List<SortBean> sortBean) {
         // Sort
-        Sort.Direction sortDirection = sortBean.isOrderAsc() ? Sort.Direction.ASC : Sort.Direction.DESC;
-        String orderBy = WorkloadModel.SUPPORTED_SORT_FIELDS.contains(sortBean.getOrderBy()) ? sortBean.getOrderBy() : WorkloadModel.DEFAULT_SORT_FIELD;
-        Sort sort = new Sort(sortDirection, orderBy);
+        Sort sort = ConversionUtils.toSort(sortBean, WorkloadModel.SUPPORTED_SORT_FIELDS);
 
         // Pagination
         int offset = pageBean.getOffset();
