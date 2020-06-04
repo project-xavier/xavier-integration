@@ -17,11 +17,7 @@ public class ApiService {
     String contextPath;
 
     public <T> PageResponse<T> mapToCustomPage(Exchange exchange, Class<T> tClass) {
-        return (PageResponse<T>) mapToCustomPage(exchange);
-    }
-
-    public PageResponse<Object> mapToCustomPage(Exchange exchange) {
-        Page<Object> page = (Page<Object>) exchange.getIn().getBody();
+        Page<T> page = (Page<T>) exchange.getIn().getBody();
 
         // LINKS
         String basePath = exchange.getIn().getHeader(Exchange.HTTP_URI, String.class);
@@ -64,12 +60,16 @@ public class ApiService {
         meta.setCount(page.getTotalElements());
 
         // RESULT
-        PageResponse<Object> result = new PageResponse<>();
+        PageResponse<T> result = new PageResponse<>();
         result.setMeta(meta);
         result.setData(page.getContent());
         result.setLinks(links);
 
         return result;
+    }
+
+    public PageResponse<Object> mapToCustomPage(Exchange exchange) {
+        return mapToCustomPage(exchange, Object.class);
     }
 
     private String getURLLink(String basePath, String queryParameters, int limit, int offset) {
