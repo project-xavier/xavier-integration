@@ -22,6 +22,9 @@ public class ApiService {
         // LINKS
         String basePath = exchange.getIn().getHeader(Exchange.HTTP_URI, String.class);
         String queryParameters = exchange.getIn().getHeader(Exchange.HTTP_QUERY, String.class);
+        if (queryParameters == null) {
+            queryParameters = "";
+        }
         String queryParametersWithoutLimitNorOffset = Arrays.stream(queryParameters.split("&"))
                 .filter(e -> !e.startsWith("limit") && !e.startsWith("offset"))
                 .collect(Collectors.joining("&"));
