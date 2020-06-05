@@ -102,8 +102,8 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         //Then
         verify(analysisService).findAllByOwner("mrizzi@redhat.com", new PageBean(0, 10));
         assertThat(response).isNotNull();
-        assertThat(response.getBody()).contains("\"content\":[]");
-        assertThat(response.getBody()).contains("\"size\":10");
+        assertThat(response.getBody()).contains("\"data\":[]");
+        assertThat(response.getBody()).contains("\"limit\":10");
         camelContext.stop();
     }
 
@@ -153,8 +153,8 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         //Then
         verify(analysisService).findAllByOwner("mrizzi@redhat.com", new PageBean(offset, limit));
         assertThat(response).isNotNull();
-        assertThat(response.getBody()).contains("\"content\":[]");
-        assertThat(response.getBody()).contains("\"size\":3");
+        assertThat(response.getBody()).contains("\"data\":[]");
+        assertThat(response.getBody()).contains("\"limit\":3");
         camelContext.stop();
     }
 
@@ -186,8 +186,8 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         //Then
         verify(analysisService).findByOwnerAndReportName("mrizzi@redhat.com", filterText, new PageBean(offset, limit));
         assertThat(response).isNotNull();
-        assertThat(response.getBody()).contains("\"content\":[]");
-        assertThat(response.getBody()).contains("\"size\":3");
+        assertThat(response.getBody()).contains("\"data\":[]");
+        assertThat(response.getBody()).contains("\"limit\":3");
         camelContext.stop();
     }
 
