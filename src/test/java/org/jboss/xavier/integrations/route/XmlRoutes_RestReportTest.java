@@ -502,7 +502,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         verify(analysisService).findByOwnerAndId("mrizzi@redhat.com", one);
         verify(analysisService, never()).deleteById(one);
         assertThat(response).isNotNull();
-        assertThat(response.getBody()).contains("Analysis not found");
+        assertThat(response.getBody()).contains("Report not found");
         camelContext.stop();
     }
 

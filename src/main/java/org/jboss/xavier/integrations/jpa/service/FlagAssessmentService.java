@@ -1,7 +1,5 @@
 package org.jboss.xavier.integrations.jpa.service;
 
-import java.util.List;
-
 import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagAssessmentModel;
 import org.jboss.xavier.integrations.jpa.OffsetLimitRequest;
 import org.jboss.xavier.integrations.jpa.repository.FlagAssessmentRepository;
