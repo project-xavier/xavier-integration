@@ -118,13 +118,18 @@
         <rest path="/mappings">
             <description>Mapping REST API</description>
             <get uri="/flag-assessment">
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the position in the dataset of the records" dataType="int" />
+                <param name="limit" type="query" required="false" description="Define the number of records that is intended to be retrieved" dataType="int" />
                 <route id="mappings-flag-assessment-findAll">
                     <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>mappings</constant></setHeader>
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
-                    <bean ref="flagAssessmentService" method="findAll()" />
+
+                    <to uri="direct:to-pageBean"/>
+                    <bean ref="flagAssessmentService" method="findAll(${header.pageBean})"/>
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
             </get>
         </rest>
@@ -391,6 +396,12 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadSummaryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                 </route>
             </get>
@@ -416,6 +427,7 @@
                         </when>
                     </choice>
                     <bean ref="workloadService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
             </get>
             <get uri="/{id}/workload-summary/flags">
@@ -440,6 +452,7 @@
                         </when>
                     </choice>
                     <bean ref="flagService" method="findByReportAnalysisOwnerAndReportAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id}, ${header.pageBean}, ${header.sortBean})" />
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
             </get>
             <get uri="/{id}/payload">

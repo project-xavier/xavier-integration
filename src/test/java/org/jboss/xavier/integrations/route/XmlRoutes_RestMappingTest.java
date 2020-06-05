@@ -28,6 +28,9 @@ public class XmlRoutes_RestMappingTest extends XavierCamelTest {
     @Value("${camel.component.servlet.mapping.context-path}")
     String camel_context;
 
+    @Value("${pagination.limit.max}")
+    int MAX_LIMIT;
+
     @SpyBean
     private FlagAssessmentService flagAssessmentService;
 
@@ -44,6 +47,7 @@ public class XmlRoutes_RestMappingTest extends XavierCamelTest {
         camelContext.start();
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
+        camelContext.startRoute("to-pageBean");
         camelContext.startRoute("mappings-flag-assessment-findAll");
 
 
@@ -54,7 +58,8 @@ public class XmlRoutes_RestMappingTest extends XavierCamelTest {
         restTemplate.exchange(camel_context + "mappings/flag-assessment", HttpMethod.GET, entity, String.class);
 
         //Then
-        verify(flagAssessmentService).findAll();
+        PageBean pageBean = new PageBean(0, MAX_LIMIT);
+        verify(flagAssessmentService).findAll(pageBean);
         camelContext.stop();
     }
 

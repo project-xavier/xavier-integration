@@ -482,6 +482,8 @@ public class EndToEndTest {
                 .build();
         appIdentifierRepository.save(Arrays.asList(applicationPlatform1, applicationPlatform2, applicationPlatform3, applicationPlatform4));
 
+
+        // FLag assessments
         FlagAssessmentModel flagAssessmentModel1 = new FlagAssessmentModel();
         flagAssessmentModel1.setAssessment("assessment1");
         flagAssessmentModel1.setFlag("flag1");
@@ -581,6 +583,13 @@ public class EndToEndTest {
         assertHttpClientError("/report/99999/payload-link", HttpMethod.GET,HttpStatus.NOT_FOUND);
         assertHttpClientError("/report/99999/payload", HttpMethod.GET,HttpStatus.NOT_FOUND);
         assertHttpClientError("/report/99999/initial-savings-estimation", HttpMethod.GET, HttpStatus.NOT_FOUND);
+
+        // this one should give 2 pages
+        ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
+        assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
+
+        ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(4);
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
