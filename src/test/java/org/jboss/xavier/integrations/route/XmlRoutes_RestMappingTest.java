@@ -1,12 +1,13 @@
 package org.jboss.xavier.integrations.route;
 
+import static org.mockito.Mockito.verify;
+
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.jpa.service.FlagAssessmentService;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,9 +16,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.anyInt;
 
 
 @SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
