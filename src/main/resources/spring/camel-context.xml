@@ -54,21 +54,6 @@
         </onException>
 
         <onException>
-            <exception>java.util.NoSuchElementException</exception>
-            <handled><constant>true</constant></handled>
-            <setHeader headerName="exception">
-                <simple>${exception.stacktrace}</simple>
-            </setHeader>
-            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
-                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_NOT_FOUND}</simple>
-            </setHeader>
-            <setBody>
-                <simple>${exception.message}</simple>
-            </setBody>
-            <stop/>
-        </onException>
-
-        <onException>
             <exception>java.lang.AssertionError</exception>
             <handled><constant>true</constant></handled>
             <setHeader headerName="exception">
@@ -209,6 +194,7 @@
                             <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.pageBean})" />
                         </otherwise>
                     </choice>
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
             </get>
             <get uri="/{id}">
@@ -250,7 +236,7 @@
                             </setHeader>
                         </when>
                         <otherwise>
-                            <throwException exceptionType="java.util.NoSuchElementException" message="Analysis not found"/>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
                         </otherwise>
                     </choice>
                 </route>
