@@ -364,6 +364,12 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
+                        </when>
+                    </choice>
                     <bean ref="workloadSummaryReportService" method="findByAnalysisOwnerAndAnalysisId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
                 </route>
             </get>
