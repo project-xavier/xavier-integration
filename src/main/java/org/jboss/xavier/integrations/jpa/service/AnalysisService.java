@@ -1,5 +1,8 @@
 package org.jboss.xavier.integrations.jpa.service;
 
+import java.util.Date;
+import java.util.List;
+
 import org.jboss.xavier.analytics.pojo.AdministrationMetricsProjection;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
@@ -9,17 +12,10 @@ import org.jboss.xavier.integrations.jpa.OffsetLimitRequest;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
 import org.jboss.xavier.integrations.route.model.PageBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-
-import static org.junit.Assert.assertTrue;
-
-import java.util.Date;
-import java.util.List;
 
 @Component
 public class AnalysisService
@@ -33,9 +29,6 @@ public class AnalysisService
     @Autowired
     AnalysisRepository analysisRepository;
 
-    @Value("${pagination.report.limit.max:1000}")
-    int paginationLimitMax;
-    
     // WARNING: BE CAREFUL
     // think about changing this "private" modifier
     // every time you "find" a report it should check that the
