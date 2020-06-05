@@ -575,13 +575,6 @@ public class EndToEndTest {
             }
         });
 
-        // this one should give 2 pages
-        ResponseEntity<PagedResources<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessment.getBody().getContent().size()).isEqualTo(2);
-
-        ResponseEntity<PagedResources<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessmentHighLimit.getBody().getContent().size()).isEqualTo(4);
-
         // Checking errors are correctly treated
         assertHttpClientError("/report/99999", HttpMethod.GET,HttpStatus.NOT_FOUND);
         assertHttpClientError("/report/99999", HttpMethod.DELETE, HttpStatus.NOT_FOUND);

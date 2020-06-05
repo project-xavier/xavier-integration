@@ -16,6 +16,7 @@ import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -89,6 +90,8 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
+        camelContext.startRoute("to-pageBean");
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
@@ -133,6 +136,8 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
+        camelContext.startRoute("to-pageBean");
+
         Map<String, Object> variables = new HashMap<>();
         int offset = 2;
         variables.put("offset", offset);
@@ -163,6 +168,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         TestUtil.mockRBACResponse(camelContext);
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
+        camelContext.startRoute("to-pageBean");
         Map<String, Object> variables = new HashMap<>();
         int offset = 2;
         variables.put("offset", offset);

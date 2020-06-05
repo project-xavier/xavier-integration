@@ -54,7 +54,7 @@ public class XmlRoutes_RestMappingTest extends XavierCamelTest {
         restTemplate.exchange(camel_context + "mappings/flag-assessment", HttpMethod.GET, entity, String.class);
 
         //Then
-        verify(flagAssessmentService).findAll(Mockito.any(PageBean.class));
+        verify(flagAssessmentService).findAll();
         camelContext.stop();
     }
 
