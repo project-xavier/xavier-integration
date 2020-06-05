@@ -847,8 +847,8 @@ public class EndToEndTest {
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
 
         // Testing that limit and offset params are really taken into consideration
-        ResponseEntity<PagedResources<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<AnalysisModel>>() {});
-        assertThat(responseAnalysisModel.getBody().getContent().size()).isEqualTo(2);
+        ResponseEntity<PageResponse<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<AnalysisModel>>() {});
+        assertThat(responseAnalysisModel.getBody().getData().size()).isEqualTo(2);
 
         camelContext.stop();
     }
