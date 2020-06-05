@@ -118,16 +118,13 @@
         <rest path="/mappings">
             <description>Mapping REST API</description>
             <get uri="/flag-assessment">
-                <param name="offset" type="query" defaultValue="0" required="false" description="Define the page requested" />
-                <param name="limit" type="query" defaultValue="{{pagination.flag-assessment.limit.default}}" required="false" description="Define the size of the requested page" />
                 <route id="mappings-flag-assessment-findAll">
                     <!-- RBAC check start-->
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_NAME}"><constant>mappings</constant></setHeader>
                     <setHeader headerName="${type:org.jboss.xavier.integrations.rbac.RBACRouteBuilder.RBAC_ENDPOINT_RESOURCE_PERMISSION}"><constant>read</constant></setHeader>
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
-
-                    <bean ref="flagAssessmentService" method="findAll(${header.offset}, ${header.limit})" />
+                    <bean ref="flagAssessmentService" method="findAll()" />
                 </route>
             </get>
         </rest>
@@ -187,8 +184,8 @@
             <description>Report REST API</description>
             <get uri="/">
                 <description>Get the list of all the reports for the user</description>
-                <param name="offset" type="query" defaultValue="0" required="false" description="Define the page requested" />
-                <param name="limit" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the position in the dataset of the records" dataType="int" />
+                <param name="limit" type="query" defaultValue="10" required="false" description="Define the number of records that is intended to be retrieved" dataType="int" />
                 <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
                 <route id="reports-get-all">
                     <!-- RBAC check start-->
@@ -197,13 +194,14 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
+                    <to uri="direct:to-pageBean"/>
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>
-                            <bean ref="analysisService" method="findAllByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.offset}, ${header.limit})" />
+                            <bean ref="analysisService" method="findAllByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.pageBean})" />
                         </when>
                         <otherwise>
-                            <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.offset}, ${header.limit})" />
+                            <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.pageBean})" />
                         </otherwise>
                     </choice>
                 </route>

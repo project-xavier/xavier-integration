@@ -583,7 +583,6 @@ public class EndToEndTest {
         assertThat(responseFlaggAssessmentHighLimit.getBody().getContent().size()).isEqualTo(4);
 
         // Checking errors are correctly treated
-        assertHttpClientError("/report?limit=9999&offset=0", HttpMethod.GET,HttpStatus.PRECONDITION_FAILED);
         assertHttpClientError("/report/99999", HttpMethod.GET,HttpStatus.NOT_FOUND);
         assertHttpClientError("/report/99999", HttpMethod.DELETE, HttpStatus.NOT_FOUND);
         assertHttpClientError("/report/99999/payload-link", HttpMethod.GET,HttpStatus.NOT_FOUND);

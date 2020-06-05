@@ -2,9 +2,11 @@ package org.jboss.xavier.integrations.route;
 
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.jpa.service.FlagAssessmentService;
+import org.jboss.xavier.integrations.route.model.PageBean;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,7 +54,7 @@ public class XmlRoutes_RestMappingTest extends XavierCamelTest {
         restTemplate.exchange(camel_context + "mappings/flag-assessment", HttpMethod.GET, entity, String.class);
 
         //Then
-        verify(flagAssessmentService).findAll(anyInt(), anyInt());
+        verify(flagAssessmentService).findAll(Mockito.any(PageBean.class));
         camelContext.stop();
     }
 

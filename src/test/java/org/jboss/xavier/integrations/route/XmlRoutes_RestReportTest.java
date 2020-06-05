@@ -97,7 +97,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report/", HttpMethod.GET, entity, String.class);
 
         //Then
-        verify(analysisService).findAllByOwner("mrizzi@redhat.com", 0, 10);
+        verify(analysisService).findAllByOwner("mrizzi@redhat.com", new PageBean(0, 10));
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("\"content\":[]");
         assertThat(response.getBody()).contains("\"size\":10");
@@ -134,10 +134,10 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
         Map<String, Object> variables = new HashMap<>();
-        int page = 2;
-        variables.put("offset", page);
-        int size = 3;
-        variables.put("limit", size);
+        int offset = 2;
+        variables.put("offset", offset);
+        int limit = 3;
+        variables.put("limit", limit);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set(TestUtil.HEADER_RH_IDENTITY, TestUtil.getBase64RHIdentity());
@@ -146,7 +146,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?offset={offset}&limit={limit}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        verify(analysisService).findAllByOwner("mrizzi@redhat.com", page, size);
+        verify(analysisService).findAllByOwner("mrizzi@redhat.com", new PageBean(offset, limit));
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("\"content\":[]");
         assertThat(response.getBody()).contains("\"size\":3");
@@ -164,10 +164,10 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         TestUtil.startUsernameRoutes(camelContext);
         camelContext.startRoute("reports-get-all");
         Map<String, Object> variables = new HashMap<>();
-        int page = 2;
-        variables.put("offset", page);
-        int size = 3;
-        variables.put("limit", size);
+        int offset = 2;
+        variables.put("offset", offset);
+        int limit = 3;
+        variables.put("limit", limit);
         String filterText = "my report name which I'm searching";
         variables.put("filterText", filterText);
 
@@ -178,7 +178,7 @@ public class XmlRoutes_RestReportTest extends XavierCamelTest {
         ResponseEntity<String> response = restTemplate.exchange(camel_context + "report?offset={offset}&limit={limit}&filterText={filterText}", HttpMethod.GET, entity, String.class, variables);
 
         //Then
-        verify(analysisService).findByOwnerAndReportName("mrizzi@redhat.com", filterText, page, size);
+        verify(analysisService).findByOwnerAndReportName("mrizzi@redhat.com", filterText, new PageBean(offset, limit));
         assertThat(response).isNotNull();
         assertThat(response.getBody()).contains("\"content\":[]");
         assertThat(response.getBody()).contains("\"size\":3");
