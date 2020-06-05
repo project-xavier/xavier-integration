@@ -1,20 +1,21 @@
 package org.jboss.xavier.integrations.jpa.service;
 
+import java.util.Date;
+import java.util.List;
+
 import org.jboss.xavier.analytics.pojo.AdministrationMetricsProjection;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
+import org.jboss.xavier.integrations.jpa.OffsetLimitRequest;
 import org.jboss.xavier.integrations.jpa.repository.AnalysisRepository;
+import org.jboss.xavier.integrations.route.model.PageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.List;
 
 @Component
 public class AnalysisService
@@ -91,9 +92,13 @@ public class AnalysisService
         analysisRepository.save(analysisModel);
     }
 
-    public Page<AnalysisModel> findAllByOwner(String owner, int page, int size)
+    public Page<AnalysisModel> findAllByOwner(String owner, PageBean pageBean)
     {
-        Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
+        // Pagination
+        int offset = pageBean.getOffset();
+        int limit = pageBean.getLimit();
+        Pageable pageable = new OffsetLimitRequest(offset, limit, new Sort(Sort.Direction.DESC, "id"));
+
         return analysisRepository.findAllByOwner(owner, pageable);
     }
 
@@ -102,9 +107,12 @@ public class AnalysisService
         return analysisRepository.countByOwner(owner);
     }
 
-    public Page<AnalysisModel> findByOwnerAndReportName(String owner, String filterText, int page, int size)
+    public Page<AnalysisModel> findByOwnerAndReportName(String owner, String filterText, PageBean pageBean)
     {
-        Pageable pageable = new PageRequest(page, size, new Sort(Sort.Direction.DESC, "id"));
+        // Pagination
+        int offset = pageBean.getOffset();
+        int limit = pageBean.getLimit();
+        Pageable pageable = new OffsetLimitRequest(offset, limit, new Sort(Sort.Direction.DESC, "id"));
         return analysisRepository.findByOwnerAndReportNameIgnoreCaseContaining(owner, filterText.trim(), pageable);
     }
 

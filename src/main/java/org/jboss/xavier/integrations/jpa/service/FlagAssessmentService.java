@@ -9,8 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 public class FlagAssessmentService
 {
@@ -25,5 +23,6 @@ public class FlagAssessmentService
         Pageable pageable = new OffsetLimitRequest(offset, limit, null);
         return flagAssessmentRepository.findAll(pageable);
     }
+
 
 }

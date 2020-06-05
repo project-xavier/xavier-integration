@@ -38,7 +38,6 @@
     <bean id="utils" class="org.jboss.xavier.utils.Utils"/>
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-
         <onException>
             <exception>java.util.NoSuchElementException</exception>
             <handled><constant>true</constant></handled>
@@ -51,6 +50,22 @@
             <setBody>
                 <simple>${exception.message}</simple>
             </setBody>
+            <stop/>
+        </onException>
+
+        <onException>
+            <exception>java.lang.AssertionError</exception>
+            <handled><constant>true</constant></handled>
+            <setHeader headerName="exception">
+                <simple>${exception.stacktrace}</simple>
+            </setHeader>
+            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_PRECONDITION_FAILED}</simple>
+            </setHeader>
+            <setBody>
+                <simple>PRECONDITION FAILED</simple>
+            </setBody>
+            <bean ref="mainRouteBuilder" method="markAnalysisAsFailed(${exchange})"/>
             <stop/>
         </onException>
 
@@ -159,8 +174,8 @@
             <description>Report REST API</description>
             <get uri="/">
                 <description>Get the list of all the reports for the user</description>
-                <param name="page" type="query" defaultValue="0" required="false" description="Define the page requested" />
-                <param name="size" type="query" defaultValue="10" required="false" description="Define the size of the requested page" />
+                <param name="offset" type="query" defaultValue="0" required="false" description="Define the position in the dataset of the records" dataType="int" />
+                <param name="limit" type="query" defaultValue="10" required="false" description="Define the number of records that is intended to be retrieved" dataType="int" />
                 <param name="filterText" type="query" required="false" description="Define the text which will be used to filter the results" />
                 <route id="reports-get-all">
                     <!-- RBAC check start-->
@@ -169,15 +184,17 @@
                     <to uri="direct:check-rbac-permissions" />
                     <!-- RBAC check end-->
 
+                    <to uri="direct:to-pageBean"/>
                     <choice>
                         <when>
                             <simple>${header.filterText} == null</simple>
-                            <bean ref="analysisService" method="findAllByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.page}, ${header.size})" />
+                            <bean ref="analysisService" method="findAllByOwner(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.pageBean})" />
                         </when>
                         <otherwise>
-                            <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.page}, ${header.size})" />
+                            <bean ref="analysisService" method="findByOwnerAndReportName(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.filterText}, ${header.pageBean})" />
                         </otherwise>
                     </choice>
+                    <bean ref="apiService" method="mapToCustomPage(${exchange})"/>
                 </route>
             </get>
             <get uri="/{id}">
@@ -190,6 +207,12 @@
                     <!-- RBAC check end-->
 
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.USERNAME}}, ${header.id})" />
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException"/>
+                        </when>
+                    </choice>
                 </route>
             </get>
             <delete uri="/{id}">
@@ -213,12 +236,7 @@
                             </setHeader>
                         </when>
                         <otherwise>
-                            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
-                                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_NOT_FOUND}</simple>
-                            </setHeader>
-                            <setBody>
-                                <constant>Analysis not found</constant>
-                            </setBody>
+                            <throwException exceptionType="java.util.NoSuchElementException" message="Report not found"/>
                         </otherwise>
                     </choice>
                 </route>
@@ -447,12 +465,7 @@
                             <convertBodyTo type="byte[]"/>
                         </when>
                         <otherwise>
-                            <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
-                                <simple resultType="String">${type:javax.servlet.http.HttpServletResponse.SC_NOT_FOUND}</simple>
-                            </setHeader>
-                            <setBody>
-                                <constant>Not Found</constant>
-                            </setBody>
+                            <throwException exceptionType="java.util.NoSuchElementException"/>
                         </otherwise>
                     </choice>
                 </route>
@@ -467,6 +480,12 @@
 
                     <bean ref="analysisService" method="findByOwnerAndId(${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.USERNAME}}, ${header.id})"/>
                     <to uri="direct:get-s3-payload-link"/>
+                    <choice>
+                        <when>
+                            <simple>${body} == null</simple>
+                            <throwException exceptionType="java.util.NoSuchElementException"/>
+                        </when>
+                    </choice>
                 </route>
             </get>
         </rest>

@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Duration;
 import org.jboss.xavier.Application;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
@@ -26,8 +27,11 @@ import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotif
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -40,6 +44,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -522,8 +527,9 @@ public class EndToEndTest {
         flagAssessmentRepository.save(Arrays.asList(flagAssessmentModel1, flagAssessmentModel2, flagAssessmentModel3, flagAssessmentModel4));
     }
 
-    @After
-    public void cleanUp() throws IOException {
+    @BeforeClass
+    @AfterClass
+    public static void cleanUp() throws IOException {
         // cleaning downloadable files/directories
         FileUtils.deleteDirectory(new File("src/test/resources/insights-ingress-go"));
         FileUtils.deleteQuietly(new File("src/test/resources/ingressRepo.zip"));
@@ -536,6 +542,12 @@ public class EndToEndTest {
         int s3Size = storageClient.listObjectsV2(new ListObjectsV2Request().withBucketName(bucket)).getKeyCount();
         logger.info("S3 Objects : " + s3Size);
         return s3Size;
+    }
+
+    private void assertHttpClientError(String url, HttpMethod method, HttpStatus status) {
+        assertThatExceptionOfType(org.springframework.web.client.HttpClientErrorException.class)
+        .isThrownBy(() -> new RestTemplate().exchange(getBaseURLAPIPath() + url, method, getRequestEntity(), String.class))
+        .matches(e -> e.getStatusCode().equals(status));
     }
 
     @Test
@@ -564,6 +576,13 @@ public class EndToEndTest {
                         .to("http4:oldhost?preserveHostHeader=true");
             }
         });
+
+        // Checking errors are correctly treated
+        assertHttpClientError("/report/99999", HttpMethod.GET,HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999", HttpMethod.DELETE, HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999/payload-link", HttpMethod.GET,HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999/payload", HttpMethod.GET,HttpStatus.NOT_FOUND);
+        assertHttpClientError("/report/99999/initial-savings-estimation", HttpMethod.GET, HttpStatus.NOT_FOUND);
 
         // this one should give 2 pages
         ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
@@ -797,7 +816,7 @@ public class EndToEndTest {
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", ++analysisNum), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo(numberVMsExpected_InBigFile);
 
         // Stress test
-        // We load 3 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
+        // We load 2 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
         // More or less 7 minutes each bunch of threads of Big Files
         // 1 bunch of threads for 2 big files and 1 small file, while 1 big file and 1 small file wait in the queue
         // We have 3 consumers
@@ -826,6 +845,10 @@ public class EndToEndTest {
 
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 3L)).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore - 1);
+
+        // Testing that limit and offset params are really taken into consideration
+        ResponseEntity<PageResponse<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<AnalysisModel>>() {});
+        assertThat(responseAnalysisModel.getBody().getData().size()).isEqualTo(2);
 
         camelContext.stop();
     }
