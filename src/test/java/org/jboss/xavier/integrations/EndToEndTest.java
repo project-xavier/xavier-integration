@@ -233,7 +233,9 @@ public class EndToEndTest {
                 .withIdentifier("IBM Websphere App Server") // Workload name
                 .build();
         appIdentifierRepository.save(Arrays.asList(applicationPlatform1, applicationPlatform2, applicationPlatform3, applicationPlatform4));
-        
+
+
+        // FLag assessments
         FlagAssessmentModel flagAssessmentModel1 = new FlagAssessmentModel();
         flagAssessmentModel1.setAssessment("assessment1");
         flagAssessmentModel1.setFlag("flag1");
@@ -243,7 +245,6 @@ public class EndToEndTest {
         fgId1.setFlag("flag");
         fgId1.setOsName("osName");
         flagAssessmentModel1.setId(fgId1);
-        
         FlagAssessmentModel flagAssessmentModel2 = new FlagAssessmentModel();
         flagAssessmentModel2.setAssessment("assessment2");
         flagAssessmentModel2.setFlag("flag2");
@@ -273,7 +274,6 @@ public class EndToEndTest {
         fgId4.setFlag("flag4");
         fgId4.setOsName("osName4");
         flagAssessmentModel4.setId(fgId4);
-        
         flagAssessmentRepository.save(Arrays.asList(flagAssessmentModel1, flagAssessmentModel2, flagAssessmentModel3, flagAssessmentModel4));
     }
 
@@ -321,6 +321,13 @@ public class EndToEndTest {
                             .to("http4:oldhost?preserveHostHeader=true");
                 }
             });
+
+        // this one should give 2 pages
+        ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
+        assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
+
+        ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(4);
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
