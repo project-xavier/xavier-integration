@@ -35,6 +35,7 @@ import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.SoftAssertions;
 import org.awaitility.Duration;
 import org.jboss.xavier.Application;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.summary.AppIdentifierModel;
@@ -55,9 +56,12 @@ import org.jboss.xavier.integrations.route.model.PageResponse;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -67,6 +71,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -292,6 +297,12 @@ public class EndToEndTest {
         return s3Size;
     }
 
+    private void assertHttpClientError(String url, HttpMethod method, HttpStatus status) {
+        assertThatExceptionOfType(org.springframework.web.client.HttpClientErrorException.class)
+        .isThrownBy(() -> new RestTemplate().exchange(getBaseURLAPIPath() + url, method, getRequestEntity(), String.class))
+        .matches(e -> e.getStatusCode().equals(status));
+    }
+    
     @Before
     public void initCamel() throws Exception {
         if (camelContext.getStatus() != ServiceStatus.Started ) {
@@ -320,19 +331,26 @@ public class EndToEndTest {
                 }
             });
 
-        setDefaults();
+            setDefaults();
 
-        // this one should give 2 pages
-        ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
+            // Checking errors are correctly treated
+            assertHttpClientError("/report/99999", HttpMethod.GET,HttpStatus.NOT_FOUND);
+            assertHttpClientError("/report/99999", HttpMethod.DELETE, HttpStatus.NOT_FOUND);
+            assertHttpClientError("/report/99999/payload-link", HttpMethod.GET,HttpStatus.NOT_FOUND);
+            assertHttpClientError("/report/99999/payload", HttpMethod.GET,HttpStatus.NOT_FOUND);
+            assertHttpClientError("/report/99999/initial-savings-estimation", HttpMethod.GET, HttpStatus.NOT_FOUND);
 
-        ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(4);
+            // this one should give 2 pages
+            ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
+            assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
 
-        // 1. Check user has firstTime
-        ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
-        assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
-        logger.info("****** Checking First Time User **********");
+            ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
+            assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(4);
+
+            // 1. Check user has firstTime
+            ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
+            assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
+            logger.info("****** Checking First Time User **********");
         }
     }
 
@@ -456,6 +474,10 @@ public class EndToEndTest {
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrev()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=4", analysisNum));
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
+
+        // Testing that limit and offset params are really taken into consideration
+        ResponseEntity<PageResponse<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<AnalysisModel>>() {});
+        assertThat(responseAnalysisModel.getBody().getData().size()).isEqualTo(2);
     }
 
     @Test
@@ -592,7 +614,7 @@ public class EndToEndTest {
     @Test
     public void whenSeveralAnalysisRunningLargerShouldNotAffectSmaller() throws Exception {
         // Stress test
-        // We load 3 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
+        // We load 2 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
         // More or less 7 minutes each bunch of threads of Big Files
         // 1 bunch of threads for 2 big files and 1 small file, while 1 big file and 1 small file wait in the queue
         // We have 3 consumers
