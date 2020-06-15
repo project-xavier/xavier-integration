@@ -67,7 +67,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -134,17 +133,15 @@ public class EndToEndTest {
 
     @Inject
     AmazonS3 amazonS3;
-    
+
     @Inject
     private ObjectMapper objectMapper;
 
     @Value("${camel.component.servlet.mapping.context-path}")
     private String basePath;
 
-    
     private static int analysisNum;
 
-    @Before
     public void setDefaults() {
         long id = 0L;
 
@@ -275,6 +272,7 @@ public class EndToEndTest {
         fgId4.setOsName("osName4");
         flagAssessmentModel4.setId(fgId4);
         flagAssessmentRepository.save(Arrays.asList(flagAssessmentModel1, flagAssessmentModel2, flagAssessmentModel3, flagAssessmentModel4));
+
     }
 
     @BeforeClass
@@ -322,6 +320,8 @@ public class EndToEndTest {
                 }
             });
 
+        setDefaults();
+
         // this one should give 2 pages
         ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessment = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
         assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
@@ -339,7 +339,8 @@ public class EndToEndTest {
     @Test
     public void whenRegularTestShouldAnswerInTime() throws Exception {
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
-        assertThat(getStorageObjectsSize()).isEqualTo(0);
+        int s3Objects = getStorageObjectsSize();
+        assertThat(s3Objects).isEqualTo(analysisNum);
 
         logger.info("+++++++  Regular Test ++++++");
         analysisNum++;
@@ -356,7 +357,7 @@ public class EndToEndTest {
             });
 
         // Check S3
-        assertThat(getStorageObjectsSize()).isEqualTo(1);
+        assertThat(getStorageObjectsSize()).isEqualTo(s3Objects+1);
 
         // Check DB for initialCostSavingsReport with concrete values
         InitialSavingsEstimationReportModel initialCostSavingsReportDB = initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 1L);
@@ -434,13 +435,8 @@ public class EndToEndTest {
             .isThrownBy(() -> new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", 9999), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<String>() {}))
             .matches(e -> e.getStatusCode().equals(HttpStatus.NOT_FOUND))
             .matches(e -> e.getResponseBodyAsString().equalsIgnoreCase("Report not found"));
-    }
 
-    @Test
-    public void whenPerformanceTestShouldAnswerInTime() throws Exception {
-        analysisNum++;
-
-        // OpenAPI Pagination Response test
+            // OpenAPI Pagination Response test
         ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReportPagination = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
         assertThat(workloadInventoryReportPagination.getBody().getMeta().getCount()).isEqualTo(14);
         assertThat(workloadInventoryReportPagination.getBody().getMeta().getOffset()).isEqualTo(0);
@@ -460,6 +456,11 @@ public class EndToEndTest {
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getLast()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getPrev()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=4", analysisNum));
         assertThat(workloadInventoryReportPagination.getBody().getLinks().getNext()).isEqualTo(getBaseURLAPIPathWithoutHost() + String.format("/report/%d/workload-inventory?datacenter=Datacenter&cluster=VMCluster&limit=4&offset=12", analysisNum));
+    }
+
+    @Test
+    public void whenPerformanceTestShouldAnswerInTime() throws Exception {
+        analysisNum++;
 
         // Performance test
         logger.info("+++++++  Performance Test ++++++");
@@ -477,20 +478,15 @@ public class EndToEndTest {
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_without_host.json", "application/json"), String.class);
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum),timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(8);
 
-        ResponseEntity<PagedResources<WorkloadInventoryReportModel>> workloadInventoryReport_file_vm_without_host = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PagedResources<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().size()).isEqualTo(8);
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(2);
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getContent().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(6);
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_file_vm_without_host = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?size=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().size()).isEqualTo(8);
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(2);
+        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(6);
     }
 
     @Test
     public void whenFileWithHostWithoutClusterShouldAddVMToWorkloadInventory() throws Exception {
         analysisNum++;
-        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport_file_vm_without_host = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {});
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().size()).isEqualTo(8);
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(2);
-        assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(6);
-
         // Test with a file with Host without Cluster
         logger.info("+++++++  Test with a file with Host without Cluster ++++++");
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-host_without_cluster.json", "application/json"), String.class);
@@ -631,9 +627,10 @@ public class EndToEndTest {
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_with_used_disk_storage.json", "application/json"), String.class);
         analysisNum++;
         Thread.sleep(5000);
+        assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore+1);
+
         ResponseEntity<String> stringEntity = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d", analysisNum), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
         assertThat(stringEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", Long.valueOf(analysisNum))).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore);
     }
