@@ -13,7 +13,7 @@ if (env.CHANGE_ID) {
         ocDeployerComponentPath: "xavier/xavier-integration",
     
         // the service sets to deploy into the test environment
-        ocDeployerServiceSets: "xavier/xavier-integration",
+        ocDeployerServiceSets: "platform-mq,rbac,ingress,xavier",
     
         // the iqe plugins to install for the test
         iqePlugins: ["iqe-migration-analytics-plugin"],
