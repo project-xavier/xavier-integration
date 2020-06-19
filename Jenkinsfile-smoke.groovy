@@ -16,7 +16,7 @@ if (env.CHANGE_ID) {
         ocDeployerServiceSets: "platform-mq,rbac,ingress,xavier",
     
         // the iqe plugins to install for the test
-        iqePlugins: ["iqe-migration-analytics-plugin"],
+        iqePlugins: ["iqe-migration_analytics-plugin"],
     
         // the pytest marker to use when calling `iqe tests all`
         pytestMarker: "ma_smoke",
