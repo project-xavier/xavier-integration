@@ -15,14 +15,10 @@
  */
 package org.jboss.xavier.integrations;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-
-import org.jboss.xavier.integrations.migrationanalytics.input.InputDataModel;
-
+import org.jboss.xavier.analytics.pojo.input.UploadFormInputDataModel;
+import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
+import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel;
 import org.kie.api.KieServices;
 import org.kie.api.command.BatchExecutionCommand;
@@ -34,6 +30,12 @@ import org.kie.api.runtime.rule.QueryResultsRow;
 import org.kie.server.api.model.KieServiceResponse;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+
 @Component
 public class DecisionServerHelper {
 
@@ -42,26 +44,11 @@ public class DecisionServerHelper {
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
-    public BatchExecutionCommand createRandomMigrationAnalyticsCommand() {
-        return createRandomMigrationAnalyticsCommand(createSampleInputDataModel());
+    public BatchExecutionCommand createMigrationAnalyticsCommand(Object inputDataModel) {
+        return generateCommands(inputDataModel, "get InitialSavingsEstimationReports", "kiesession0");
     }
 
-    public BatchExecutionCommand createRandomMigrationAnalyticsCommand(InputDataModel inputDataModel) {
-        return generateCommands(inputDataModel, "get reports", "kiesession0");
-    }
-
-    public InputDataModel createSampleInputDataModel()
-    {
-        InputDataModel inputDataModel = new InputDataModel();
-        String customerId = Integer.toString(random.nextInt(99999999));
-        inputDataModel.setCustomerId(customerId);
-        inputDataModel.setFileName(format.format(new Date()) + "-" + customerId + "-payload.json");
-        inputDataModel.setNumberOfHosts(random.nextInt(99999));
-        inputDataModel.setTotalDiskSpace(Integer.toUnsignedLong(random.nextInt(999999999)));
-        return inputDataModel;
-    }
-
-    private BatchExecutionCommand generateCommands(Object insert, String retrieveQueryId, String kiseSessionId)
+    public BatchExecutionCommand generateCommands(Object insert, String retrieveQueryId, String kiseSessionId)
     {
         List<Command<?>> cmds = new ArrayList<Command<?>>();
         KieCommands commands = KieServices.Factory.get().getCommands();
@@ -83,6 +70,53 @@ public class DecisionServerHelper {
         }
 
         return report;
+    }
+
+    public InitialSavingsEstimationReportModel extractInitialSavingsEstimationReportModel(KieServiceResponse<ExecutionResults> response) {
+        ExecutionResults res = response.getResult();
+        InitialSavingsEstimationReportModel report = null;
+        if (res != null) {
+            QueryResults queryResults = (QueryResults) res.getValue("output");
+            for (QueryResultsRow queryResult : queryResults) {
+                report = (InitialSavingsEstimationReportModel) queryResult.get("report");
+                break;
+            }
+        }
+        report.getEnvironmentModel().setReport(report);
+        report.getSourceCostsModel().setReport(report);
+        report.getSourceRampDownCostsModel().setReport(report);
+        report.getRhvRampUpCostsModel().setReport(report);
+        report.getRhvYearByYearCostsModel().setReport(report);
+        report.getRhvSavingsModel().setReport(report);
+        report.getRhvAdditionalContainerCapacityModel().setReport(report);
+//        report.getRhvOrderFormModel().setReport(report);
+        return report;
+    }
+
+    public WorkloadInventoryReportModel extractWorkloadInventoryReportModel(KieServiceResponse<ExecutionResults> response) {
+        ExecutionResults res = response.getResult();
+        WorkloadInventoryReportModel report = null;
+        if (res != null) {
+            QueryResults queryResults = (QueryResults) res.getValue("output");
+            for (QueryResultsRow queryResult : queryResults) {
+                report = (WorkloadInventoryReportModel) queryResult.get("report");
+                break;
+            }
+        }
+        return report;
+    }
+
+    public AnalysisModel createSampleAnalysisModel(KieServiceResponse<ExecutionResults> response)
+    {
+        AnalysisModel analysis = new AnalysisModel();
+        analysis.setStatus("CREATED");
+        InitialSavingsEstimationReportModel initialSavingsEstimationReport = extractInitialSavingsEstimationReportModel(response);
+        analysis.setInitialSavingsEstimationReportModel(initialSavingsEstimationReport);
+        initialSavingsEstimationReport.setAnalysis(analysis);
+        analysis.setPayloadName(initialSavingsEstimationReport.getFileName());
+        analysis.setReportName("Report Name");
+        analysis.setReportDescription("Report Description");
+        return analysis;
     }
 
 }

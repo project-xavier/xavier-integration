@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Data
@@ -14,8 +15,6 @@ import java.util.Map;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RHIdentity {
-    String account_number;
-    Map<String,String> internal;
-
-
+    Identity identity;
+    Map<String, Map<String,String>> entitlements = new HashMap<>();
 }
