@@ -97,6 +97,7 @@
             <endpointProperty key="headerFilterStrategy" value="#restResponseHeaderRemover"/>
             <apiProperty key="api.title" value="Migration Analytics REST API"/>
             <apiProperty key="api.version" value="${api.version}"/>
+            <apiProperty key="base.path" value="/api/xavier/v1.0"/>
             <apiProperty key="cors" value="true"/>
         </restConfiguration>
 
