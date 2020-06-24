@@ -14,16 +14,19 @@ public class AdministrationMetricsModel {
     @DataField(pos = 2, columnName = "Domain")
     private String ownerDomain;
 
-    @DataField(pos = 3, columnName = "Payload name")
+    @DataField(pos = 3, columnName = "Owner Account Number")
+    private String ownerAccountNumber;
+
+    @DataField(pos = 4, columnName = "Payload name")
     private String payloadName;
 
-    @DataField(pos = 4, columnName = "Analysis status")
+    @DataField(pos = 5, columnName = "Analysis status")
     private String analysisStatus;
 
-    @DataField(pos = 5, columnName = "Creation date (yyyy-MM-dd HH:mm:ss)", pattern = "yyyy-MM-dd HH:mm:ss z")
+    @DataField(pos = 6, columnName = "Creation date (yyyy-MM-dd HH:mm:ss)", pattern = "yyyy-MM-dd HH:mm:ss z")
     private Date analysisInserted;
 
-    @DataField(pos = 6, columnName = "VMs analyzed")
+    @DataField(pos = 7, columnName = "VMs analyzed")
     private Long totalVms;
 
     public String getOwner() {
@@ -40,6 +43,14 @@ public class AdministrationMetricsModel {
 
     public void setOwnerDomain(String ownerDomain) {
         this.ownerDomain = ownerDomain;
+    }
+
+    public String getOwnerAccountNumber() {
+        return ownerAccountNumber;
+    }
+
+    public void setOwnerAccountNumber(String ownerAccountNumber) {
+        this.ownerAccountNumber = ownerAccountNumber;
     }
 
     public String getPayloadName() {
