@@ -27,7 +27,7 @@ public interface AnalysisRepository extends JpaRepository<AnalysisModel, Long>
     AnalysisModel findByIdAndStatusIgnoreCaseNot(Long id, String status);
 
     @Query(nativeQuery = true, value = "\n" +
-            "select am.id, am.owner, am.payload_name as payloadName, am.status as analysisStatus, am.inserted as analysisInserted, count(wirm.id) as totalVms \n" +
+            "select am.id, am.owner, am.owner_account_number, am.payload_name as payloadName, am.status as analysisStatus, am.inserted as analysisInserted, count(wirm.id) as totalVms \n" +
             "from analysis_model am \n" +
             "left join workload_inventory_report_model wirm \n" +
             "on am.id = wirm.analysis_id \n" +
