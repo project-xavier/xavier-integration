@@ -13,9 +13,9 @@
         "workloads": [],
         "complexity": "Hard",
         "recommendedTargetsIMS": [
-          "RHV",
-          "RHEL",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat Enterprise Linux",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [
           "Shared Disk"
@@ -42,9 +42,9 @@
         "workloads": [],
         "complexity": "Hard",
         "recommendedTargetsIMS": [
-          "RHV",
-          "RHEL",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat Enterprise Linux",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [
           "Shared Disk"
@@ -71,9 +71,9 @@
         "workloads": [],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
-          "RHV",
-          "OCP",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -82,7 +82,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48023,
@@ -125,9 +125,9 @@
         ],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
-          "RHV",
-          "OCP",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -136,7 +136,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48028,
@@ -154,8 +154,8 @@
         ],
         "complexity": "Medium",
         "recommendedTargetsIMS": [
-          "RHV",
-          "OCP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization"
         ],
         "flagsIMS": [
           "RDM"
@@ -166,7 +166,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48035,
@@ -184,8 +184,8 @@
         ],
         "complexity": "Medium",
         "recommendedTargetsIMS": [
-          "RHV",
-          "OCP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization"
         ],
         "flagsIMS": [
           "RDM"
@@ -196,7 +196,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48036,
@@ -212,9 +212,9 @@
         "workloads": [],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
-          "RHV",
-          "OCP",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -223,7 +223,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48030,
@@ -241,9 +241,9 @@
         ],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
-          "RHV",
-          "OCP",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -252,7 +252,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48031,
@@ -270,9 +270,9 @@
         ],
         "complexity": "Medium",
         "recommendedTargetsIMS": [
-          "RHV",
-          "RHEL",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat Enterprise Linux",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -299,9 +299,9 @@
         ],
         "complexity": "Medium",
         "recommendedTargetsIMS": [
-          "RHV",
-          "RHEL",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat Enterprise Linux",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -329,9 +329,9 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "Red Hat JBoss EAP",
-          "RHV",
-          "OCP",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -340,7 +340,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48024,
@@ -359,9 +359,9 @@
         "complexity": "Easy",
         "recommendedTargetsIMS": [
           "Red Hat JBoss EAP",
-          "RHV",
-          "OCP",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
@@ -370,7 +370,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "RHEL"
+        "osFamily": "Red Hat Enterprise Linux"
       },
       {
         "id": 48027,
@@ -388,9 +388,9 @@
         ],
         "complexity": "Easy",
         "recommendedTargetsIMS": [
-          "RHV",
-          "OCP",
-          "OSP"
+          "Red Hat Virtualization",
+          "Red Hat OpenShift virtualization",
+          "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
         "product": "VMware vCenter",
