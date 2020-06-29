@@ -356,11 +356,11 @@ public class EndToEndTest {
 
     @Test
     public void whenRegularTestShouldAnswerInTime() throws Exception {
+        logger.info("+++++++  Regular Test ++++++");
         // Start the camel route as if the UI was sending the file to the Camel Rest Upload route
         int s3Objects = getStorageObjectsSize();
         assertThat(s3Objects).isEqualTo(analysisNum);
 
-        logger.info("+++++++  Regular Test ++++++");
         analysisNum++;
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190912-demolab_withSSA.tar.gz", "application/zip"), String.class);
 
@@ -371,11 +371,16 @@ public class EndToEndTest {
             .until( () -> {
                 // Check database for the ICSR to be created
                 List<InitialSavingsEstimationReportModel> all = initialSavingsEstimationReportRepository.findAll();
-                return all != null && !all.isEmpty();
+                return all != null && all.size() == analysisNum;
             });
 
         // Check S3
-        assertThat(getStorageObjectsSize()).isEqualTo(s3Objects+1);
+        await()
+            .atMost(5000, TimeUnit.MILLISECONDS)
+            .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+            .until( () -> {
+                return (getStorageObjectsSize() == s3Objects + 1);
+            });
 
         // Check DB for initialCostSavingsReport with concrete values
         InitialSavingsEstimationReportModel initialCostSavingsReportDB = initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", 1L);
@@ -477,7 +482,7 @@ public class EndToEndTest {
 
         // Testing that limit and offset params are really taken into consideration
         ResponseEntity<PageResponse<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<AnalysisModel>>() {});
-        assertThat(responseAnalysisModel.getBody().getData().size()).isEqualTo(2);
+        assertThat(responseAnalysisModel.getBody().getData().size()).isLessThanOrEqualTo(2);
     }
 
     @Test
@@ -629,7 +634,6 @@ public class EndToEndTest {
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
         analysisNum++;
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0.json", "application/json"), String.class);
-
         // We will check for time we retrieve the third file uploaded to see previous ones are not affecting
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", firstupload + 1), timeoutMilliseconds_SmallFileSummaryReport)).isEqualTo(8);
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", firstupload), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo(numberVMsExpected_InBigFile);
@@ -648,8 +652,12 @@ public class EndToEndTest {
         // we upload a file to be sure there's one report to delete, as it could be that this test is executed the first
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_with_used_disk_storage.json", "application/json"), String.class);
         analysisNum++;
-        Thread.sleep(5000);
-        assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore+1);
+        await()
+            .atMost(5000, TimeUnit.MILLISECONDS)
+            .with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+            .until( () -> {
+                return getStorageObjectsSize() == s3ObjectsBefore + 1;
+            });
 
         ResponseEntity<String> stringEntity = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d", analysisNum), HttpMethod.DELETE, getRequestEntity(), new ParameterizedTypeReference<String>() {});
         assertThat(stringEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
