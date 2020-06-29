@@ -147,6 +147,8 @@ public class EndToEndTest {
 
     private static int analysisNum;
 
+    private static boolean firstTime = true;
+
     public void setDefaults() {
         long id = 0L;
 
@@ -305,13 +307,14 @@ public class EndToEndTest {
     
     @Before
     public void initCamel() throws Exception {
-        if (camelContext.getStatus() != ServiceStatus.Started ) {
-            Thread.sleep(2000);
+        Thread.sleep(2000);
 
-            // given
-            camelContext.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_MAX_CHARS, "5000");
-            camelContext.start();
+        // given
+        camelContext.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_MAX_CHARS, "5000");
+        camelContext.start();
 
+        if (firstTime) {
+            firstTime = false;
             camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
                 @Override
                 public void configure() {
@@ -352,6 +355,11 @@ public class EndToEndTest {
             assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
             logger.info("****** Checking First Time User **********");
         }
+    }
+
+    @After
+    public void closeCamel() throws Exception {
+        camelContext.stop();
     }
 
     @Test
