@@ -14,7 +14,7 @@ public class AdministrationMetricsModel {
     @DataField(pos = 2, columnName = "Domain")
     private String ownerDomain;
 
-    @DataField(pos = 3, columnName = "Owner Account Number")
+    @DataField(pos = 3, columnName = "Owner account number")
     private String ownerAccountNumber;
 
     @DataField(pos = 4, columnName = "Payload name")
