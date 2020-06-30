@@ -21,7 +21,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RBACRouteBuilder_DirectFetchRbacAndProcessDataTest extends XavierCamelTest {
 
     @Value("${camel.component.servlet.mapping.context-path}")

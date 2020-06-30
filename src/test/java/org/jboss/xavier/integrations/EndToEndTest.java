@@ -148,6 +148,7 @@ public class EndToEndTest {
     private static int analysisNum;
 
     private static boolean firstTime = true;
+    private static int testsExecuted = 0;
 
     public void setDefaults() {
         long id = 0L;
@@ -304,17 +305,17 @@ public class EndToEndTest {
         .isThrownBy(() -> new RestTemplate().exchange(getBaseURLAPIPath() + url, method, getRequestEntity(), String.class))
         .matches(e -> e.getStatusCode().equals(status));
     }
-    
+
     @Before
     public void initCamel() throws Exception {
-        Thread.sleep(2000);
-
-        // given
-        camelContext.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_MAX_CHARS, "5000");
-        camelContext.start();
-
         if (firstTime) {
+            logger.info("STARTING CAMEL >>>>>>>>");
             firstTime = false;
+            Thread.sleep(2000); //TODO use Awaitility to check a particular container
+
+            // given
+            camelContext.getGlobalOptions().put(Exchange.LOG_DEBUG_BODY_MAX_CHARS, "5000");
+            camelContext.start();
             camelContext.getRouteDefinition("download-file").adviceWith(camelContext, new AdviceWithRouteBuilder() {
                 @Override
                 public void configure() {
@@ -336,6 +337,10 @@ public class EndToEndTest {
 
             setDefaults();
 
+            ResponseEntity<PageResponse<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<AnalysisModel>>() {});
+            analysisNum = responseAnalysisModel.getBody().getData().size();
+            logger.info("***** Number of reports upload until now : " + analysisNum);
+
             // Checking errors are correctly treated
             assertHttpClientError("/report/99999", HttpMethod.GET,HttpStatus.NOT_FOUND);
             assertHttpClientError("/report/99999", HttpMethod.DELETE, HttpStatus.NOT_FOUND);
@@ -351,15 +356,21 @@ public class EndToEndTest {
             assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(4);
 
             // 1. Check user has firstTime
+            logger.info("****** Checking First Time User **********");
             ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
             assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
-            logger.info("****** Checking First Time User **********");
         }
     }
 
     @After
     public void closeCamel() throws Exception {
-        camelContext.stop();
+        testsExecuted++;
+        logger.info("After test method .....................");
+
+        if (testsExecuted == 10) {
+            camelContext.stop();
+            logger.info("...................CLOSING CAMEL CONTEXT .............");
+        }
     }
 
     @Test
@@ -491,6 +502,8 @@ public class EndToEndTest {
         // Testing that limit and offset params are really taken into consideration
         ResponseEntity<PageResponse<AnalysisModel>> responseAnalysisModel = new RestTemplate().exchange(getBaseURLAPIPath() + "/report?limit=2&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<AnalysisModel>>() {});
         assertThat(responseAnalysisModel.getBody().getData().size()).isLessThanOrEqualTo(2);
+        logger.info("-------  End Regular Test -------");
+
     }
 
     @Test
@@ -502,6 +515,8 @@ public class EndToEndTest {
 
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory-20190829-16128-uq17dx.tar.gz", "application/zip"), String.class);
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum), timeoutMilliseconds_PerformaceTest)).isEqualTo(142);
+        logger.info("------- End Performance Test ------");
+
     }
 
     @Test
@@ -517,6 +532,8 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().size()).isEqualTo(8);
         assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(2);
         assertThat(workloadInventoryReport_file_vm_without_host.getBody().getData().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(6);
+        logger.info("------- End file with VM without Host Test ------");
+
     }
 
     @Test
@@ -534,6 +551,8 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getData().stream().filter(e -> e.getDatacenter().equalsIgnoreCase("No datacenter defined") && e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(3);
         // Right VMs
         assertThat(workloadInventoryReport_file_host_without_cluster.getBody().getData().stream().filter(e -> !e.getDatacenter().equalsIgnoreCase("No datacenter defined") && !e.getCluster().equalsIgnoreCase("No cluster defined")).count()).isEqualTo(5);
+        logger.info("------- End file with Host without Cluster Test ------");
+
     }
 
     @Test
@@ -551,6 +570,8 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(5);
         assertThat(workloadInventoryReport_file_wrong_cpu_cores.getBody().getData().size()).isEqualTo(5);
+        logger.info("------- End Wrong CPU cores per socket Test ------");
+
     }
 
     @Test
@@ -558,7 +579,7 @@ public class EndToEndTest {
         analysisNum++;
         // Test with a file with 0 CPU cores per socket
         logger.info("+++++++  Test with a file with 0 CPU cores per socket ++++++");
-        new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_with_0_cores.json", "application/json"), String.class);
+        ResponseEntity<String> response = new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cloudforms-export-v1_0_0-vm_with_0_cores.json", "application/json"), String.class);
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum), timeoutMilliseconds_InitialCostSavingsReport)).isEqualTo(8);
 
         ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport_zero_cpu_cores = new RestTemplate().exchange(getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", analysisNum), HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {});
@@ -568,6 +589,8 @@ public class EndToEndTest {
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() == null).count()).isEqualTo(0);
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getData().stream().filter(e -> e.getCpuCores() != null).count()).isEqualTo(8);
         assertThat(workloadInventoryReport_file_zero_cpu_cores.getBody().getData().size()).isEqualTo(8);
+        logger.info("------- End 0 CPU cores per socket Test ------");
+
     }
 
     @Test
@@ -613,6 +636,8 @@ public class EndToEndTest {
                 .usingRecursiveComparison()
                 .ignoringFieldsMatchingRegexes(".*id.*", ".*creationDate.*",  ".*report.*", ".*workloadsDetectedOSTypeModels.*", ".*scanRunModels.*")
                 .isEqualTo(workloadSummaryReport_JavaRuntimesExpected);
+        logger.info("------- End file with VM.used_disk_storage Test ------");
+
     }
 
     @Test
@@ -622,6 +647,8 @@ public class EndToEndTest {
         analysisNum++;
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall("cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum), timeoutMilliseconds_UltraPerformaceTest)).isEqualTo(numberVMsExpected_InBigFile);
+        logger.info("------- End Ultra Performance Test ------");
+
     }
 
     @Test
@@ -649,6 +676,7 @@ public class EndToEndTest {
 
         int timeoutMilliseconds_secondSmallFile = timeoutMilliseconds_UltraPerformaceTest + timeoutMilliseconds_SmallFileSummaryReport;
         assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", firstupload + 3), timeoutMilliseconds_secondSmallFile)).isEqualTo( 8);
+        logger.info("------- End Stress Test ------");
     }
 
     @Test
@@ -671,6 +699,8 @@ public class EndToEndTest {
         assertThat(stringEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com", Long.valueOf(analysisNum))).isNull();
         assertThat(getStorageObjectsSize()).isEqualTo(s3ObjectsBefore);
+        logger.info("--------- End Delete report test -------");
+
     }
 
     private String getBaseURLAPIPath() {
