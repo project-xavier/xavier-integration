@@ -10,16 +10,6 @@
 
     <jpa:repositories base-package="org.jboss.xavier.integrations.jpa" />
 
-    <!-- setup ActiveMQ Artemis connection factory -->
-    <bean id="artemisConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory">
-        <constructor-arg index="0" value="tcp://${amq.server}:${amq.port:61616}"/>
-    </bean>
-
-    <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
-        <!-- specify connection factory on JMS component -->
-        <property name="connectionFactory" ref="artemisConnectionFactory"/>
-    </bean>
-
     <bean id="restResponseHeaderRemover" class="org.jboss.xavier.integrations.route.filter.RestHeaderFilterStrategy">
         <property name="outFilterPattern" value=".*" />
         <property name="outAllowFilter">
@@ -542,19 +532,8 @@
             </aggregate>
         </route>
 
-        <route id="call-kie-extract-reports" trace="true">
-            <from uri="jms:queue:inputDataModel" />
-            <log message="Message received" />
-            <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
-            <bean method="createMigrationAnalyticsCommand(${body})" ref="decisionServerHelper"/>
-            <to id="decisionserver" uri="direct:decisionserver"/>
-            <bean id="route-extract-reports" method="extractReports" ref="decisionServerHelper"/>
-            <log id="route-log-totalPrice" message="totalPrice = ${body.totalPrice}"/>
-            <to uri="jpa:org.jboss.xavier.integrations.migrationanalytics.output.ReportDataModel" />
-        </route>
-
         <route id="route-ma">
-            <from uri="jms:queue:uploadFormInputDataModel" />
+            <from uri="seda:uploadFormInputDataModel?concurrentConsumers={{thread.concurrentConsumers:5}}"/>
                 <log message="Message received" />
                 <to uri="log:INFO?showBody=true&amp;showHeaders=true" />
                 <setHeader headerName="${type:org.jboss.xavier.integrations.route.RouteBuilderExceptionHandler.ANALYSIS_ID}">

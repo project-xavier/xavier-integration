@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|direct:send-costsavings|direct:calculate-vmworkloadinventory|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel|direct:flags-shared-disks")
+@MockEndpointsAndSkip("seda:uploadFormInputDataModel|direct:send-costsavings|direct:calculate-vmworkloadinventory|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel|direct:flags-shared-disks")
 public class MainRouteBuilder_DirectUnzipFileTest extends XavierCamelTest {
 
     @EndpointInject(uri = "mock:direct:store")
