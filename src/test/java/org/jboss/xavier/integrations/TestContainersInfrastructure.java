@@ -106,7 +106,7 @@ public class TestContainersInfrastructure {
             .withEnv("INGRESS_MINIOSECRETKEY", "uvgz3LCwWM3e400cDkQIH/y1Y4xgU4iV91CwFSPC")
             .withEnv("INGRESS_MINIOENDPOINT", "minio:9000")
             .withEnv("INGRESS_KAFKABROKERS", "kafka:9092")
-            .dependsOn(kafkaContainer,minioContainer,createbucketsContainer);
+            .dependsOn(kafkaContainer,localstackContainer, minioContainer,createbucketsContainer);
 
 
     // RBAC
@@ -155,9 +155,12 @@ public class TestContainersInfrastructure {
         cloneInsightsRbacRepo_UnzipAndConfigure();
 
         logger.info(">>> Starting Docker Containers");
-        Startables.deepStart(Stream.of(kie_serverContainer, postgreSQLContainer, localstackContainer, minioContainer, activemqContainer, 
-                                        createbucketsContainer, kafkaContainer, ingressContainer, rbacPostgreSQLContainer, rbacServerContainer))
-                    .join();
+        Startables.deepStart(Stream.of(kie_serverContainer, postgreSQLContainer, localstackContainer)).join();
+        Startables.deepStart(Stream.of(activemqContainer, kafkaContainer)).join();
+        Startables.deepStart(Stream.of(minioContainer, createbucketsContainer)).join();
+        ingressContainer.start();
+        rbacPostgreSQLContainer.start();
+        rbacServerContainer.start();
 
         Thread.sleep(5000);
         importProjectIntoKIE();

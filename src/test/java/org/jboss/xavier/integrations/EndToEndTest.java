@@ -364,18 +364,7 @@ public class EndToEndTest extends TestContainersInfrastructure {
         }
     }
 
-    @After
-    public void closeCamel() throws Exception {
-        testsExecuted++;
-        logger.info("After test method ...");
-
-        if (testsExecuted == 10) {
-            logger.info("CLOSING CAMEL CONTEXT >>>>>>>>");
-            camelContext.stop();
-        }
-    }
-
-    @Test
+ @Test
     public void whenRegularTestShouldAnswerInTime() throws Exception {
         logger.info("+++++++  Regular Test ++++++");
         // Start the camel route as if the UI was sending the file to the Camel Rest
