@@ -15,6 +15,7 @@ public class AdministrationMetricsMapper {
     public AdministrationMetricsModel toAdministrationMetricsModel(AdministrationMetricsProjection projection) {
         AdministrationMetricsModel model = new AdministrationMetricsModel();
         model.setOwner(projection.getOwner());
+        model.setOwnerAccountNumber(projection.getOwnerAccountNumber());
         model.setPayloadName(projection.getPayloadName());
         model.setAnalysisStatus(projection.getAnalysisStatus());
         model.setAnalysisInserted(projection.getAnalysisInserted());
