@@ -859,6 +859,24 @@ public class EndToEndTest extends TestContainersInfrastructure {
             return getStorageObjectsSize() == s3ObjectsBefore + 1;
         });
 
+        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange(
+                getBaseURLAPIPath() + String.format("/report/%d/workload-summary", analysisNum), HttpMethod.GET,
+                getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {
+                });
+        // Call initialCostSavingsReport
+        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport = new RestTemplate().exchange(
+                getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", analysisNum),
+                HttpMethod.GET, getRequestEntity(),
+                new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {
+                });
+
+        // Call workloadInventoryReport
+        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate()
+                .exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum),
+                        HttpMethod.GET, getRequestEntity(),
+                        new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {
+                        });
+
         ResponseEntity<String> stringEntity = new RestTemplate().exchange(
                 getBaseURLAPIPath() + String.format("/report/%d", analysisNum), HttpMethod.DELETE, getRequestEntity(),
                 new ParameterizedTypeReference<String>() {
