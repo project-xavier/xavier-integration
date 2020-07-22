@@ -156,9 +156,12 @@ public class TestContainersInfrastructure {
 
         logger.info(">>> Starting Docker Containers");
         minioContainer.start();
-        Startables.deepStart(Stream.of(activemqContainer, postgreSQLContainer, localstackContainer)).join();
+        activemqContainer.start();
+        postgreSQLContainer.start();
+        localstackContainer.start();
         createbucketsContainer.start();
-        Startables.deepStart(Stream.of(kie_serverContainer, kafkaContainer)).join();
+        kie_serverContainer.start();
+        kafkaContainer.start();
         ingressContainer.start();
         rbacPostgreSQLContainer.start();
         rbacServerContainer.start();
