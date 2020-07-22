@@ -155,9 +155,10 @@ public class TestContainersInfrastructure {
         cloneInsightsRbacRepo_UnzipAndConfigure();
 
         logger.info(">>> Starting Docker Containers");
-        Startables.deepStart(Stream.of(kie_serverContainer, postgreSQLContainer, localstackContainer)).join();
-        Startables.deepStart(Stream.of(activemqContainer, kafkaContainer)).join();
-        Startables.deepStart(Stream.of(minioContainer, createbucketsContainer)).join();
+        minioContainer.start();
+        Startables.deepStart(Stream.of(activemqContainer, postgreSQLContainer, localstackContainer)).join();
+        createbucketsContainer.start();
+        Startables.deepStart(Stream.of(kie_serverContainer, kafkaContainer)).join();
         ingressContainer.start();
         rbacPostgreSQLContainer.start();
         rbacServerContainer.start();

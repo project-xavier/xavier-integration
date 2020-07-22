@@ -58,6 +58,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -361,6 +362,17 @@ public class EndToEndTest extends TestContainersInfrastructure {
                     getRequestEntity(), new ParameterizedTypeReference<User>() {
                     });
             assertThat(userEntity.getBody().isFirstTimeCreatingReports()).isTrue();
+        }
+    }
+
+    @After
+    public void closeCamel() throws Exception {
+        testsExecuted++;
+        logger.info("After test method ...");
+
+        if (testsExecuted == 7) {
+            logger.info("CLOSING CAMEL CONTEXT >>>>>>>>");
+            camelContext.stop();
         }
     }
 
@@ -792,6 +804,7 @@ public class EndToEndTest extends TestContainersInfrastructure {
     }
 
     @Test
+    @Ignore
     public void whenBigFileAnalisedItShouldEndOnTime() throws Exception {
         // Ultra Performance test
         logger.info("+++++++  Ultra Performance Test ++++++");
@@ -805,6 +818,7 @@ public class EndToEndTest extends TestContainersInfrastructure {
     }
 
     @Test
+    @Ignore
     public void whenSeveralAnalysisRunningLargerShouldNotAffectSmaller() throws Exception {
         // Stress test
         // We load 2 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
@@ -853,34 +867,19 @@ public class EndToEndTest extends TestContainersInfrastructure {
         // we upload a file to be sure there's one report to delete, as it could be that
         // this test is executed the first
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall(
-                "cloudforms-export-v1_0_0-vm_with_used_disk_storage.json", "application/json"), String.class);
+                "cloudforms-export-v1_0_0.tar.gz", "application/json"), String.class);
         analysisNum++;
         await().atMost(5000, TimeUnit.MILLISECONDS).with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS).until(() -> {
             return getStorageObjectsSize() == s3ObjectsBefore + 1;
         });
-
-        ResponseEntity<WorkloadSummaryReportModel> workloadSummaryReport = new RestTemplate().exchange(
-                getBaseURLAPIPath() + String.format("/report/%d/workload-summary", analysisNum), HttpMethod.GET,
-                getRequestEntity(), new ParameterizedTypeReference<WorkloadSummaryReportModel>() {
-                });
-        // Call initialCostSavingsReport
-        ResponseEntity<InitialSavingsEstimationReportModel> initialCostSavingsReport = new RestTemplate().exchange(
-                getBaseURLAPIPath() + String.format("/report/%d/initial-saving-estimation", analysisNum),
-                HttpMethod.GET, getRequestEntity(),
-                new ParameterizedTypeReference<InitialSavingsEstimationReportModel>() {
-                });
-
-        // Call workloadInventoryReport
-        ResponseEntity<PageResponse<WorkloadInventoryReportModel>> workloadInventoryReport = new RestTemplate()
-                .exchange(getBaseURLAPIPath() + String.format("/report/%d/workload-inventory?limit=100", analysisNum),
-                        HttpMethod.GET, getRequestEntity(),
-                        new ParameterizedTypeReference<PageResponse<WorkloadInventoryReportModel>>() {
-                        });
+        logger.info("... after upload");
 
         ResponseEntity<String> stringEntity = new RestTemplate().exchange(
                 getBaseURLAPIPath() + String.format("/report/%d", analysisNum), HttpMethod.DELETE, getRequestEntity(),
                 new ParameterizedTypeReference<String>() {
                 });
+        logger.info("... after report");
+
         assertThat(stringEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(initialSavingsEstimationReportService.findByAnalysisOwnerAndAnalysisId("dummy@redhat.com",
                 Long.valueOf(analysisNum))).isNull();
