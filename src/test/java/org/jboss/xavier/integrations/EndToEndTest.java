@@ -370,7 +370,7 @@ public class EndToEndTest extends TestContainersInfrastructure {
         testsExecuted++;
         logger.info("After test method ...");
 
-        if (testsExecuted == 7) {
+        if (testsExecuted == 10) {
             logger.info("CLOSING CAMEL CONTEXT >>>>>>>>");
             camelContext.stop();
         }
@@ -865,12 +865,17 @@ public class EndToEndTest extends TestContainersInfrastructure {
         // we upload a file to be sure there's one report to delete, as it could be that
         // this test is executed the first
         new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall(
-                "cloudforms-export-v1_0_0.tar.gz", "application/json"), String.class);
+                "cloudforms-export-v1_0_0.json", "application/json"), String.class);
         analysisNum++;
-        await().atMost(5000, TimeUnit.MILLISECONDS).with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS).until(() -> {
-            return getStorageObjectsSize() == s3ObjectsBefore + 1;
-        });
         logger.info("... after upload");
+
+        await().atMost(10000, TimeUnit.MILLISECONDS).with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS).until(() -> {
+                return getStorageObjectsSize() == s3ObjectsBefore + 1;
+        });
+        logger.info("... after S3 check");
+
+        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum),
+        timeoutMilliseconds_SmallFileSummaryReport)).isEqualTo(8);
 
         ResponseEntity<String> stringEntity = new RestTemplate().exchange(
                 getBaseURLAPIPath() + String.format("/report/%d", analysisNum), HttpMethod.DELETE, getRequestEntity(),
