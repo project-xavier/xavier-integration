@@ -7,7 +7,7 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <name>Xavier Integration</name>
-    <description>Integration component created using Fuse (on Spring Boot) to integrate JPA (with external DB), JMS (AMQ Broker), Drools (remote invocation), Rest APIs, Swagger</description>
+    <description>Integration component created using Fuse (on Spring Boot) to integrate JPA (with external DB), Drools (remote invocation), Rest APIs, Swagger</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,7 +17,6 @@
         <fuse.version>7.6.0.fuse-760027-redhat-00001</fuse.version>
 
         <drools.version>7.18.0.Final-redhat-00002</drools.version>
-        <activemq.artemis.version>2.7.0</activemq.artemis.version>
 
         <!-- maven plugin versions -->
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
@@ -110,26 +109,10 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-xstream-starter</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jms</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-aws</artifactId>
         </dependency>
-        <!-- activemq artemis -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-spring-integration</artifactId>
-            <version>${activemq.artemis.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-jms_2.0_spec</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.kie.server</groupId>
             <artifactId>kie-server-client</artifactId>

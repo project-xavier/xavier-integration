@@ -105,15 +105,6 @@ public class EndToEndTest {
     private static Logger logger = LoggerFactory.getLogger(EndToEndTest.class);
 
     @ClassRule
-    public static GenericContainer activemq = new GenericContainer<>("vromero/activemq-artemis")
-            .withExposedPorts(61616, 8161)
-            .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG"))
-            .withEnv("DISABLE_SECURITY", "true")
-            .withEnv("BROKER_CONFIG_GLOBAL_MAX_SIZE", "50000")
-            .withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
-            .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
-
-    @ClassRule
     public static GenericContainer kie_server = new GenericContainer<>("jboss/kie-server-showcase:7.18.0.Final")
             .withNetworkAliases("kie-server")
             .withExposedPorts(8080)
@@ -273,8 +264,6 @@ public class EndToEndTest {
                 importProjectIntoKIE();
 
                 EnvironmentTestUtils.addEnvironment("environment", configurableApplicationContext.getEnvironment(),
-                        "amq.server=" + activemq.getContainerIpAddress(),
-                        "amq.port=" + activemq.getMappedPort(61616),
                         "minio.host=" + getContainerHost(minio, 9000),
                         "insights.upload.host=" + getContainerHost(ingress),
                         "insights.properties=yearOverYearGrowthRatePercentage,percentageOfHypervisorsMigratedOnYear1,percentageOfHypervisorsMigratedOnYear2,percentageOfHypervisorsMigratedOnYear3,reportName,reportDescription",
