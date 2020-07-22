@@ -804,7 +804,6 @@ public class EndToEndTest extends TestContainersInfrastructure {
     }
 
     @Test
-    @Ignore
     public void whenBigFileAnalisedItShouldEndOnTime() throws Exception {
         // Ultra Performance test
         logger.info("+++++++  Ultra Performance Test ++++++");
@@ -818,7 +817,6 @@ public class EndToEndTest extends TestContainersInfrastructure {
     }
 
     @Test
-    @Ignore
     public void whenSeveralAnalysisRunningLargerShouldNotAffectSmaller() throws Exception {
         // Stress test
         // We load 2 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
