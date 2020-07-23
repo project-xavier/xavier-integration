@@ -3,6 +3,7 @@ package org.jboss.xavier.integrations;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.awaitility.Awaitility.await;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +59,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -83,7 +83,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RunWith(CamelSpringBootRunner.class)
 @UseAdviceWith // Disables automatic start of Camel context
-@SpringBootTest(classes = { Application.class }, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ContextConfiguration(initializers = TestContainersInfrastructure.SpringBootInitializerTestContainers.class)
 @Import(TestConfigurationS3.class)
 @ActiveProfiles("test")

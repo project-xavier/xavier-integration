@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Enumeration;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -36,7 +35,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.MountableFile;
 
 public class TestContainersInfrastructure {
@@ -158,7 +156,6 @@ public class TestContainersInfrastructure {
         rbacPostgreSQLContainer.start();
         rbacServerContainer.start();
 
-        Thread.sleep(5000);
         importProjectIntoKIE();
     }
 
@@ -292,7 +289,6 @@ public class TestContainersInfrastructure {
                     "minio.host=" + getContainerHost(getMinio(), 9000),
                     "insights.upload.host=" + getContainerHost(getIngress()),
                     "insights.properties=yearOverYearGrowthRatePercentage,percentageOfHypervisorsMigratedOnYear1,percentageOfHypervisorsMigratedOnYear2,percentageOfHypervisorsMigratedOnYear3,reportName,reportDescription",
-//                    "camel.component.servlet.mapping.context-path=/api/xavier/*",
                     "insights.kafka.host=" + getKafka().getBootstrapServers(),
                     "postgresql.service.name=" + getPostgreSQL().getContainerIpAddress(),
                     "postgresql.service.port=" + getPostgreSQL().getFirstMappedPort(),

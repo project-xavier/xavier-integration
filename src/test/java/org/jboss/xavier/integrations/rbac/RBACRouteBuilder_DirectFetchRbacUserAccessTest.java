@@ -7,11 +7,13 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.http4.HttpMethods;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
+import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.route.XavierCamelTest;
 import org.jboss.xavier.integrations.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RBACRouteBuilder_DirectFetchRbacUserAccessTest extends XavierCamelTest {
 
     @Value("${camel.component.servlet.mapping.context-path}")

@@ -1,5 +1,10 @@
 package org.jboss.xavier.integrations.rbac;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.camel.Exchange;
 import org.jboss.xavier.Application;
 import org.jboss.xavier.integrations.route.XavierCamelTest;
@@ -8,11 +13,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
+@SpringBootTest(classes = {Application.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RBACRouteBuilder_DirectCheckRbacPermissionsTest extends XavierCamelTest {
 
     @Value("${camel.component.servlet.mapping.context-path}")
