@@ -60,12 +60,6 @@ public class TestContainersInfrastructure {
     protected static LocalStackContainer localstackContainer = new LocalStackContainer().withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AWS-LOG"))
     .withServices(S3);
 
-    protected static GenericContainer activemqContainer=new GenericContainer<>("vromero/activemq-artemis").withExposedPorts(61616, 8161)
-    .withLogConsumer(new Slf4jLogConsumer(logger).withPrefix("AMQ-LOG")).withEnv("DISABLE_SECURITY", "true")
-    .withEnv("BROKER_CONFIG_GLOBAL_MAX_SIZE", "50000").withEnv("BROKER_CONFIG_MAX_SIZE_BYTES", "50000")
-    .withEnv("BROKER_CONFIG_MAX_DISK_USAGE", "100");
-
-
     // INGRESS
     private static Network ingressNetwork = Network.newNetwork();
 
@@ -138,7 +132,6 @@ public class TestContainersInfrastructure {
 
     public static void stopAndDestroyDockerContainers() {
         logger.info(">>> Stopping Docker Containers");
-        activemqContainer.stop();
         kie_serverContainer.stop();
         postgreSQLContainer.stop();
         localstackContainer.stop();
@@ -156,7 +149,6 @@ public class TestContainersInfrastructure {
 
         logger.info(">>> Starting Docker Containers");
         minioContainer.start();
-        activemqContainer.start();
         postgreSQLContainer.start();
         localstackContainer.start();
         createbucketsContainer.start();
@@ -267,10 +259,6 @@ public class TestContainersInfrastructure {
         return localstackContainer;
     }
 
-    public static GenericContainer getActivemq() {
-        return activemqContainer;
-    }
-
     public static GenericContainer getMinio() {
         return minioContainer;
     }
@@ -301,8 +289,6 @@ public class TestContainersInfrastructure {
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
 
             EnvironmentTestUtils.addEnvironment("test", configurableApplicationContext.getEnvironment(),
-                    "amq.server=" + getActivemq().getContainerIpAddress(),
-                    "amq.port=" + getActivemq().getMappedPort(61616),
                     "minio.host=" + getContainerHost(getMinio(), 9000),
                     "insights.upload.host=" + getContainerHost(getIngress()),
                     "insights.properties=yearOverYearGrowthRatePercentage,percentageOfHypervisorsMigratedOnYear1,percentageOfHypervisorsMigratedOnYear2,percentageOfHypervisorsMigratedOnYear3,reportName,reportDescription",
