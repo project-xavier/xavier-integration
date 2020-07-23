@@ -280,8 +280,7 @@ public class MainRouteBuilder extends RouteBuilderExceptionHandler {
 
         from("direct:send-costsavings").routeId("send-costsavings")
                 .setBody(header(UPLOADFORMDATA))
-                .log("Message to send to AMQ : ${body}")
-                .to("jms:queue:uploadFormInputDataModel")
+                .to("seda:uploadFormInputDataModel")
                 .end();
 
         from("direct:calculate-costsavings").routeId("calculate-costsavings")

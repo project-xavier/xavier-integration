@@ -20,7 +20,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@MockEndpointsAndSkip("jms:queue:uploadFormInputDataModel|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel|direct:flags-shared-disks")
+@MockEndpointsAndSkip("seda:uploadFormInputDataModel|direct:vm-workload-inventory|direct:calculate-workloadsummaryreportmodel|direct:flags-shared-disks")
 public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
     @Inject
     CamelContext camelContext;
@@ -28,8 +28,8 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
     @Inject
     AnalysisService analysisService;
 
-    @EndpointInject(uri = "mock:jms:queue:uploadFormInputDataModel")
-    private MockEndpoint mockJmsQueueCostSavings;
+    @EndpointInject(uri = "mock:seda:uploadFormInputDataModel")
+    private MockEndpoint mockCostSavings;
 
     @EndpointInject(uri = "mock:direct:vm-workload-inventory")
     private MockEndpoint mockDirectWorkloadInventory;
@@ -83,17 +83,17 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
 
         Thread.sleep(11000L);
         //Then
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
+        assertThat(mockCostSavings.getExchanges().get(0).getIn().getBody()).isEqualToComparingFieldByFieldRecursively(expectedFormInputDataModelExpected);
 
         camelContext.stop();
     }
 
     @Test
-    public void mainRouteBuilder_DirectCalculate_FileGiven_ShouldSendMessageToJMS() throws Exception {
+    public void mainRouteBuilder_DirectCalculate_FileGiven_ShouldSendMessageToICS() throws Exception {
         //Given
         AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
-        mockJmsQueueCostSavings.expectedMessageCount(1);
+        mockCostSavings.expectedMessageCount(1);
 
         String fileName = "cloudforms-export-v1.json";
 
@@ -127,18 +127,18 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
 
         Thread.sleep(5000);
         //Then
-        mockJmsQueueCostSavings.assertIsSatisfied();
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(563902124032L);
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
+        mockCostSavings.assertIsSatisfied();
+        assertThat(mockCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(563902124032L);
+        assertThat(mockCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
         assertThat(mockDirectWorkloadInventory.getExchanges().get(0).getIn().getBody(VMWorkloadInventoryModel.class).getVmName()).isNotEmpty();
         camelContext.stop();
     }
 
     @Test
-    public void mainRouteBuilder_DirectCalculateWithV1_0_0_FileGiven_ShouldSendMessageToJMS() throws Exception {
+    public void mainRouteBuilder_DirectCalculateWithV1_0_0_FileGiven_ShouldSendMessageToICS() throws Exception {
         //Given
         AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
-        mockJmsQueueCostSavings.expectedMessageCount(1);
+        mockCostSavings.expectedMessageCount(1);
 
         String fileName = "cloudforms-export-v1_0_0.json";
 
@@ -172,9 +172,9 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
 
         Thread.sleep(5000);
         //Then
-        mockJmsQueueCostSavings.assertIsSatisfied();
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
+        mockCostSavings.assertIsSatisfied();
+        assertThat(mockCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(146028888064L);
+        assertThat(mockCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(4);
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().noneMatch(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getVmName().isEmpty())).isTrue();
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().filter(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName().equals("CentOS 7 (64-bit)")).count()).isEqualTo(1);
         assertThat(mockDirectWorkloadInventory.getExchanges().stream().filter(exchange -> exchange.getIn().getBody(VMWorkloadInventoryModel.class).getOsProductName().equals("Linux")).count()).isEqualTo(7);
@@ -186,7 +186,7 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
         //Given
         AnalysisModel analysisModel = analysisService.buildAndSave("report name", "report desc", "file name", "user name", "user_account_number");
 
-        mockJmsQueueCostSavings.expectedMessageCount(1);
+        mockCostSavings.expectedMessageCount(1);
         mockDirectWorkloadInventory.expectedMessageCount(2);
         mockCalculateWorkloadSummaryReportModel.expectedMessageCount(1);
 
@@ -221,12 +221,12 @@ public class MainRouteBuilder_DirectCalculateTest extends XavierCamelTest {
 
         Thread.sleep(5000);
         //Then
-        mockJmsQueueCostSavings.assertIsSatisfied();
+        mockCostSavings.assertIsSatisfied();
         mockDirectWorkloadInventory.assertIsSatisfied();
         mockCalculateWorkloadSummaryReportModel.assertIsSatisfied();
 
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(34359738368L);
-        assertThat(mockJmsQueueCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
+        assertThat(mockCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getTotalDiskSpace()).isEqualTo(34359738368L);
+        assertThat(mockCostSavings.getExchanges().get(0).getIn().getBody(UploadFormInputDataModel.class).getHypervisor()).isEqualTo(2);
 
         assertThat(mockDirectWorkloadInventory.getExchanges()
                 .stream()
