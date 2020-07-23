@@ -869,7 +869,7 @@ public class EndToEndTest extends TestContainersInfrastructure {
         analysisNum++;
         logger.info("... after upload");
 
-        await().atMost(10000, TimeUnit.MILLISECONDS).with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS).until(() -> {
+        await().atMost(20000, TimeUnit.MILLISECONDS).with().pollInterval(Duration.ONE_HUNDRED_MILLISECONDS).until(() -> {
                 return getStorageObjectsSize() == s3ObjectsBefore + 1;
         });
         logger.info("... after S3 check");
