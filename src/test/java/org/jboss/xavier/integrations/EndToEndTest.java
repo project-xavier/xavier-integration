@@ -806,19 +806,6 @@ public class EndToEndTest extends TestContainersInfrastructure {
     }
 
     @Test
-    public void whenBigFileAnalisedItShouldEndOnTime() throws Exception {
-        // Ultra Performance test
-        logger.info("+++++++  Ultra Performance Test ++++++");
-        analysisNum++;
-        new RestTemplate().postForEntity(getBaseURLAPIPath() + "/upload", getRequestEntityForUploadRESTCall(
-                "cfme_inventory20190807-32152-jimd0q_large_dataset_5254_vms.tar.gz", "application/zip"), String.class);
-        assertThat(callSummaryReportAndCheckVMs(String.format("/report/%d/workload-summary", analysisNum),
-                timeoutMilliseconds_UltraPerformaceTest)).isEqualTo(numberVMsExpected_InBigFile);
-        logger.info("------- End Ultra Performance Test ------");
-
-    }
-
-    @Test
     public void whenSeveralAnalysisRunningLargerShouldNotAffectSmaller() throws Exception {
         // Stress test
         // We load 2 times a BIG file ( 8 Mb ) and 2 times a small file ( 316 Kb )
