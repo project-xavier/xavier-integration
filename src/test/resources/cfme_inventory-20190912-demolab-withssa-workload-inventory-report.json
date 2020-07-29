@@ -155,7 +155,7 @@
         "complexity": "Medium",
         "recommendedTargetsIMS": [
           "Red Hat Virtualization",
-          "Red Hat OpenShift virtualization"
+          "Red Hat OpenShift Virtualization"
         ],
         "flagsIMS": [
           "RDM"
