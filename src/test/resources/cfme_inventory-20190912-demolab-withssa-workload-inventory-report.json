@@ -330,7 +330,7 @@
         "recommendedTargetsIMS": [
           "Red Hat JBoss EAP",
           "Red Hat Virtualization",
-          "Red Hat OpenShift virtualization",
+          "Red Hat OpenShift Virtualization",
           "Red Hat OpenStack Platform"
         ],
         "flagsIMS": [],
