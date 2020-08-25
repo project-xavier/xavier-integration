@@ -314,6 +314,7 @@
                     <excludes>
                         <exclude>**/*KT.java</exclude>
                     </excludes>
+                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
             <plugin>
