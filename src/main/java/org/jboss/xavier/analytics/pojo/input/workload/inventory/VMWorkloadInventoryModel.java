@@ -48,6 +48,7 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
     private Boolean hasMemoryHotAdd;
     private Boolean hasCpuHotAdd;
     private Boolean hasCpuHotRemove;
+    private Boolean hasPassthroughDevice;
 
     public VMWorkloadInventoryModel()
     {
@@ -56,6 +57,14 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
         this.vmDiskFilenames = new ArrayList<>();
         nicsCount = 0;
         diskSpace = 0L;
+    }
+
+    public Boolean getHasPassthroughDevice() {
+        return hasPassthroughDevice;
+    }
+
+    public void setHasPassthroughDevice(Boolean hasPassthroughDevice) {
+        this.hasPassthroughDevice = hasPassthroughDevice;
     }
 
     public String getProvider() {

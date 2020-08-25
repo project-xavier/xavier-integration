@@ -54,6 +54,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
     public static final String VMDISKSPATH = "vmworkloadinventory.vmDisksPath";
     public static final String DATACOLLECTEDON = "datacollectedon" ;
     public static final String USEDDISKSTORAGEPATH = "vmworkloadinventory.usedDiskSpacePath";
+    public static final String HASPASSTHROUGHDEVICEPATH = "vmworkloadinventory.hasPassthroughDevice";
 
     @Autowired
     protected Environment env;

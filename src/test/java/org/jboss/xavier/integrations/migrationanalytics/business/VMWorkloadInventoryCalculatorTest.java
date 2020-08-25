@@ -238,4 +238,36 @@ public class VMWorkloadInventoryCalculatorTest {
                 .findFirst().get().getCpuCores())
                 .isEqualTo(0);
     }
+    
+    @Test
+    public void calculate_jsonV1_0_0_GivenWithHasPassthroughDeviceShouldReturnNotNullValue() throws Exception {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
+        cloudFormsJson = cloudFormsJson.replace("\"name\": \"hana\",",
+                                                "\"name\": \"hana\",\n                    \"has_passthrough_device\": \"True\",");
+        cloudFormsJson = cloudFormsJson.replace("\"name\": \"jboss0\",",
+                                                "\"name\": \"jboss0\",\n                    \"has_passthrough_device\": true,");
+        cloudFormsJson = cloudFormsJson.replace("\"name\": \"db\",",
+                                                "\"name\": \"db\",\n                    \"has_passthrough_device\": null,");
+        // oracle-db : missing
+
+        Map<String, Object> headers = new HashMap<>();
+        Long analysisId = 30L;
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(8);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana"))
+                .findFirst().get().getHasPassthroughDevice())
+                .isEqualTo(Boolean.TRUE);
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("jboss0"))
+                .findFirst().get().getHasPassthroughDevice())
+                .isEqualTo(Boolean.TRUE);
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("db"))
+                .findFirst().get().getHasPassthroughDevice())
+                .isNull();
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db"))
+                .findFirst().get().getHasPassthroughDevice())
+                .isNull();
+    }
 }

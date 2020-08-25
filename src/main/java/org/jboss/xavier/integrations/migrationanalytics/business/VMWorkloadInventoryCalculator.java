@@ -108,6 +108,9 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         model.setScanRunDate(scanRunDate);
 
+        Object hasPassthroughDevice = getValueForExpandedPathAndHandlePathNotPresent(HASPASSTHROUGHDEVICEPATH, vmStructMap, "Setting value to null.");
+        model.setHasPassthroughDevice(hasPassthroughDevice != null ? Boolean.valueOf(hasPassthroughDevice.toString()) : null);
+
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
 
         return model;
