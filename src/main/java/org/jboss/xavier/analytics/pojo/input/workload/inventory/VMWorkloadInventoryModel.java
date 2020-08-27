@@ -49,14 +49,86 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
     private Boolean hasCpuHotAdd;
     private Boolean hasCpuHotRemove;
     private Boolean hasPassthroughDevice;
+    private Boolean hasVmAffinityConfig;
+    private String numaNodeAffinity;
+    private String firmware;
+    private Boolean hasVmDrsConfig;
+    private Boolean hasVmHaConfig;
+    private Integer balloonedMemory;
+    private Boolean hasEncryptedDisk;
+    private Boolean hasOpaqueNetwork;
 
-    public VMWorkloadInventoryModel()
+    public VMWorkloadInventoryModel() 
     {
         this.systemServicesNames = new ArrayList<> ();
         this.files = new HashMap<>();
         this.vmDiskFilenames = new ArrayList<>();
         nicsCount = 0;
         diskSpace = 0L;
+    }
+
+    public Boolean getHasOpaqueNetwork() {
+        return hasOpaqueNetwork;
+    }
+
+    public void setHasOpaqueNetwork(Boolean hasOpaqueNetwork) {
+        this.hasOpaqueNetwork = hasOpaqueNetwork;
+    }
+
+    public Boolean getHasEncryptedDisk() {
+        return hasEncryptedDisk;
+    }
+
+    public void setHasEncryptedDisk(Boolean hasEncryptedDisk) {
+        this.hasEncryptedDisk = hasEncryptedDisk;
+    }
+
+    public Integer getBalloonedMemory() {
+        return balloonedMemory;
+    }
+
+    public void setBalloonedMemory(Integer ballonedMemory) {
+        this.balloonedMemory = ballonedMemory;
+    }
+
+    public Boolean getHasVmHaConfig() {
+        return hasVmHaConfig;
+    }
+
+    public void setHasVmHaConfig(Boolean hasVmHaConfig) {
+        this.hasVmHaConfig = hasVmHaConfig;
+    }
+
+    public Boolean getHasVmDrsConfig() {
+        return hasVmDrsConfig;
+    }
+
+    public void setHasVmDrsConfig(Boolean hasVmDrsConfig) {
+        this.hasVmDrsConfig = hasVmDrsConfig;
+    }
+
+    public String getFirmware() {
+        return firmware;
+    }
+
+    public void setFirmware(String firmware) {
+        this.firmware = firmware;
+    }
+
+    public String getNumaNodeAffinity() {
+        return numaNodeAffinity;
+    }
+
+    public void setNumaNodeAffinity(String numaNodeAffinity) {
+        this.numaNodeAffinity = numaNodeAffinity;
+    }
+
+    public Boolean getHasVmAffinityConfig() {
+        return hasVmAffinityConfig;
+    }
+
+    public void setHasVmAffinityConfig(Boolean hasVmAffinityConfig) {
+        this.hasVmAffinityConfig = hasVmAffinityConfig;
     }
 
     public Boolean getHasPassthroughDevice() {

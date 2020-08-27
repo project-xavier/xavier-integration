@@ -108,21 +108,35 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         model.setScanRunDate(scanRunDate);
 
-        Object hasPassthroughDevice = getValueForExpandedPathAndHandlePathNotPresent(HASPASSTHROUGHDEVICEPATH, vmStructMap, "Setting value to null.");
-        model.setHasPassthroughDevice(hasPassthroughDevice != null ? Boolean.valueOf(hasPassthroughDevice.toString()) : null);
+        model.setHasPassthroughDevice(getValueForBooleanFieldHandlingPathNotPresent(HASPASSTHROUGHDEVICEPATH, vmStructMap, "Setting value to null."));
+        model.setHasVmAffinityConfig(getValueForBooleanFieldHandlingPathNotPresent(HASVMAFFINITYCONFIG, vmStructMap, "Setting value to null."));
+        model.setHasVmDrsConfig(getValueForBooleanFieldHandlingPathNotPresent(HASVMDRSCONFIG, vmStructMap, "Setting value to null."));
+        model.setHasVmHaConfig(getValueForBooleanFieldHandlingPathNotPresent(HASVMHACONFIG, vmStructMap, "Setting value to null."));
+        model.setHasEncryptedDisk(getValueForBooleanFieldHandlingPathNotPresent(HASENCRYPTEDDISK, vmStructMap, "Setting value to null."));
+        model.setHasOpaqueNetwork(getValueForBooleanFieldHandlingPathNotPresent(HASOPAQUENETWORK, vmStructMap, "Setting value to null."));
+
+        model.setNumaNodeAffinity(getValueForExpandedPathAndHandlePathNotPresent(NUMANODEAFFINITY, vmStructMap, "Setting value to null."));
+        model.setFirmware(getValueForExpandedPathAndHandlePathNotPresent(FIRMWARE, vmStructMap, "Setting value to null."));
+        model.setBalloonedMemory(getValueForExpandedPathAndHandlePathNotPresent(BALLOONEDMEMORY, vmStructMap, "Setting value to null."));
 
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
 
         return model;
     }
 
-    private Object getValueForExpandedPathAndHandlePathNotPresent(String path, Map vmStructMap, String errorMessage)
+    private Boolean getValueForBooleanFieldHandlingPathNotPresent(String path, Map vmStructMap, String errorMessage) {
+
+        Object value = getValueForExpandedPathAndHandlePathNotPresent(path, vmStructMap, errorMessage);
+        return (value != null ? Boolean.valueOf(value.toString()) : null);
+    }
+
+    private <T> T getValueForExpandedPathAndHandlePathNotPresent(String path, Map vmStructMap, String errorMessage)
     {
         try {
             String foundPath = getExpandedPath(path, vmStructMap);
             Object returnValue = vmStructMap.get(foundPath);
             if (returnValue!= null)
-                return returnValue;
+                return (T) returnValue;
 
         } catch (Exception e) {
             // In versions previous to 1_0_0 it will fail because there is no such property

@@ -55,6 +55,14 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
     public static final String DATACOLLECTEDON = "datacollectedon" ;
     public static final String USEDDISKSTORAGEPATH = "vmworkloadinventory.usedDiskSpacePath";
     public static final String HASPASSTHROUGHDEVICEPATH = "vmworkloadinventory.hasPassthroughDevice";
+    public static final String HASVMAFFINITYCONFIG = "vmworkloadinventory.hasVmAffinityConfig";
+    public static final String NUMANODEAFFINITY = "vmworkloadinventory.numaNodeAffinity";
+    public static final String FIRMWARE = "vmworkloadinventory.firmware";
+    public static final String HASVMDRSCONFIG = "vmworkloadinventory.hasVmDrsConfig";
+    public static final String HASVMHACONFIG = "vmworkloadinventory.hasVmHaConfig";
+    public static final String BALLOONEDMEMORY = "vmworkloadinventory.balloonedMemory";
+    public static final String HASENCRYPTEDDISK = "vmworkloadinventory.hasEncryptedDisk";
+    public static final String HASOPAQUENETWORK = "vmworkloadinventory.hasOpaqueNetwork";
 
     @Autowired
     protected Environment env;
@@ -95,7 +103,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
                 value = ((Number) value).longValue();
             } else if (Integer.class.isAssignableFrom(type)) {
                 value = ((Number) value).intValue();
-            }
+            } 
         } catch (Exception e) {
             value = null;
             analysisIssuesHandler.record(vmStructMap.get("_analysisId").toString(), "VM", vmStructMap.get("name").toString(), expandParamsInPath, e.getMessage());
