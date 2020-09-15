@@ -36,7 +36,7 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
     private String product;
     private String version;
     private String host_name;
-    private boolean cpuAffinityNotNull;
+    private Boolean cpuAffinity;
 
     private Date scanRunDate;
 
@@ -328,11 +328,11 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
         this.hasCpuHotRemove = hasCpuHotRemove;
     }
   
-    public boolean isCpuAffinityNotNull() {
-        return cpuAffinityNotNull;
+    public Boolean getCpuAffinity() {
+        return cpuAffinity;
     }
 
-    public void setCpuAffinityNotNull(boolean cpuAffinityNotNull) {
-        this.cpuAffinityNotNull = cpuAffinityNotNull;
+    public void setCpuAffinity(Boolean cpuAffinity) {
+        this.cpuAffinity = cpuAffinity;
     }
 }

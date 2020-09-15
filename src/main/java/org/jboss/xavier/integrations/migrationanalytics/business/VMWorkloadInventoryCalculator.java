@@ -92,7 +92,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setHasCpuHotRemove(cpuHotRemoveObject != null? (Boolean)cpuHotRemoveObject: null);
 
         Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, "Setting value to null.");
-        model.setCpuAffinityNotNull(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
+        model.setCpuAffinity(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
