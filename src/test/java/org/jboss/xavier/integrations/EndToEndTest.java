@@ -387,8 +387,8 @@ public class EndToEndTest {
 
         // OSInformation
         AppIdentifierModel osFamily1 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
-                .withName("RHEL")
-                .withIdentifier("RHEL") // osFamily field
+                .withName("Red Hat Enterprise Linux")
+                .withIdentifier("Red Hat Enterprise Linux") // osFamily field
                 .withPriority(100)
                 .build();
         AppIdentifierModel osFamily2 = AppIdentifierModel.Builder.anAppIdentifierModel().withId(++id).withGroupName(OSInformationModel.APP_IDENTIFIER)
