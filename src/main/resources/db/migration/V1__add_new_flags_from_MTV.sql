@@ -22,3 +22,9 @@ INSERT INTO flag_assessment_model
 (flag, os_name, assessment, flag_label) VALUES ('Passthrough Device', '', 'VM contains passthrough devices which are incompatible with OpenShift Virtualization', 'Passthrough device detected')
 ON CONFLICT DO NOTHING;
 
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('TEST', '', 'TEST DESCRIPTION', 'TEST LABEL')
+ON CONFLICT DO NOTHING;
+
+
+
