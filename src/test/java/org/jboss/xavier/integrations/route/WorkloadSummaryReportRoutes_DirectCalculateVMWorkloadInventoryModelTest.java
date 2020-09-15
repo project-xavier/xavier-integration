@@ -62,10 +62,10 @@ public class WorkloadSummaryReportRoutes_DirectCalculateVMWorkloadInventoryModel
         String[] complexities = new String[]{"Easy", "Easy", "Medium", "Hard", "Unknown", null};
 
         List<Set<String>> recommendedTargetsIMS = new ArrayList<>(Arrays.asList(
-                new HashSet<>(Arrays.asList("rhv", "osp", "RHEL")),
-                new HashSet<>(Arrays.asList("rhv", "osp", "ocp")),
-                new HashSet<>(Arrays.asList("osp", "rhel")),
-                new HashSet<>(Collections.singletonList("RHEL")),
+                new HashSet<>(Arrays.asList("red hat virtualization", "red hat openstack platform", "Red Hat Enterprise Linux")),
+                new HashSet<>(Arrays.asList("red hat virtualization", "red hat openstack platform", "red hat openshift virtualization")),
+                new HashSet<>(Arrays.asList("red hat openstack platform", "Red Hat Enterprise Linux")),
+                new HashSet<>(Collections.singletonList("Red Hat Enterprise Linux")),
                 new HashSet<>(Collections.singletonList("other")),
                 new HashSet<>()
         ));
