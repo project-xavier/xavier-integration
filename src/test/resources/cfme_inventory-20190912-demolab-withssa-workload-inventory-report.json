@@ -82,7 +82,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48023,
@@ -136,7 +136,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48028,
@@ -166,7 +166,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48035,
@@ -196,7 +196,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48036,
@@ -223,7 +223,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48030,
@@ -252,7 +252,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48031,
@@ -340,7 +340,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48024,
@@ -370,7 +370,7 @@
         "creationDate": 1568305947979,
         "ssaEnabled": true,
         "insightsEnabled": false,
-        "osFamily": "Red Hat Enterprise Linux"
+        "osFamily": "RHEL"
       },
       {
         "id": 48027,
