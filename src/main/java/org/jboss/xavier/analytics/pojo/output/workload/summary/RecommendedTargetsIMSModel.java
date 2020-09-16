@@ -25,10 +25,10 @@ import javax.persistence.*;
 @NamedNativeQuery(
         name = "RecommendedTargetsIMSModel.calculateRecommendedTargetsIMS",
         query = "select count(distinct wi.id) as total, " +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhv' then 1 else 0 end), 0) as rhv, " +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='osp' then 1 else 0 end), 0) as osp, " +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='rhel' then 1 else 0 end), 0) as rhel, " +
-                "coalesce(sum(case when lower(rt.recommended_targetsims)='ocp' then 1 else 0 end), 0) as ocp, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='red hat virtualization' then 1 else 0 end), 0) as rhv, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='red hat openstack platform' then 1 else 0 end), 0) as osp, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='red hat enterprise linux' then 1 else 0 end), 0) as rhel, " +
+                "coalesce(sum(case when lower(rt.recommended_targetsims)='red hat openshift virtualization' then 1 else 0 end), 0) as ocp, " +
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='openjdk' then 1 else 0 end), 0) as openjdk, " +
                 "coalesce(sum(case when lower(rt.recommended_targetsims)='red hat jboss eap' then 1 else 0 end), 0) as jbosseap " +
                 "from workload_inventory_report_model_recommended_targetsims rt " +
