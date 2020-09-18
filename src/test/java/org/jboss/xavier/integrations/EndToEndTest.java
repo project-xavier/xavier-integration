@@ -637,8 +637,8 @@ public class EndToEndTest {
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(0);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getComplexity().contains("Unsupported")).count()).isEqualTo(1);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(6);
-            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("OSP")).count()).isEqualTo(11);
-            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("RHEL")).count()).isEqualTo(4);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("Red Hat OpenStack Platform")).count()).isEqualTo(11);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("Red Hat Enterprise Linux")).count()).isEqualTo(4);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("None")).count()).isEqualTo(1);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
