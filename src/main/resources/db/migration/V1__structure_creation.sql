@@ -51,7 +51,7 @@ CREATE TABLE public.analysis_model (
 );
 
 
-ALTER TABLE public.analysis_model OWNER TO "userEN2";
+ALTER TABLE public.analysis_model OWNER TO   ${user};
 
 --
 -- Name: analysis_model_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -65,7 +65,7 @@ CREATE SEQUENCE public.analysis_model_sequence
     CACHE 1;
 
 
-ALTER TABLE public.analysis_model_sequence OWNER TO "userEN2";
+ALTER TABLE public.analysis_model_sequence OWNER TO   ${user};
 
 --
 -- Name: app_identifier_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -81,7 +81,7 @@ CREATE TABLE public.app_identifier_model (
 );
 
 
-ALTER TABLE public.app_identifier_model OWNER TO "userEN2";
+ALTER TABLE public.app_identifier_model OWNER TO   ${user};
 
 --
 -- Name: complexity_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -97,7 +97,7 @@ CREATE TABLE public.complexity_model (
 );
 
 
-ALTER TABLE public.complexity_model OWNER TO "userEN2";
+ALTER TABLE public.complexity_model OWNER TO   ${user};
 
 --
 -- Name: environment_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -116,7 +116,7 @@ CREATE TABLE public.environment_model (
 );
 
 
-ALTER TABLE public.environment_model OWNER TO "userEN2";
+ALTER TABLE public.environment_model OWNER TO   ${user};
 
 --
 -- Name: flag_assessment_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -130,7 +130,7 @@ CREATE TABLE public.flag_assessment_model (
 );
 
 
-ALTER TABLE public.flag_assessment_model OWNER TO "userEN2";
+ALTER TABLE public.flag_assessment_model OWNER TO   ${user};
 
 --
 -- Name: flag_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -146,7 +146,7 @@ CREATE TABLE public.flag_model (
 );
 
 
-ALTER TABLE public.flag_model OWNER TO "userEN2";
+ALTER TABLE public.flag_model OWNER TO   ${user};
 
 --
 -- Name: flagmodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -160,7 +160,7 @@ CREATE SEQUENCE public.flagmodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.flagmodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.flagmodel_sequence OWNER TO   ${user};
 
 --
 -- Name: initial_savings_estimation_report_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -175,7 +175,7 @@ CREATE TABLE public.initial_savings_estimation_report_model (
 );
 
 
-ALTER TABLE public.initial_savings_estimation_report_model OWNER TO "userEN2";
+ALTER TABLE public.initial_savings_estimation_report_model OWNER TO   ${user};
 
 --
 -- Name: initialsavingsestimationreport_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -189,7 +189,7 @@ CREATE SEQUENCE public.initialsavingsestimationreport_sequence
     CACHE 1;
 
 
-ALTER TABLE public.initialsavingsestimationreport_sequence OWNER TO "userEN2";
+ALTER TABLE public.initialsavingsestimationreport_sequence OWNER TO   ${user};
 
 --
 -- Name: inputdatamodel_id_seq; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -203,7 +203,7 @@ CREATE SEQUENCE public.inputdatamodel_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.inputdatamodel_id_seq OWNER TO "userEN2";
+ALTER TABLE public.inputdatamodel_id_seq OWNER TO   ${user};
 
 --
 -- Name: osinformation_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -219,7 +219,7 @@ CREATE TABLE public.osinformation_model (
 );
 
 
-ALTER TABLE public.osinformation_model OWNER TO "userEN2";
+ALTER TABLE public.osinformation_model OWNER TO   ${user};
 
 --
 -- Name: osinformationmodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -233,7 +233,7 @@ CREATE SEQUENCE public.osinformationmodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.osinformationmodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.osinformationmodel_sequence OWNER TO   ${user};
 
 --
 -- Name: recommended_targetsimsmodel; Type: TABLE; Schema: public; Owner: userEN2
@@ -252,7 +252,7 @@ CREATE TABLE public.recommended_targetsimsmodel (
 );
 
 
-ALTER TABLE public.recommended_targetsimsmodel OWNER TO "userEN2";
+ALTER TABLE public.recommended_targetsimsmodel OWNER TO   ${user};
 
 --
 -- Name: recommendedtargetsims_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -266,7 +266,7 @@ CREATE SEQUENCE public.recommendedtargetsims_sequence
     CACHE 1;
 
 
-ALTER TABLE public.recommendedtargetsims_sequence OWNER TO "userEN2";
+ALTER TABLE public.recommendedtargetsims_sequence OWNER TO   ${user};
 
 --
 -- Name: report_data_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -283,7 +283,7 @@ CREATE TABLE public.report_data_model (
 );
 
 
-ALTER TABLE public.report_data_model OWNER TO "userEN2";
+ALTER TABLE public.report_data_model OWNER TO   ${user};
 
 --
 -- Name: rhvadditional_container_capacity_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -299,7 +299,7 @@ CREATE TABLE public.rhvadditional_container_capacity_model (
 );
 
 
-ALTER TABLE public.rhvadditional_container_capacity_model OWNER TO "userEN2";
+ALTER TABLE public.rhvadditional_container_capacity_model OWNER TO   ${user};
 
 --
 -- Name: rhvorder_form_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -340,7 +340,7 @@ CREATE TABLE public.rhvorder_form_model (
 );
 
 
-ALTER TABLE public.rhvorder_form_model OWNER TO "userEN2";
+ALTER TABLE public.rhvorder_form_model OWNER TO   ${user};
 
 --
 -- Name: rhvramp_up_costs_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -387,7 +387,7 @@ CREATE TABLE public.rhvramp_up_costs_model (
 );
 
 
-ALTER TABLE public.rhvramp_up_costs_model OWNER TO "userEN2";
+ALTER TABLE public.rhvramp_up_costs_model OWNER TO   ${user};
 
 --
 -- Name: rhvsavings_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -403,7 +403,7 @@ CREATE TABLE public.rhvsavings_model (
 );
 
 
-ALTER TABLE public.rhvsavings_model OWNER TO "userEN2";
+ALTER TABLE public.rhvsavings_model OWNER TO   ${user};
 
 --
 -- Name: rhvyear_by_year_costs_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -426,7 +426,7 @@ CREATE TABLE public.rhvyear_by_year_costs_model (
 );
 
 
-ALTER TABLE public.rhvyear_by_year_costs_model OWNER TO "userEN2";
+ALTER TABLE public.rhvyear_by_year_costs_model OWNER TO   ${user};
 
 --
 -- Name: scan_run_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -442,7 +442,7 @@ CREATE TABLE public.scan_run_model (
 );
 
 
-ALTER TABLE public.scan_run_model OWNER TO "userEN2";
+ALTER TABLE public.scan_run_model OWNER TO   ${user};
 
 --
 -- Name: scanrunmodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -456,7 +456,7 @@ CREATE SEQUENCE public.scanrunmodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.scanrunmodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.scanrunmodel_sequence OWNER TO   ${user};
 
 --
 -- Name: source_costs_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -488,7 +488,7 @@ CREATE TABLE public.source_costs_model (
 );
 
 
-ALTER TABLE public.source_costs_model OWNER TO "userEN2";
+ALTER TABLE public.source_costs_model OWNER TO   ${user};
 
 --
 -- Name: source_ramp_down_costs_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -514,7 +514,7 @@ CREATE TABLE public.source_ramp_down_costs_model (
 );
 
 
-ALTER TABLE public.source_ramp_down_costs_model OWNER TO "userEN2";
+ALTER TABLE public.source_ramp_down_costs_model OWNER TO   ${user};
 
 --
 -- Name: summary_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -533,7 +533,7 @@ CREATE TABLE public.summary_model (
 );
 
 
-ALTER TABLE public.summary_model OWNER TO "userEN2";
+ALTER TABLE public.summary_model OWNER TO   ${user};
 
 --
 -- Name: summarymodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -547,7 +547,7 @@ CREATE SEQUENCE public.summarymodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.summarymodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.summarymodel_sequence OWNER TO   ${user};
 
 --
 -- Name: workload_inventory_report_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -576,7 +576,7 @@ CREATE TABLE public.workload_inventory_report_model (
 );
 
 
-ALTER TABLE public.workload_inventory_report_model OWNER TO "userEN2";
+ALTER TABLE public.workload_inventory_report_model OWNER TO   ${user};
 
 --
 -- Name: workload_inventory_report_model_flagsims; Type: TABLE; Schema: public; Owner: userEN2
@@ -588,7 +588,7 @@ CREATE TABLE public.workload_inventory_report_model_flagsims (
 );
 
 
-ALTER TABLE public.workload_inventory_report_model_flagsims OWNER TO "userEN2";
+ALTER TABLE public.workload_inventory_report_model_flagsims OWNER TO   ${user};
 
 --
 -- Name: workload_inventory_report_model_recommended_targetsims; Type: TABLE; Schema: public; Owner: userEN2
@@ -600,7 +600,7 @@ CREATE TABLE public.workload_inventory_report_model_recommended_targetsims (
 );
 
 
-ALTER TABLE public.workload_inventory_report_model_recommended_targetsims OWNER TO "userEN2";
+ALTER TABLE public.workload_inventory_report_model_recommended_targetsims OWNER TO   ${user};
 
 --
 -- Name: workload_inventory_report_model_workloads; Type: TABLE; Schema: public; Owner: userEN2
@@ -612,7 +612,7 @@ CREATE TABLE public.workload_inventory_report_model_workloads (
 );
 
 
-ALTER TABLE public.workload_inventory_report_model_workloads OWNER TO "userEN2";
+ALTER TABLE public.workload_inventory_report_model_workloads OWNER TO   ${user};
 
 --
 -- Name: workload_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -628,7 +628,7 @@ CREATE TABLE public.workload_model (
 );
 
 
-ALTER TABLE public.workload_model OWNER TO "userEN2";
+ALTER TABLE public.workload_model OWNER TO   ${user};
 
 --
 -- Name: workload_summary_report_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -640,7 +640,7 @@ CREATE TABLE public.workload_summary_report_model (
 );
 
 
-ALTER TABLE public.workload_summary_report_model OWNER TO "userEN2";
+ALTER TABLE public.workload_summary_report_model OWNER TO   ${user};
 
 --
 -- Name: workloadinventoryreport_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -654,7 +654,7 @@ CREATE SEQUENCE public.workloadinventoryreport_sequence
     CACHE 1;
 
 
-ALTER TABLE public.workloadinventoryreport_sequence OWNER TO "userEN2";
+ALTER TABLE public.workloadinventoryreport_sequence OWNER TO   ${user};
 
 --
 -- Name: workloadmodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -668,7 +668,7 @@ CREATE SEQUENCE public.workloadmodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.workloadmodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.workloadmodel_sequence OWNER TO   ${user};
 
 --
 -- Name: workloads_application_platforms_detected_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -684,7 +684,7 @@ CREATE TABLE public.workloads_application_platforms_detected_model (
 );
 
 
-ALTER TABLE public.workloads_application_platforms_detected_model OWNER TO "userEN2";
+ALTER TABLE public.workloads_application_platforms_detected_model OWNER TO   ${user};
 
 --
 -- Name: workloads_detectedostype_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -698,7 +698,7 @@ CREATE TABLE public.workloads_detectedostype_model (
 );
 
 
-ALTER TABLE public.workloads_detectedostype_model OWNER TO "userEN2";
+ALTER TABLE public.workloads_detectedostype_model OWNER TO   ${user};
 
 --
 -- Name: workloads_java_runtime_detected_model; Type: TABLE; Schema: public; Owner: userEN2
@@ -714,7 +714,7 @@ CREATE TABLE public.workloads_java_runtime_detected_model (
 );
 
 
-ALTER TABLE public.workloads_java_runtime_detected_model OWNER TO "userEN2";
+ALTER TABLE public.workloads_java_runtime_detected_model OWNER TO   ${user};
 
 --
 -- Name: workloadsapplicationplatformsdetectedmodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -728,7 +728,7 @@ CREATE SEQUENCE public.workloadsapplicationplatformsdetectedmodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.workloadsapplicationplatformsdetectedmodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.workloadsapplicationplatformsdetectedmodel_sequence OWNER TO   ${user};
 
 --
 -- Name: workloadsdetectedostypemodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -742,7 +742,7 @@ CREATE SEQUENCE public.workloadsdetectedostypemodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.workloadsdetectedostypemodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.workloadsdetectedostypemodel_sequence OWNER TO   ${user};
 
 --
 -- Name: workloadsjavaruntimedetectedmodel_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -756,7 +756,7 @@ CREATE SEQUENCE public.workloadsjavaruntimedetectedmodel_sequence
     CACHE 1;
 
 
-ALTER TABLE public.workloadsjavaruntimedetectedmodel_sequence OWNER TO "userEN2";
+ALTER TABLE public.workloadsjavaruntimedetectedmodel_sequence OWNER TO   ${user};
 
 --
 -- Name: workloadsummaryreport_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -770,7 +770,7 @@ CREATE SEQUENCE public.workloadsummaryreport_sequence
     CACHE 1;
 
 
-ALTER TABLE public.workloadsummaryreport_sequence OWNER TO "userEN2";
+ALTER TABLE public.workloadsummaryreport_sequence OWNER TO   ${user};
 
 --
 -- Name: worloadinventoryreport_sequence; Type: SEQUENCE; Schema: public; Owner: userEN2
@@ -784,7 +784,7 @@ CREATE SEQUENCE public.worloadinventoryreport_sequence
     CACHE 1;
 
 
-ALTER TABLE public.worloadinventoryreport_sequence OWNER TO "userEN2";
+ALTER TABLE public.worloadinventoryreport_sequence OWNER TO   ${user};
 
 COPY public.flag_assessment_model (flag, os_name, assessment, flag_label) FROM stdin;
 RDM		Raw devices may require manual data migration	RDM - Raw Device Mapping Disks
