@@ -49,13 +49,22 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
     private Boolean hasCpuHotAdd;
     private Boolean hasCpuHotRemove;
 
-    public VMWorkloadInventoryModel()
-    {
-        this.systemServicesNames = new ArrayList<> ();
+    private Boolean hasUSBcontrollers;
+
+    public VMWorkloadInventoryModel() {
+        this.systemServicesNames = new ArrayList<>();
         this.files = new HashMap<>();
         this.vmDiskFilenames = new ArrayList<>();
         nicsCount = 0;
         diskSpace = 0L;
+    }
+
+    public Boolean getHasUSBcontrollers() {
+        return hasUSBcontrollers;
+    }
+
+    public void setHasUSBcontrollers(Boolean hasUSBcontrollers) {
+        this.hasUSBcontrollers = hasUSBcontrollers;
     }
 
     public String getProvider() {

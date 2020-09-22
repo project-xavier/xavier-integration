@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCalculator implements Calculator<Collection<VMWorkloadInventoryModel>> {
+    private static final String NULL_VALUE_TEXT = "Setting value to null.";
     @Override
     public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
 
@@ -80,19 +81,14 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         model.setOsProductName(StringUtils.defaultIfEmpty(readValueFromExpandedEnvVarPath(PRODUCTNAMEPATH, vmStructMap), readValueFromExpandedEnvVarPath(PRODUCTNAME_FALLBACKPATH, vmStructMap )));
         model.setGuestOSFullName(StringUtils.defaultIfEmpty(readValueFromExpandedEnvVarPath(GUESTOSFULLNAMEPATH, vmStructMap ), readValueFromExpandedEnvVarPath(GUESTOSFULLNAME_FALLBACKPATH, vmStructMap )));
-        Boolean hasRdmDisk = readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap);
-        if (hasRdmDisk != null) {
-            model.setHasRdmDisk(hasRdmDisk);
-        }
-        Object cpuHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
-        model.setHasCpuHotAdd(cpuHotAddObject != null? (Boolean)cpuHotAddObject: null);
-        Object memoryHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
-        model.setHasMemoryHotAdd(memoryHotAddObject != null? (Boolean)memoryHotAddObject: null);
-        Object cpuHotRemoveObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH, vmStructMap, "Setting value to null.");
-        model.setHasCpuHotRemove(cpuHotRemoveObject != null? (Boolean)cpuHotRemoveObject: null);
+        model.setHasRdmDisk((Boolean) readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap));
+        model.setHasCpuHotAdd((Boolean) getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap, NULL_VALUE_TEXT));
+        model.setHasMemoryHotAdd((Boolean) getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH,vmStructMap, NULL_VALUE_TEXT));
+        model.setHasCpuHotRemove((Boolean) getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH,vmStructMap, NULL_VALUE_TEXT));
 
-        Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, "Setting value to null.");
+        Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, NULL_VALUE_TEXT);
         model.setCpuAffinityNotNull(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
+        model.setHasUSBcontrollers((Boolean) getValueForExpandedPathAndHandlePathNotPresent(USBCONTROLLERS, vmStructMap, NULL_VALUE_TEXT));
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
@@ -109,6 +105,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setScanRunDate(scanRunDate);
 
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
+
 
         return model;
     }
