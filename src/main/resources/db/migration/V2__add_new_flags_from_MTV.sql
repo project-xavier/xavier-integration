@@ -5,7 +5,7 @@ INSERT INTO flag_assessment_model
 (flag, os_name, assessment, flag_label) VALUES ('VM HA', '', 'VM HA detected and is unsupported in OpenShift Virtualization', 'VM HA rule detected');
 
 INSERT INTO flag_assessment_model
-(flag, os_name, assessment, flag_label) VALUES ('Balloneed memory', '', 'VM memory ballooning detected and is unsupported in OpenShift Virtualization', 'VM memory ballooning detected');
+(flag, os_name, assessment, flag_label) VALUES ('Ballooned memory', '', 'VM memory ballooning detected and is unsupported in OpenShift Virtualization', 'VM memory ballooning detected');
 
 INSERT INTO flag_assessment_model
 (flag, os_name, assessment, flag_label) VALUES ('Encrypted Disk', '', 'VM disk encryption detected and is unsupported in OpenShift Virtualization', 'VM disk encryption detected');
