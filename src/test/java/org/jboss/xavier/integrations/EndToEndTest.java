@@ -540,7 +540,7 @@ public class EndToEndTest {
         assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
 
         ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(11);
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(14);
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
