@@ -81,13 +81,19 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         model.setOsProductName(StringUtils.defaultIfEmpty(readValueFromExpandedEnvVarPath(PRODUCTNAMEPATH, vmStructMap), readValueFromExpandedEnvVarPath(PRODUCTNAME_FALLBACKPATH, vmStructMap )));
         model.setGuestOSFullName(StringUtils.defaultIfEmpty(readValueFromExpandedEnvVarPath(GUESTOSFULLNAMEPATH, vmStructMap ), readValueFromExpandedEnvVarPath(GUESTOSFULLNAME_FALLBACKPATH, vmStructMap )));
-        model.setHasRdmDisk((Boolean) readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap));
-        model.setHasCpuHotAdd((Boolean) getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap, NULL_VALUE_TEXT));
-        model.setHasMemoryHotAdd((Boolean) getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH,vmStructMap, NULL_VALUE_TEXT));
-        model.setHasCpuHotRemove((Boolean) getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH,vmStructMap, NULL_VALUE_TEXT));
+        Boolean hasRdmDisk = readValueFromExpandedEnvVarPath(HASRDMDISKPATH, vmStructMap);
+        if (hasRdmDisk != null) {
+            model.setHasRdmDisk(hasRdmDisk);
+        }
+        Object cpuHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotAdd(cpuHotAddObject != null? (Boolean)cpuHotAddObject: null);
+        Object memoryHotAddObject = getValueForExpandedPathAndHandlePathNotPresent(MEMORYHOTADDENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasMemoryHotAdd(memoryHotAddObject != null? (Boolean)memoryHotAddObject: null);
+        Object cpuHotRemoveObject = getValueForExpandedPathAndHandlePathNotPresent(CPUHOTREMOVEENABLEDPATH, vmStructMap, "Setting value to null.");
+        model.setHasCpuHotRemove(cpuHotRemoveObject != null? (Boolean)cpuHotRemoveObject: null);
 
-        Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, NULL_VALUE_TEXT);
-        model.setCpuAffinityNotNull(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
+        Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, "Setting value to null.");
+        model.setCpuAffinity(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
         model.setHasUSBcontrollers((Boolean) getValueForExpandedPathAndHandlePathNotPresent(USBCONTROLLERS, vmStructMap, NULL_VALUE_TEXT));
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
@@ -104,19 +110,36 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
 
         model.setScanRunDate(scanRunDate);
 
+        model.setHasPassthroughDevice(getValueForBooleanFieldHandlingPathNotPresent(HASPASSTHROUGHDEVICEPATH, vmStructMap, "Setting value to null."));
+        model.setHasVmAffinityConfig(getValueForBooleanFieldHandlingPathNotPresent(HASVMAFFINITYCONFIG, vmStructMap, "Setting value to null."));
+        model.setHasVmDrsConfig(getValueForBooleanFieldHandlingPathNotPresent(HASVMDRSCONFIG, vmStructMap, "Setting value to null."));
+        model.setHasVmHaConfig(getValueForBooleanFieldHandlingPathNotPresent(HASVMHACONFIG, vmStructMap, "Setting value to null."));
+        model.setHasEncryptedDisk(getValueForBooleanFieldHandlingPathNotPresent(HASENCRYPTEDDISK, vmStructMap, "Setting value to null."));
+        model.setHasOpaqueNetwork(getValueForBooleanFieldHandlingPathNotPresent(HASOPAQUENETWORK, vmStructMap, "Setting value to null."));
+
+        model.setNumaNodeAffinity(getValueForExpandedPathAndHandlePathNotPresent(NUMANODEAFFINITY, vmStructMap, "Setting value to null."));
+        model.setFirmware(getValueForExpandedPathAndHandlePathNotPresent(FIRMWARE, vmStructMap, "Setting value to null."));
+        model.setBalloonedMemory(getValueForExpandedPathAndHandlePathNotPresent(BALLOONEDMEMORY, vmStructMap, "Setting value to null."));
+
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
 
 
         return model;
     }
 
-    private Object getValueForExpandedPathAndHandlePathNotPresent(String path, Map vmStructMap, String errorMessage)
+    private Boolean getValueForBooleanFieldHandlingPathNotPresent(String path, Map vmStructMap, String errorMessage) {
+
+        Object value = getValueForExpandedPathAndHandlePathNotPresent(path, vmStructMap, errorMessage);
+        return (value != null ? Boolean.valueOf(value.toString()) : null);
+    }
+
+    private <T> T getValueForExpandedPathAndHandlePathNotPresent(String path, Map vmStructMap, String errorMessage)
     {
         try {
             String foundPath = getExpandedPath(path, vmStructMap);
             Object returnValue = vmStructMap.get(foundPath);
             if (returnValue!= null)
-                return returnValue;
+                return (T) returnValue;
 
         } catch (Exception e) {
             // In versions previous to 1_0_0 it will fail because there is no such property
