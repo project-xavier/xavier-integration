@@ -17,21 +17,26 @@ import org.jboss.xavier.Application;
 import org.jboss.xavier.analytics.pojo.output.AnalysisModel;
 import org.jboss.xavier.analytics.pojo.output.InitialSavingsEstimationReportModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
-import org.jboss.xavier.analytics.pojo.output.workload.summary.*;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.AppIdentifierModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.FlagAssessmentModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.OSInformationModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.ScanRunModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.SummaryModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadSummaryReportModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsApplicationPlatformsDetectedModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsDetectedOSTypeModel;
+import org.jboss.xavier.analytics.pojo.output.workload.summary.WorkloadsJavaRuntimeDetectedModel;
 import org.jboss.xavier.integrations.jpa.repository.AppIdentifierRepository;
-import org.jboss.xavier.integrations.jpa.repository.FlagAssessmentRepository;
 import org.jboss.xavier.integrations.jpa.repository.InitialSavingsEstimationReportRepository;
 import org.jboss.xavier.integrations.jpa.service.InitialSavingsEstimationReportService;
 import org.jboss.xavier.integrations.route.model.PageResponse;
 import org.jboss.xavier.integrations.route.model.notification.FilePersistedNotification;
 import org.jboss.xavier.integrations.route.model.user.User;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -44,7 +49,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -69,6 +73,7 @@ import org.testcontainers.utility.MountableFile;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -92,6 +97,7 @@ import java.util.zip.ZipFile;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertThat;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 @RunWith(CamelSpringBootRunner.class)
@@ -119,7 +125,8 @@ public class EndToEndTest {
             .withEnv("KIE_SERVER_CONTROLLER_USER","admin")
             .withEnv("KIE_SERVER_LOCATION","http://kie-server:8080/kie-server/services/rest/server")
             .withEnv("KIE_SERVER_PWD","kieserver1!")
-            .withEnv("KIE_SERVER_USER","kieserver");
+            .withEnv("KIE_SERVER_USER","kieserver")
+            .withCopyFileToContainer(MountableFile.forClasspathResource("kie-simple-extension-1.0-SNAPSHOT.jar", 700), "/opt/jboss/wildfly/standalone/deployments/kie-server.war/WEB-INF/lib/");
 
     @ClassRule
     public static PostgreSQLContainer postgreSQL = new PostgreSQLContainer()
@@ -143,9 +150,6 @@ public class EndToEndTest {
 
     @Inject
     private AppIdentifierRepository appIdentifierRepository;
-
-    @Inject
-    private FlagAssessmentRepository flagAssessmentRepository;
 
     @Value("${S3_BUCKET}")
     private String bucket;
@@ -272,6 +276,10 @@ public class EndToEndTest {
                         "postgresql.service.name=" + postgreSQL.getContainerIpAddress(),
                         "postgresql.service.port=" + postgreSQL.getFirstMappedPort(),
                         "spring.datasource.username=" + postgreSQL.getUsername(),
+                        "flyway.placeholders.user=" + postgreSQL.getUsername(),
+                        "flyway.locations=classpath:/db/migration",
+                        "flyway.baseline-version=0.1",
+                        "flyway.baseline-on-migrate=true",
                         "spring.datasource.password=" + postgreSQL.getPassword(),
                         "S3_HOST=" + localstack.getEndpointConfiguration(S3).getServiceEndpoint(),
                         "S3_REGION="+ localstack.getEndpointConfiguration(S3).getSigningRegion(),
@@ -471,49 +479,6 @@ public class EndToEndTest {
                 .build();
         appIdentifierRepository.save(Arrays.asList(applicationPlatform1, applicationPlatform2, applicationPlatform3, applicationPlatform4));
 
-
-        // FLag assessments
-        FlagAssessmentModel flagAssessmentModel1 = new FlagAssessmentModel();
-        flagAssessmentModel1.setAssessment("assessment1");
-        flagAssessmentModel1.setFlag("flag1");
-        flagAssessmentModel1.setFlagLabel("flaglabel1");
-        flagAssessmentModel1.setOsName("osname1");
-        FlagAssessmentIdentityModel fgId1 = new FlagAssessmentIdentityModel();
-        fgId1.setFlag("flag");
-        fgId1.setOsName("osName");
-        flagAssessmentModel1.setId(fgId1);
-
-        FlagAssessmentModel flagAssessmentModel2 = new FlagAssessmentModel();
-        flagAssessmentModel2.setAssessment("assessment2");
-        flagAssessmentModel2.setFlag("flag2");
-        flagAssessmentModel2.setFlagLabel("flaglabel2");
-        flagAssessmentModel2.setOsName("osname2");
-        FlagAssessmentIdentityModel fgId2 = new FlagAssessmentIdentityModel();
-        fgId2.setFlag("flag2");
-        fgId2.setOsName("osName2");
-        flagAssessmentModel2.setId(fgId2);
-
-        FlagAssessmentModel flagAssessmentModel3 = new FlagAssessmentModel();
-        flagAssessmentModel3.setAssessment("assessment3");
-        flagAssessmentModel3.setFlag("flag3");
-        flagAssessmentModel3.setFlagLabel("flaglabel3");
-        flagAssessmentModel3.setOsName("osname3");
-        FlagAssessmentIdentityModel fgId3 = new FlagAssessmentIdentityModel();
-        fgId3.setFlag("flag3");
-        fgId3.setOsName("osName3");
-        flagAssessmentModel3.setId(fgId3);
-
-        FlagAssessmentModel flagAssessmentModel4 = new FlagAssessmentModel();
-        flagAssessmentModel4.setAssessment("assessment4");
-        flagAssessmentModel4.setFlag("flag4");
-        flagAssessmentModel4.setFlagLabel("flaglabel4");
-        flagAssessmentModel4.setOsName("osname4");
-        FlagAssessmentIdentityModel fgId4 = new FlagAssessmentIdentityModel();
-        fgId4.setFlag("flag4");
-        fgId4.setOsName("osName4");
-        flagAssessmentModel4.setId(fgId4);
-
-        flagAssessmentRepository.save(Arrays.asList(flagAssessmentModel1, flagAssessmentModel2, flagAssessmentModel3, flagAssessmentModel4));
     }
 
     @BeforeClass
@@ -578,7 +543,7 @@ public class EndToEndTest {
         assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
 
         ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(4);
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(14);
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});

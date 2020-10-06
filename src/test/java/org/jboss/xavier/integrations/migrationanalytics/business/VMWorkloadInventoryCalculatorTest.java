@@ -96,7 +96,7 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getHasCpuHotAdd() != null).count()).isEqualTo(2);
         assertThat(modelList.stream().filter(e -> e.getHasCpuHotRemove() != null).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getHasMemoryHotAdd() != null).count()).isEqualTo(2);
-        assertThat(modelList.stream().filter(e -> e.isCpuAffinityNotNull() == true).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> e.getCpuAffinity() == true).count()).isEqualTo(1);
 
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
         expectedModel.setVmName("oracle_db");
@@ -237,5 +237,42 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana"))
                 .findFirst().get().getCpuCores())
                 .isEqualTo(0);
+    }
+
+    @Test
+    public void calculate_jsonV1_0_0_GivenWithHasPassthroughDeviceShouldReturnNotNullValue() throws Exception {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
+        cloudFormsJson = cloudFormsJson.replace("\"name\": \"jboss0\",",
+                                                "\"name\": \"jboss0\",\n                    \"has_passthrough_device\": true,  \"has_vm_affinity_config\" : false, \"numa_node_affinity\" : \"nothing\", \"firmware\" : \"UEFI\", \"has_vm_drs_config\" : false, \"has_vm_ha_config\" : true, \"ballooned_memory\" : 9, \"has_encrypted_disk\" : false, \"has_opaque_network\" : true, \n");
+        cloudFormsJson = cloudFormsJson.replace("\"name\": \"db\",",
+                                                "\"name\": \"db\",\n                    \"has_passthrough_device\": null,  \"has_vm_affinity_config\" : null, \"numa_node_affinity\" : \"something\", \"firmXXware\" : \"BIOS\", \"has_vm_drs_config\" : true, \"has_vm_ha_config\" : false, \"ballooned_memory\" : 1, \"has_encrypted_disk\" : true, \"has_opaqueXX_network\" : false, \n");
+        // oracle-db : missing
+       
+        Map<String, Object> headers = new HashMap<>();
+        Long analysisId = 30L;
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(8);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana")).filter(e -> e.getHasPassthroughDevice() && !e.getHasVmAffinityConfig() &&
+                                             e.getNumaNodeAffinity() == null && e.getFirmware().equalsIgnoreCase("BIOS") && !e.getHasVmDrsConfig() &&
+                                            e.getHasVmHaConfig() && e.getBalloonedMemory() == 0 && e.getHasEncryptedDisk() && !e.getHasOpaqueNetwork())
+        .count()).isEqualTo(1);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("jboss0")).filter(e -> e.getHasPassthroughDevice() && !e.getHasVmAffinityConfig() &&
+                                            (e.getNumaNodeAffinity().equalsIgnoreCase("nothing")) && e.getFirmware().equalsIgnoreCase("UEFI") && !e.getHasVmDrsConfig() &&
+                                            e.getHasVmHaConfig() && e.getBalloonedMemory() == 9 && !e.getHasEncryptedDisk() && e.getHasOpaqueNetwork())
+        .count()).isEqualTo(1);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("db")).filter(e -> e.getHasPassthroughDevice() == null && e.getHasVmAffinityConfig() == null &&
+                                            (e.getNumaNodeAffinity().equalsIgnoreCase("something")) && e.getFirmware()==null && e.getHasVmDrsConfig() &&
+                                             !e.getHasVmHaConfig() && e.getBalloonedMemory() == 1 && e.getHasEncryptedDisk() && e.getHasOpaqueNetwork() ==null)
+        .count()).isEqualTo(1);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db")).filter(e-> e.getHasPassthroughDevice() == null && e.getHasVmAffinityConfig()==null &&
+                                                (e.getNumaNodeAffinity() == null) && e.getFirmware()==null && e.getHasVmDrsConfig() == null &&
+                                                e.getHasVmHaConfig() == null && e.getBalloonedMemory() == null && e.getHasEncryptedDisk() == null && e.getHasOpaqueNetwork() == null)
+        .count()).isEqualTo(1);
     }
 }

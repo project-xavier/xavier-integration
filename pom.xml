@@ -194,6 +194,13 @@
             <version>1.4.10</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+
+
         <!-- Testing -->
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -314,6 +321,7 @@
                     <excludes>
                         <exclude>**/*KT.java</exclude>
                     </excludes>
+                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
             <plugin>

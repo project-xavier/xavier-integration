@@ -376,6 +376,15 @@
                     "has_rdm_disk": false,
                     "memory_hot_add_enabled":null,
                     "cpu_affinity": "0,2",
+                    "firmware": "bios",
+                    "ballooned_memory": 0,
+                    "numa_node_affinity": null,
+                    "has_encrypted_disk": true,
+                    "has_passthrough_device": true,
+                    "has_opaque_network": false,
+                    "has_vm_ha_config": true,
+                    "has_vm_drs_config": false,
+                    "has_vm_affinity_config": false,
                     "host": {
                         "ems_ref": "host-31"
                     },
@@ -5213,6 +5222,15 @@
                     "disks_aligned": "True",
                     "ems_ref": "vm-281",
                     "has_rdm_disk": false,
+                    "firmware": "bios",
+                    "ballooned_memory": 0,
+                    "numa_node_affinity": null,
+                    "has_encrypted_disk": true,
+                    "has_passthrough_device": true,
+                    "has_opaque_network": false,
+                    "has_vm_ha_config": true,
+                    "has_vm_drs_config": false,
+                    "has_vm_affinity_config": false,
                     "host": {
                         "ems_ref": "host-31"
                     },

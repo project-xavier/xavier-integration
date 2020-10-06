@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("!test")
-public class SpringConfiguration {
+public class SpringS3Configuration {
     @Value("${S3_ACCESS_KEY_ID}")
     String key;
 
