@@ -96,7 +96,7 @@ public class VMWorkloadInventoryCalculatorTest {
         assertThat(modelList.stream().filter(e -> e.getHasCpuHotAdd() != null).count()).isEqualTo(2);
         assertThat(modelList.stream().filter(e -> e.getHasCpuHotRemove() != null).count()).isEqualTo(1);
         assertThat(modelList.stream().filter(e -> e.getHasMemoryHotAdd() != null).count()).isEqualTo(2);
-        assertThat(modelList.stream().filter(e -> e.getCpuAffinity() == true).count()).isEqualTo(1);
+        assertThat(modelList.stream().filter(e -> "0,2".equals(e.getCpuAffinity())).count()).isEqualTo(1);
 
         VMWorkloadInventoryModel expectedModel = new VMWorkloadInventoryModel();
         expectedModel.setVmName("oracle_db");
@@ -240,7 +240,59 @@ public class VMWorkloadInventoryCalculatorTest {
     }
 
     @Test
-    public void calculate_jsonV1_0_0_GivenWithHasPassthroughDeviceShouldReturnNotNullValue() throws Exception {
+
+    public void calculate_jsonV1_0_0_TestHasUSBcontrollers_True() throws IOException {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
+        cloudFormsJson = cloudFormsJson.replace("\"cpu_cores_per_socket\": 1,\n                    \"cpu_total_cores\": 4,",
+                                           "\"cpu_cores_per_socket\": 1,\n                    \"cpu_total_cores\": 4, \"has_usb_controller\":true, ");
+
+        Map<String, Object> headers = new HashMap<>();
+        Long analysisId = 30L;
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(8);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana"))
+                .findFirst().get().getHasUSBcontrollers())
+                .isTrue();
+   }    
+   
+    @Test
+    public void calculate_jsonV1_0_0_TestHasUSBcontrollers_False() throws IOException {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
+        cloudFormsJson = cloudFormsJson.replace("\"cpu_cores_per_socket\": 1,\n                    \"cpu_total_cores\": 4,",
+                                           "\"cpu_cores_per_socket\": 1,\n                    \"cpu_total_cores\": 4, \"has_usb_controller\":false, ");
+
+        Map<String, Object> headers = new HashMap<>();
+        Long analysisId = 30L;
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(8);
+
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana"))
+                .findFirst().get().getHasUSBcontrollers())
+                .isFalse();
+   }
+
+
+   @Test
+   public void calculate_jsonV1_0_0_TestHasUSBcontrollers_Null() throws IOException {
+        String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
+        Map<String, Object> headers = new HashMap<>();
+        Long analysisId = 30L;
+        headers.put(RouteBuilderExceptionHandler.ANALYSIS_ID, analysisId.toString());
+
+        Collection<VMWorkloadInventoryModel> modelList = calculator.calculate(cloudFormsJson, headers);
+        assertThat(Integer.valueOf(modelList.size())).isEqualTo(8);
+        assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana"))
+                .findFirst().get().getHasUSBcontrollers())
+                .isNull();
+    }
+
+   @Test
+   public void calculate_jsonV1_0_0_GivenWithHasPassthroughDeviceShouldReturnNotNullValue() throws Exception {
         String cloudFormsJson = IOUtils.resourceToString("cloudforms-export-v1_0_0.json", StandardCharsets.UTF_8, VMWorkloadInventoryCalculatorTest.class.getClassLoader());
         cloudFormsJson = cloudFormsJson.replace("\"name\": \"jboss0\",",
                                                 "\"name\": \"jboss0\",\n                    \"has_passthrough_device\": true,  \"has_vm_affinity_config\" : false, \"numa_node_affinity\" : \"nothing\", \"firmware\" : \"UEFI\", \"has_vm_drs_config\" : false, \"has_vm_ha_config\" : true, \"ballooned_memory\" : 9, \"has_encrypted_disk\" : false, \"has_opaque_network\" : true, \n");
@@ -275,4 +327,5 @@ public class VMWorkloadInventoryCalculatorTest {
                                                 e.getHasVmHaConfig() == null && e.getBalloonedMemory() == null && e.getHasEncryptedDisk() == null && e.getHasOpaqueNetwork() == null)
         .count()).isEqualTo(1);
     }
+
 }

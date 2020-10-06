@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCalculator implements Calculator<Collection<VMWorkloadInventoryModel>> {
+    private static final String NULL_VALUE_TEXT = "Setting value to null.";
     @Override
     public Collection<VMWorkloadInventoryModel> calculate(String cloudFormsJson, Map<String, Object> headers) {
 
@@ -92,7 +93,8 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setHasCpuHotRemove(cpuHotRemoveObject != null? (Boolean)cpuHotRemoveObject: null);
 
         Object cpuAffinity = getValueForExpandedPathAndHandlePathNotPresent(CPUAFFINITYPATH, vmStructMap, "Setting value to null.");
-        model.setCpuAffinity(cpuAffinity != null && !((String)cpuAffinity).trim().isEmpty());
+        model.setCpuAffinity(cpuAffinity != null && !((String)cpuAffinity).isEmpty()? (String)cpuAffinity: null);
+        model.setHasUSBcontrollers((Boolean) getValueForExpandedPathAndHandlePathNotPresent(USBCONTROLLERS, vmStructMap, NULL_VALUE_TEXT));
 
         model.setDiskSpace(getDiskSpaceList(vmStructMap));
 
@@ -120,6 +122,7 @@ public class VMWorkloadInventoryCalculator extends AbstractVMWorkloadInventoryCa
         model.setBalloonedMemory(getValueForExpandedPathAndHandlePathNotPresent(BALLOONEDMEMORY, vmStructMap, "Setting value to null."));
 
         model.setAnalysisId(Long.parseLong(vmStructMap.get("_analysisId").toString()));
+
 
         return model;
     }
