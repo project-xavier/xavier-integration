@@ -554,8 +554,11 @@ public class EndToEndTest {
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
             .filter(e -> e.getFlag().equalsIgnoreCase("VM HA")).findFirst().get().getFlagLabel()).isEqualToIgnoringCase("High Availability (HA) detected");
 
-            assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
             .filter(e -> e.getFlag().equalsIgnoreCase("VM HA")).findFirst().get().getAssessment()).isEqualToIgnoringCase("HA disk locking detected and is unsupported in OpenShift Virtualization");
+
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
+            .filter(e -> e.getFlag().equalsIgnoreCase("VMWare DRS")).findFirst().get().getAssessment()).isEqualToIgnoringCase("VM distributed resource scheduling between nodes detected and is unsupported in OpenShift Virtualization");
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
