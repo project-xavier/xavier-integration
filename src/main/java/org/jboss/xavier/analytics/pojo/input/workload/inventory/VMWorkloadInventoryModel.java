@@ -36,7 +36,7 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
     private String product;
     private String version;
     private String host_name;
-    private Boolean cpuAffinity;
+    private String cpuAffinity;
 
     private Date scanRunDate;
 
@@ -48,6 +48,8 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
     private Boolean hasMemoryHotAdd;
     private Boolean hasCpuHotAdd;
     private Boolean hasCpuHotRemove;
+  
+    private Boolean hasUSBcontrollers;
     private Boolean hasPassthroughDevice;
     private Boolean hasVmAffinityConfig;
     private String numaNodeAffinity;
@@ -65,6 +67,15 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
         this.vmDiskFilenames = new ArrayList<>();
         nicsCount = 0;
         diskSpace = 0L;
+    }
+
+
+    public Boolean getHasUSBcontrollers() {
+        return hasUSBcontrollers;
+    }
+
+    public void setHasUSBcontrollers(Boolean hasUSBcontrollers) {
+        this.hasUSBcontrollers = hasUSBcontrollers;
     }
 
     public Boolean getHasOpaqueNetwork() {
@@ -328,11 +339,11 @@ public class VMWorkloadInventoryModel extends AbstractInputModel implements Seri
         this.hasCpuHotRemove = hasCpuHotRemove;
     }
   
-    public Boolean getCpuAffinity() {
+    public String getCpuAffinity() {
         return cpuAffinity;
     }
 
-    public void setCpuAffinity(Boolean cpuAffinity) {
+    public void setCpuAffinity(String cpuAffinity) {
         this.cpuAffinity = cpuAffinity;
     }
 }
