@@ -542,7 +542,7 @@ public class EndToEndTest {
         assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
 
         ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(15);
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(16);
 
         // Testing changes introduced in V5__update_flags_values
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()

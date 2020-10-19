@@ -309,7 +309,7 @@ public class VMWorkloadInventoryCalculatorTest {
 
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("hana")).filter(e -> e.getHasPassthroughDevice() && !e.getHasVmAffinityConfig() &&
                                              e.getNumaNodeAffinity() == null && e.getFirmware().equalsIgnoreCase("BIOS") && !e.getHasVmDrsConfig() &&
-                                            e.getHasVmHaConfig() && e.getBalloonedMemory() == 0 && e.getHasEncryptedDisk() && !e.getHasOpaqueNetwork() && !e.getHasSriovNic())
+                                            e.getHasVmHaConfig() && e.getBalloonedMemory() == 0 && e.getHasEncryptedDisk() && !e.getHasOpaqueNetwork() && e.getHasSriovNic() == null)
         .count()).isEqualTo(1);
 
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("jboss0")).filter(e -> e.getHasPassthroughDevice() && !e.getHasVmAffinityConfig() &&
@@ -319,7 +319,7 @@ public class VMWorkloadInventoryCalculatorTest {
 
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("db")).filter(e -> e.getHasPassthroughDevice() == null && e.getHasVmAffinityConfig() == null &&
                                             (e.getNumaNodeAffinity().equalsIgnoreCase("something")) && e.getFirmware()==null && e.getHasVmDrsConfig() &&
-                                             !e.getHasVmHaConfig() && e.getBalloonedMemory() == 1 && e.getHasEncryptedDisk() && e.getHasOpaqueNetwork() ==null && e.getHasSriovNic() ==null)
+                                             !e.getHasVmHaConfig() && e.getBalloonedMemory() == 1 && e.getHasEncryptedDisk() && e.getHasOpaqueNetwork() ==null && !e.getHasSriovNic())
         .count()).isEqualTo(1);
 
         assertThat(modelList.stream().filter(e -> e.getVmName().equalsIgnoreCase("oracle_db")).filter(e-> e.getHasPassthroughDevice() == null && e.getHasVmAffinityConfig()==null &&
