@@ -190,6 +190,8 @@ public class WorkloadInventoryReportModel
 
     private String osFamily;
 
+    private String category;
+
     public WorkloadInventoryReportModel() {}
 
     public static long getSerialVersionUID() {
@@ -388,5 +390,13 @@ public class WorkloadInventoryReportModel
 
     public void setOsFamily(String osFamily) {
         this.osFamily = osFamily;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }
