@@ -622,7 +622,7 @@ public class EndToEndTest {
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("None")).count()).isEqualTo(1);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
-            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getCategory().contains("Critical")).count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getVmCategory().contains("Critical")).count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
         });
 
