@@ -72,6 +72,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                             dbWir.setComplexity(element.getComplexity());
                             dbWir.setFlagsIMS(element.getFlagsIMS());
                             dbWir.setRecommendedTargetsIMS(element.getRecommendedTargetsIMS());
+                            dbWir.setVmCategory(element.getVmCategory());
                             return dbWir;
                         }).collect(Collectors.toList());
                 workloadInventoryReportService.saveAll(updatedWir);
