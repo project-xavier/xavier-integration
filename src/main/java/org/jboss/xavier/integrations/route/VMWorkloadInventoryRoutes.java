@@ -76,6 +76,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                             dbWir.setVmCategory(element.getVmCategory());
                             return dbWir;
                         }).collect(Collectors.toList());
+                updatedWir.forEach(element -> System.out.println("Updated VM: " + element.getVmName() + " Category: " + element.getVmCategory()));
                 workloadInventoryReportService.saveAll(updatedWir);
                 exchange.getIn().setBody(updatedWir);
             });
