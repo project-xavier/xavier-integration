@@ -69,14 +69,12 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
                         .map(element -> {
                             WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneByOwnerAndId(username, element.getId());
-                            System.out.println("VM: " + dbWir.getVmName() + " Category: " + dbWir.getVmCategory());
                             dbWir.setComplexity(element.getComplexity());
                             dbWir.setFlagsIMS(element.getFlagsIMS());
                             dbWir.setRecommendedTargetsIMS(element.getRecommendedTargetsIMS());
                             dbWir.setVmCategory(element.getVmCategory());
                             return dbWir;
                         }).collect(Collectors.toList());
-                updatedWir.forEach(element -> System.out.println("Updated VM: " + element.getVmName() + " Category: " + element.getVmCategory()));
                 workloadInventoryReportService.saveAll(updatedWir);
                 exchange.getIn().setBody(updatedWir);
             });
