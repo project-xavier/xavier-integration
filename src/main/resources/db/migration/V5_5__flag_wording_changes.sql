@@ -39,7 +39,7 @@ SET flag_label = 'Encrypted disk detected.' , assessment = 'Encrypted disks are 
 WHERE flag = 'Encrypted disk';
 
 UPDATE flag_assessment_model
-SET flag = 'Opaque network' , flag_label = 'Opaque network detected.' , assessment= 'Opaque networks are not supported by OpenShift Virtualization and may require post migration VM reconfiguration. The VM can be migrated but the network must be configured after migration.'
+SET flag = 'Opaque network' , flag_label = 'Opaque network detected.' , assessment= 'Opaque networks are not supported by OpenShift Virtualization. The VM can be migrated but the network must be configured after migration.'
 WHERE flag = 'Opaque Network';
 
 UPDATE flag_assessment_model
