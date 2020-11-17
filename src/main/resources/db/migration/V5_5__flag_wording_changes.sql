@@ -1,47 +1,75 @@
-UPDATE flag_assessment_model
-SET flag = 'Passthrough device' , flag_label = 'Passthrough device detected.' , assessment= 'Passthrough devices are not supported by OpenShift Virtualization. The VM cannot be migrated unless the passthrough device is removed.'
+delete from flag_assessment_model
 WHERE flag = 'Passthrough Device';
 
-UPDATE flag_assessment_model
-SET flag = 'VM-Host affinity' , flag_label = 'VM-Host affinity detected.' , assessment= 'VM-Host affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.'
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('Passthrough device','','Passthrough device detected.','Passthrough devices are not supported by OpenShift Virtualization. The VM cannot be migrated unless the passthrough device is removed.') ON CONFLICT DO NOTHING;
+
+delete from  flag_assessment_model
 WHERE flag = 'VM/Host Affinity Configured';
 
-UPDATE flag_assessment_model
-SET flag = 'CPU/memory hotplug' , flag_label = 'CPU/memory hotplug.' , assessment = 'Review VM CPU or memory configuration after migration.'
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('VM-Host affinity','','VM-Host affinity detected','VM-Host affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.') ON CONFLICT DO NOTHING;
+
+
+delete from flag_assessment_model
 WHERE flag = 'CPU/Memory hotplug';
 
-UPDATE flag_assessment_model
-SET flag = 'CPU affinity' , flag_label = 'CPU affinity detected.' , assessment= 'CPU affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.'
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('CPU/memory hotplug','','CPU/memory hotplug.','Review VM CPU or memory configuration after migration.') ON CONFLICT DO NOTHING;
+
+
+delete from flag_assessment_model
 WHERE flag = 'CPU Affinity';
 
-UPDATE flag_assessment_model
-SET flag = 'NUMA node affinity' , flag_label = 'NUMA node affinity detected.' , assessment= 'NUMA node affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.'
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('CPU affinity','','CPU affinity detected.','CPU affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.') ON CONFLICT DO NOTHING;
+
+
+delete from flag_assessment_model
 WHERE flag = 'NUMA Node Affinity';
 
-UPDATE flag_assessment_model
-SET flag = 'UEFI secure boot' , flag_label = 'UEFI secure boot detected.' , assessment= 'UEFI secure boot is not supported by OpenShift Virtualization. The VM cannot be migrated unless UEFI secure boot is disabled.'
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('NUMA node affinity','','NUMA node affinity detected.','NUMA node affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.') ON CONFLICT DO NOTHING;
+
+
+delete from flag_assessment_model
 WHERE flag = 'UEFI Boot';
+
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('UEFI secure boot','','UEFI secure boot detected.','UEFI secure boot is not supported by OpenShift Virtualization. The VM cannot be migrated unless UEFI secure boot is disabled.') ON CONFLICT DO NOTHING;
+
 
 UPDATE flag_assessment_model
 SET flag_label = 'VMware DRS detected.' , assessment = 'VMware Distributed Resource Scheduler is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.'
 WHERE flag = 'VMWare DRS';
 
-UPDATE flag_assessment_model
-SET flag = 'HA' , flag_label = 'VM running on HA host detected.' , assessment= 'HA is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.'
+delete from flag_assessment_model
 WHERE flag = 'VM HA';
 
-UPDATE flag_assessment_model
-SET flag = 'Memory ballooning' , flag_label = 'Memory ballooning detected.' , assessment= 'Memory ballooning is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.'
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('HA','','VM running on HA host detected.','HA is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.') ON CONFLICT DO NOTHING;
+
+
+delete from flag_assessment_model
 WHERE flag = 'Ballooned memory';
+
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('Memory ballooning','','Memory ballooning detected.','Memory ballooning is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.') ON CONFLICT DO NOTHING;
+
 
 UPDATE flag_assessment_model
 SET flag_label = 'Encrypted disk detected.' , assessment = 'Encrypted disks are not supported by OpenShift Virtualization.  The VM cannot be migrated unless the disk is unencrypted.'
 WHERE flag = 'Encrypted disk';
 
-UPDATE flag_assessment_model
-SET flag = 'Opaque network' , flag_label = 'Opaque network detected.' , assessment= 'Opaque networks are not supported by OpenShift Virtualization. The VM can be migrated but the network must be configured after migration.'
+delete from flag_assessment_model
 WHERE flag = 'Opaque Network';
 
-UPDATE flag_assessment_model
-SET flag = 'USB controller' , flag_label = 'USB controller detected.' , assessment = 'USB controllers are not supported by OpenShift Virtualization. The VM can be migrated but the devices attached to the USB controller will not be migrated.'
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('Opaque network','','Opaque network detected.','Opaque networks are not supported by OpenShift Virtualization. The VM can be migrated but the network must be configured after migration.') ON CONFLICT DO NOTHING;
+
+
+delete from flag_assessment_model
 WHERE flag = 'USB device';
+
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('USB controller','','USB controller detected.','USB controllers are not supported by OpenShift Virtualization. The VM can be migrated but the devices attached to the USB controller will not be migrated.') ON CONFLICT DO NOTHING;
