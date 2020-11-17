@@ -558,7 +558,7 @@ public class EndToEndTest {
             .filter(e -> e.getFlag().equalsIgnoreCase("HA")).findFirst().get().getAssessment()).isEqualToIgnoringCase("HA is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.");
 
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
-            .filter(e -> e.getFlag().equalsIgnoreCase("VMWare DRS")).findFirst().get().getAssessment()).isEqualToIgnoringCase("VMware Distributed Resource Scheduler is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.");
+            .filter(e -> e.getFlag().equalsIgnoreCase("VMware DRS")).findFirst().get().getAssessment()).isEqualToIgnoringCase("VMware Distributed Resource Scheduler is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.");
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});

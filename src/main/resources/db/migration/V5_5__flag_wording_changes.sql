@@ -8,7 +8,7 @@ delete from  flag_assessment_model
 WHERE flag = 'VM/Host Affinity Configured';
 
 INSERT INTO flag_assessment_model
-(flag, os_name, assessment, flag_label) VALUES ('VM-Host affinity','','VM-Host affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.','VM-Host affinity detected') ON CONFLICT DO NOTHING;
+(flag, os_name, assessment, flag_label) VALUES ('VM-Host affinity','','VM-Host affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.','VM-Host affinity detected.') ON CONFLICT DO NOTHING;
 
 
 delete from flag_assessment_model
@@ -26,7 +26,7 @@ INSERT INTO flag_assessment_model
 
 
 delete from flag_assessment_model
-WHERE flag = 'NUMA Node Affinity';
+WHERE flag = 'Numa Node Affinity';
 
 INSERT INTO flag_assessment_model
 (flag, os_name, assessment, flag_label) VALUES ('NUMA node affinity','','NUMA node affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.','NUMA node affinity detected.') ON CONFLICT DO NOTHING;
@@ -39,9 +39,11 @@ INSERT INTO flag_assessment_model
 (flag, os_name, assessment, flag_label) VALUES ('UEFI secure boot','','UEFI secure boot is not supported by OpenShift Virtualization. The VM cannot be migrated unless UEFI secure boot is disabled.','UEFI secure boot detected.') ON CONFLICT DO NOTHING;
 
 
-UPDATE flag_assessment_model
-SET flag_label = 'VMware DRS detected.' , assessment = 'VMware Distributed Resource Scheduler is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.'
+delete from flag_assessment_model
 WHERE flag = 'VMWare DRS';
+
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('VMware DRS','','VMware Distributed Resource Scheduler is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.','VMware DRS detected.') ON CONFLICT DO NOTHING;
 
 delete from flag_assessment_model
 WHERE flag = 'VM HA';
@@ -57,9 +59,11 @@ INSERT INTO flag_assessment_model
 (flag, os_name, assessment, flag_label) VALUES ('Memory ballooning','','Memory ballooning is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.','Memory ballooning detected.') ON CONFLICT DO NOTHING;
 
 
-UPDATE flag_assessment_model
-SET flag_label = 'Encrypted disk detected.' , assessment = 'Encrypted disks are not supported by OpenShift Virtualization.  The VM cannot be migrated unless the disk is unencrypted.'
-WHERE flag = 'Encrypted disk';
+delete from flag_assessment_model
+WHERE flag = 'Encrypted Disk';
+
+INSERT INTO flag_assessment_model
+(flag, os_name, assessment, flag_label) VALUES ('Encrypted disk','','Encrypted disks are not supported by OpenShift Virtualization.  The VM cannot be migrated unless the disk is unencrypted.','Encrypted disk detected.') ON CONFLICT DO NOTHING;
 
 delete from flag_assessment_model
 WHERE flag = 'Opaque Network';
