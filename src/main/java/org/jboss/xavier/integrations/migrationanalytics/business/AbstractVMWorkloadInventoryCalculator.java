@@ -64,6 +64,7 @@ public abstract class AbstractVMWorkloadInventoryCalculator {
     public static final String BALLOONEDMEMORY = "vmworkloadinventory.balloonedMemory";
     public static final String HASENCRYPTEDDISK = "vmworkloadinventory.hasEncryptedDisk";
     public static final String HASOPAQUENETWORK = "vmworkloadinventory.hasOpaqueNetwork";
+    public static final String HASSRIOVNIC = "vmworkloadinventory.hasSrIovNic";
 
     @Autowired
     protected Environment env;
