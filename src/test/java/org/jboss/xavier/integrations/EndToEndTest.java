@@ -546,19 +546,19 @@ public class EndToEndTest {
 
         // Testing changes introduced in V5__update_flags_values
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
-            .filter(e -> e.getFlag().equalsIgnoreCase("CPU Affinity")).findFirst().get().getFlagLabel()).isEqualToIgnoringCase("CPU affinity detected");
+            .filter(e -> e.getFlag().equalsIgnoreCase("CPU affinity")).findFirst().get().getFlagLabel()).isEqualToIgnoringCase("CPU affinity detected.");
 
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
-            .filter(e -> e.getFlag().equalsIgnoreCase("CPU Affinity")).findFirst().get().getAssessment()).isEqualToIgnoringCase("CPU affinity rules detected; unable to assign to specific nodes/CPU's");
+            .filter(e -> e.getFlag().equalsIgnoreCase("CPU affinity")).findFirst().get().getAssessment()).isEqualToIgnoringCase("CPU affinity is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.");
 
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
-            .filter(e -> e.getFlag().equalsIgnoreCase("VM HA")).findFirst().get().getFlagLabel()).isEqualToIgnoringCase("High Availability (HA) detected");
+            .filter(e -> e.getFlag().equalsIgnoreCase("HA")).findFirst().get().getFlagLabel()).isEqualToIgnoringCase("VM running on HA host detected.");
 
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
-            .filter(e -> e.getFlag().equalsIgnoreCase("VM HA")).findFirst().get().getAssessment()).isEqualToIgnoringCase("HA disk locking detected and is unsupported in OpenShift Virtualization");
+            .filter(e -> e.getFlag().equalsIgnoreCase("HA")).findFirst().get().getAssessment()).isEqualToIgnoringCase("HA is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.");
 
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
-            .filter(e -> e.getFlag().equalsIgnoreCase("VMWare DRS")).findFirst().get().getAssessment()).isEqualToIgnoringCase("VM distributed resource scheduling between nodes detected and is unsupported in OpenShift Virtualization");
+            .filter(e -> e.getFlag().equalsIgnoreCase("VMware DRS")).findFirst().get().getAssessment()).isEqualToIgnoringCase("VMware Distributed Resource Scheduler is not supported by OpenShift Virtualization. The VM can be migrated but it will not have this feature in the target environment.");
 
         // 1. Check user has firstTime
         ResponseEntity<User> userEntity = new RestTemplate().exchange(getBaseURLAPIPath() + "/user", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<User>() {});
