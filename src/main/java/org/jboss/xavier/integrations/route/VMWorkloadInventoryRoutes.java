@@ -1,5 +1,6 @@
 package org.jboss.xavier.integrations.route;
 
+import org.jboss.xavier.analytics.pojo.input.workload.inventory.VMWorkloadInventoryModel;
 import org.jboss.xavier.analytics.pojo.output.workload.inventory.WorkloadInventoryReportModel;
 import org.jboss.xavier.integrations.jpa.service.WorkloadInventoryReportService;
 import org.jboss.xavier.integrations.route.strategy.WorkloadInventoryReportModelAggregationStrategy;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +30,19 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
         from("direct:calculate-vmworkloadinventory").routeId("calculate-vmworkloadinventory")
             .setHeader("KieSessionId", constant("WorkloadInventoryKSession0"))
             .bean("VMWorkloadInventoryCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
-            .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
+                .process(exchange -> {
+                    Set<String> vmNamesWithSharedDisk = exchange.getIn().getHeader("vmNamesWithSharedDisk", Set.class);
+                    Collection<VMWorkloadInventoryModel>  allVms = exchange.getIn().getBody(Collection.class);
+                    Collection<VMWorkloadInventoryModel> originalAndAmendedVms = allVms.stream().map(vmWorkloadInventoryModel ->
+                    {
+                        if (vmNamesWithSharedDisk != null && vmNamesWithSharedDisk.contains(vmWorkloadInventoryModel.getVmName())) {
+                            vmWorkloadInventoryModel.setHasSharedVmdk(true);
+                        }
+                        return vmWorkloadInventoryModel;
+                    }).collect(Collectors.toList());
+                    exchange.getIn().setBody(allVms);
+                })
+                .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
                 .to("direct:vm-workload-inventory")
             .end()
@@ -44,17 +58,10 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .process(exchange -> {
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
-                List<WorkloadInventoryReportModel> workloadInventoryReportModels = workloadInventoryReportService.findByAnalysisOwnerAndAnalysisId(
-                        exchange.getIn().getHeader(USERNAME, String.class),
-                        Long.parseLong(exchange.getIn().getHeader(MA_METADATA, Map.class).get(ANALYSIS_ID).toString()));
-                List<WorkloadInventoryReportModel> workloadInventoryReportModelsToUpdate = workloadInventoryReportModels.stream()
-                    .filter(workloadInventoryReportModel -> vmNamesWithSharedDisk.contains(workloadInventoryReportModel.getVmName()))
-                    .peek(workloadInventoryReportModel -> workloadInventoryReportModel.addFlagIMS("Shared Disk")).collect(Collectors.toList());
-                exchange.getIn().setBody(workloadInventoryReportModelsToUpdate);
-            })
-            .to("direct:reevaluate-workload-inventory-reports");
+                exchange.getIn().setHeader("vmNamesWithSharedDisk", vmNamesWithSharedDisk);
+            });
 
-        from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
+  /*      from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
             .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
             .process(exchange -> {
                 WorkloadInventoryReportModel wir = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
@@ -77,6 +84,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                         }).collect(Collectors.toList());
                 workloadInventoryReportService.saveAll(updatedWir);
                 exchange.getIn().setBody(updatedWir);
-            });
+            });*/
     }
 }
