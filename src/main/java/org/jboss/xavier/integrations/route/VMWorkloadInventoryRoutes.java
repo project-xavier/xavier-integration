@@ -61,29 +61,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 exchange.getIn().setHeader("vmNamesWithSharedDisk", vmNamesWithSharedDisk);
             });
 
-  /*      from("direct:reevaluate-workload-inventory-reports").routeId("reevaluate-workload-inventory-reports")
-            .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
-            .process(exchange -> {
-                WorkloadInventoryReportModel wir = exchange.getIn().getBody(WorkloadInventoryReportModel.class);
-                exchange.getIn().setHeader(ANALYSIS_ID, wir.getAnalysis().getId());
-            })
-                .setHeader("KieSessionId", constant("WorkloadInventoryReevaluateKSession0"))
-                .to("direct:vm-workload-inventory").id("reevaluate-workload-decisionserver")
-            .end()
-            .process(exchange -> {
-                String username = exchange.getIn().getHeader(USERNAME, String.class);
-                List<WorkloadInventoryReportModel> kieWir = exchange.getIn().getBody(List.class);
-                List<WorkloadInventoryReportModel> updatedWir = kieWir.stream()
-                        .map(element -> {
-                            WorkloadInventoryReportModel dbWir = workloadInventoryReportService.findOneByOwnerAndId(username, element.getId());
-                            dbWir.setComplexity(element.getComplexity());
-                            dbWir.setFlagsIMS(element.getFlagsIMS());
-                            dbWir.setRecommendedTargetsIMS(element.getRecommendedTargetsIMS());
-                            dbWir.setVmCategory(element.getVmCategory());
-                            return dbWir;
-                        }).collect(Collectors.toList());
-                workloadInventoryReportService.saveAll(updatedWir);
-                exchange.getIn().setBody(updatedWir);
-            });*/
+
     }
 }
