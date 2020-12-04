@@ -61,7 +61,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
                 vmNamesWithSharedDisk.forEach(vmname -> System.out.println("flags-shared-disks.settingHeader - Shared Disk VM Name: " + vmname));
                 exchange.getIn().setHeader("vmNamesWithSharedDisk", vmNamesWithSharedDisk);
-            });
+            }).to("direct:calculate-vmworkloadinventory");
 
 
     }
