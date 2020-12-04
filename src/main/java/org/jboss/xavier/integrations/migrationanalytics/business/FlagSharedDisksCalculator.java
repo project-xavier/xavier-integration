@@ -51,6 +51,7 @@ public class FlagSharedDisksCalculator extends AbstractVMWorkloadInventoryCalcul
             });
         final Set<String> vmNamesWithSharedDisk = new HashSet();
         fileNamesInVms.values().stream().filter(set -> set.size() > 1).forEach(set -> vmNamesWithSharedDisk.addAll(set));
+        vmNamesWithSharedDisk.forEach(vmname -> System.out.println("FlagSharedDisksCalculator - Shared Disk VM Name: " + vmname));
         return vmNamesWithSharedDisk;
     }
 
