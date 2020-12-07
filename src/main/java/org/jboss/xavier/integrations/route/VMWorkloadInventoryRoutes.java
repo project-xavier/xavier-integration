@@ -56,11 +56,17 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .transform().method("decisionServerHelper", "extractWorkloadInventoryReportModel");
 
         from("direct:flags-shared-disks").routeId("flags-shared-disks")
+                .process(exchange -> {
+                    String originalBody = exchange.getIn().getBody(String.class);
+                    exchange.getIn().setHeader("originalBody", originalBody);
+                })
             .bean("flagSharedDisksCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
             .process(exchange -> {
+                String originalBody = exchange.getIn().getHeader("originalBody", String.class);
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
                 vmNamesWithSharedDisk.forEach(vmname -> System.out.println("flags-shared-disks.settingHeader - Shared Disk VM Name: " + vmname));
                 exchange.getIn().setHeader("vmNamesWithSharedDisk", vmNamesWithSharedDisk);
+                exchange.getIn().setBody(originalBody);
             }).to("direct:calculate-vmworkloadinventory");
 
 
