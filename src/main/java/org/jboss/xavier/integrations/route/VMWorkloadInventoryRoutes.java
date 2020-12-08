@@ -45,6 +45,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 })
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
+                .removeHeader("vmNamesWithSharedDisk")
                 .to("direct:vm-workload-inventory")
             .end()
             .process(exchange -> analysisService.addWorkloadInventoryReportModels(exchange.getIn().getBody(List.class),
