@@ -43,6 +43,7 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                     }).collect(Collectors.toList());
                     exchange.getIn().setBody(allVms);
                     exchange.getIn().removeHeader("vmNamesWithSharedDisk");
+                    exchange.getIn().removeHeader("originalBody");
                 })
                 .split(body()).parallelProcessing(parallel).aggregationStrategy(new WorkloadInventoryReportModelAggregationStrategy())
                 .setHeader(ANALYSIS_ID, simple("${body." + ANALYSIS_ID + "}", String.class))
