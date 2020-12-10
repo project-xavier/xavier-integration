@@ -32,7 +32,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .bean("VMWorkloadInventoryCalculator", "calculate(${body}, ${header.${type:org.jboss.xavier.integrations.route.MainRouteBuilder.MA_METADATA}})", false)
                 .process(exchange -> {
                     Set<String> vmNamesWithSharedDisk = exchange.getIn().getHeader("vmNamesWithSharedDisk", Set.class);
-                    vmNamesWithSharedDisk.forEach(vmname -> System.out.println("VMWorkloadInventoryCalculator.postProcessing - Shared Disk VM Name: " + vmname));
                     Collection<VMWorkloadInventoryModel>  allVms = exchange.getIn().getBody(Collection.class);
                     Collection<VMWorkloadInventoryModel> originalAndAmendedVms = allVms.stream().map(vmWorkloadInventoryModel ->
                     {
@@ -67,7 +66,6 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
             .process(exchange -> {
                 String originalBody = exchange.getIn().getHeader("originalBody", String.class);
                 Set<String> vmNamesWithSharedDisk = exchange.getIn().getBody(Set.class);
-                vmNamesWithSharedDisk.forEach(vmname -> System.out.println("flags-shared-disks.settingHeader - Shared Disk VM Name: " + vmname));
                 exchange.getIn().setHeader("vmNamesWithSharedDisk", vmNamesWithSharedDisk);
                 exchange.getIn().setBody(originalBody);
             }).to("direct:calculate-vmworkloadinventory");
