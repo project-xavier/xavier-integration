@@ -33,13 +33,12 @@ public class VMWorkloadInventoryRoutes extends RouteBuilderExceptionHandler {
                 .process(exchange -> {
                     Set<String> vmNamesWithSharedDisk = exchange.getIn().getHeader("vmNamesWithSharedDisk", Set.class);
                     Collection<VMWorkloadInventoryModel>  allVms = exchange.getIn().getBody(Collection.class);
-                    Collection<VMWorkloadInventoryModel> originalAndAmendedVms = allVms.stream().map(vmWorkloadInventoryModel ->
+                    allVms.forEach(vmWorkloadInventoryModel ->
                     {
                         if (vmNamesWithSharedDisk != null && vmNamesWithSharedDisk.contains(vmWorkloadInventoryModel.getVmName())) {
                             vmWorkloadInventoryModel.setHasSharedVmdk(true);
                         }
-                        return vmWorkloadInventoryModel;
-                    }).collect(Collectors.toList());
+                    });
                     exchange.getIn().setBody(allVms);
                     exchange.getIn().removeHeader("vmNamesWithSharedDisk");
                     exchange.getIn().removeHeader("originalBody");
