@@ -99,7 +99,6 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
         //When
         camelContext.start();
         camelContext.startRoute("flags-shared-disks");
-        //camelContext.startRoute("vm-workload-inventory");
         String body = IOUtils.resourceToString(fileName, StandardCharsets.UTF_8, this.getClass().getClassLoader());
 
         //Then
