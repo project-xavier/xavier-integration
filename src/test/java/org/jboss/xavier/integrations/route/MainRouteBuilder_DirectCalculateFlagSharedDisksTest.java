@@ -99,7 +99,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
         //When
         camelContext.start();
         camelContext.startRoute("flags-shared-disks");
-        camelContext.startRoute("vm-workload-inventory");
+        //camelContext.startRoute("vm-workload-inventory");
         String body = IOUtils.resourceToString(fileName, StandardCharsets.UTF_8, this.getClass().getClassLoader());
 
         //Then
@@ -108,7 +108,7 @@ public class MainRouteBuilder_DirectCalculateFlagSharedDisksTest extends XavierC
             exchange.getIn().setHeaders(headers);
         });
 
-        assertThat(result.getIn().getBody()).isEqualTo(expectedVmNamesWithSharedDisk);
+        assertThat(result.getIn().getHeader("vmNamesWithSharedDisk")).isEqualTo(expectedVmNamesWithSharedDisk);
 
         camelContext.stop();
     }
