@@ -14,11 +14,10 @@
         "complexity": "Hard",
         "recommendedTargetsIMS": [
           "Red Hat Virtualization",
-          "Red Hat Enterprise Linux",
-          "Red Hat OpenStack Platform"
+          "Red Hat Enterprise Linux"
         ],
         "flagsIMS": [
-          "Shared Disk"
+          "Shared VMDK"
         ],
         "product": "VMware vCenter",
         "version": "6.7.2",
@@ -44,11 +43,10 @@
         "complexity": "Hard",
         "recommendedTargetsIMS": [
           "Red Hat Virtualization",
-          "Red Hat Enterprise Linux",
-          "Red Hat OpenStack Platform"
+          "Red Hat Enterprise Linux"
         ],
         "flagsIMS": [
-          "Shared Disk"
+          "Shared VMDK"
         ],
         "product": "VMware vCenter",
         "version": "6.7.2",

@@ -542,7 +542,7 @@ public class EndToEndTest {
         assertThat(responseFlaggAssessment.getBody().getData().size()).isEqualTo(2);
 
         ResponseEntity<PageResponse<FlagAssessmentModel>> responseFlaggAssessmentHighLimit = new RestTemplate().exchange(getBaseURLAPIPath() + "/mappings/flag-assessment?limit=1000&offset=0", HttpMethod.GET, getRequestEntity(), new ParameterizedTypeReference<PageResponse<FlagAssessmentModel>>() {});
-        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(16);
+        assertThat(responseFlaggAssessmentHighLimit.getBody().getData().size()).isEqualTo(17);
 
         // Testing changes introduced in V5__update_flags_values
         assertThat(responseFlaggAssessmentHighLimit.getBody().getData().stream()
@@ -617,11 +617,11 @@ public class EndToEndTest {
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getComplexity().contains("Unknown")).count()).isEqualTo(0);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getComplexity().contains("Unsupported")).count()).isEqualTo(1);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getRecommendedTargetsIMS().stream()).distinct().count()).isEqualTo(6);
-            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("Red Hat OpenStack Platform")).count()).isEqualTo(11);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("Red Hat OpenStack Platform")).count()).isEqualTo(9);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("Red Hat Enterprise Linux")).count()).isEqualTo(4);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getRecommendedTargetsIMS().contains("None")).count()).isEqualTo(1);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().flatMap(e -> e.getFlagsIMS().stream()).distinct().count()).isEqualTo(2);
-            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getFlagsIMS().contains("Shared Disk")).count()).isEqualTo(2);
+            softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getFlagsIMS().contains("Shared VMDK")).count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getVmCategory().contains("Critical")).count()).isEqualTo(2);
             softly.assertThat(workloadInventoryReport.getBody().getData().stream().filter(e -> e.getOsName().contains("ServerNT") && e.getWorkloads().contains("Microsoft SQL Server")).count()).isEqualTo(1);
         });
