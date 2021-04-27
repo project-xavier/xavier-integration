@@ -45,163 +45,192 @@
             }
         },
         {
-            "kind": "DeploymentConfig",
-            "apiVersion": "apps.openshift.io/v1",
-            "metadata": {
-                "name": "broker-amq",
-                "generation": 2,
-                "creationTimestamp": null,
-                "labels": {
-                    "app": "amq-broker",
-                    "application": "migration-analytics",
-                    "template": "amq-broker-73-basic",
-                    "xpaas": "1.4.16"
-                }
-            },
-            "spec": {
-                "replicas": 1,
-                "revisionHistoryLimit": 10,
-                "selector": {
-                    "deploymentConfig": "broker-amq"
-                },
-                "strategy": {
-                    "type": "Rolling",
-                    "rollingParams": {
-                        "updatePeriodSeconds": 1,
-                        "intervalSeconds": 1,
-                        "timeoutSeconds": 600,
-                        "maxUnavailable": "25%",
-                        "maxSurge": 0
-                    },
-                    "resources": {},
-                    "activeDeadlineSeconds": 21600
-                },
-                "triggers": [
-                    {
-                        "type": "ConfigChange"
-                    }
-                ],
-                "test": false,
-                "template": {
-                    "metadata": {
-                        "name": "broker-amq",
-                        "labels": {
-                            "application": "migration-analytics",
-                            "deploymentConfig": "broker-amq"
-                        }
-                    },
-                    "spec": {
-                        "containers": [
-                            {
-                                "name": "broker-amq",
-                                "image": "registry.redhat.io/amq-broker-7/amq-broker-73-openshift:7.3",
-                                "ports": [
-                                    {
-                                        "name": "console-jolokia",
-                                        "containerPort": 8161,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "amqp",
-                                        "containerPort": 5672,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "mqtt",
-                                        "containerPort": 1883,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "stomp",
-                                        "containerPort": 61613,
-                                        "protocol": "TCP"
-                                    },
-                                    {
-                                        "name": "artemis",
-                                        "containerPort": 61616,
-                                        "protocol": "TCP"
-                                    }
-                                ],
-                                "env": [
-                                    {
-                                        "name": "AMQ_USER",
-                                        "value": "userk0N"
-                                    },
-                                    {
-                                        "name": "AMQ_PASSWORD",
-                                        "value": "i7MN2pkw"
-                                    },
-                                    {
-                                        "name": "AMQ_ROLE",
-                                        "value": "admin"
-                                    },
-                                    {
-                                        "name": "AMQ_NAME",
-                                        "value": "broker"
-                                    },
-                                    {
-                                        "name": "AMQ_TRANSPORTS",
-                                        "value": "openwire,amqp,stomp,mqtt,hornetq"
-                                    },
-                                    {
-                                        "name": "AMQ_QUEUES"
-                                    },
-                                    {
-                                        "name": "AMQ_ADDRESSES"
-                                    },
-                                    {
-                                        "name": "AMQ_GLOBAL_MAX_SIZE",
-                                        "value": "100 gb"
-                                    },
-                                    {
-                                        "name": "AMQ_REQUIRE_LOGIN"
-                                    },
-                                    {
-                                        "name": "AMQ_EXTRA_ARGS"
-                                    },
-                                    {
-                                        "name": "AMQ_ANYCAST_PREFIX"
-                                    },
-                                    {
-                                        "name": "AMQ_MULTICAST_PREFIX"
-                                    }
-                                ],
-                                "resources": {},
-                                "readinessProbe": {
-                                    "exec": {
-                                        "command": [
-                                            "/bin/bash",
-                                            "-c",
-                                            "/opt/amq/bin/readinessProbe.sh"
-                                        ]
-                                    },
-                                    "timeoutSeconds": 1,
-                                    "periodSeconds": 10,
-                                    "successThreshold": 1,
-                                    "failureThreshold": 3
-                                },
-                                "terminationMessagePath": "/dev/termination-log",
-                                "terminationMessagePolicy": "File",
-                                "imagePullPolicy": "Always"
-                            }
-                        ],
-                        "restartPolicy": "Always",
-                        "terminationGracePeriodSeconds": 60,
-                        "dnsPolicy": "ClusterFirst",
-                        "securityContext": {},
-                        "schedulerName": "default-scheduler"
-                    }
-                }
-            },
-            "status": {
-                "latestVersion": 0,
-                "observedGeneration": 0,
-                "replicas": 0,
-                "updatedReplicas": 0,
-                "availableReplicas": 0,
-                "unavailableReplicas": 0
-            }
+  "apiVersion": "apps/v1",
+  "kind": "StatefulSet",
+  "metadata": {
+    "generation": 1,
+    "labels": {
+      "application": "broker",
+      "template": "amq-broker-73-persistence",
+      "xpaas": "1.4.16"
+    },
+    "name": "broker-amq",
+    "namespace": "migration-analytics",
+  },
+  "spec": {
+    "podManagementPolicy": "OrderedReady",
+    "replicas": 1,
+    "revisionHistoryLimit": 10,
+    "selector": {
+      "matchLabels": {
+        "app": "broker-amq"
+      }
+    },
+    "serviceName": "broker-amq-headless",
+    "template": {
+      "metadata": {
+        "creationTimestamp": null,
+        "labels": {
+          "app": "broker-amq",
+          "application": "broker",
+          "deploymentConfig": "broker-amq"
         },
+        "name": "broker-amq"
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "AMQ_USER",
+                "value": "amqUser"
+              },
+              {
+                "name": "AMQ_PASSWORD",
+                "value": "password"
+              },
+              {
+                "name": "AMQ_ROLE",
+                "value": "admin"
+              },
+              {
+                "name": "AMQ_NAME",
+                "value": "broker"
+              },
+              {
+                "name": "AMQ_TRANSPORTS",
+                "value": "openwire,amqp,stomp,mqtt,hornetq"
+              },
+              {
+                "name": "AMQ_QUEUES"
+              },
+              {
+                "name": "AMQ_ADDRESSES"
+              },
+              {
+                "name": "AMQ_GLOBAL_MAX_SIZE",
+                "value": "100 gb"
+              },
+              {
+                "name": "AMQ_REQUIRE_LOGIN"
+              },
+              {
+                "name": "AMQ_DATA_DIR",
+                "value": "/opt/amq/data"
+              },
+              {
+                "name": "AMQ_DATA_DIR_LOGGING",
+                "value": "true"
+              },
+              {
+                "name": "AMQ_EXTRA_ARGS"
+              },
+              {
+                "name": "AMQ_ANYCAST_PREFIX"
+              },
+              {
+                "name": "AMQ_MULTICAST_PREFIX"
+              }
+            ],
+            "image": "registry.redhat.io/amq-broker-7/amq-broker-73-openshift:7.3",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "broker-amq",
+            "ports": [
+              {
+                "containerPort": 8161,
+                "name": "console-jolokia",
+                "protocol": "TCP"
+              },
+              {
+                "containerPort": 5672,
+                "name": "amqp",
+                "protocol": "TCP"
+              },
+              {
+                "containerPort": 1883,
+                "name": "mqtt",
+                "protocol": "TCP"
+              },
+              {
+                "containerPort": 61613,
+                "name": "stomp",
+                "protocol": "TCP"
+              },
+              {
+                "containerPort": 61616,
+                "name": "all",
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "exec": {
+                "command": [
+                  "/bin/bash",
+                  "-c",
+                  "/opt/amq/bin/readinessProbe.sh"
+                ]
+              },
+              "failureThreshold": 3,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "resources": {
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/opt/amq/data",
+                "name": "broker-amq-pvol"
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+        },
+        "terminationGracePeriodSeconds": 60
+      }
+    },
+    "updateStrategy": {
+      "type": "OnDelete"
+    },
+    "volumeClaimTemplates": [
+      {
+        "metadata": {
+          "creationTimestamp": null,
+          "name": "broker-amq-pvol"
+        },
+        "spec": {
+          "accessModes": [
+            "ReadWriteOnce"
+          ],
+          "resources": {
+            "requests": {
+              "storage": "1Gi"
+            }
+          }
+        },
+        "status": {
+          "phase": "Pending"
+        }
+      }
+    ]
+  },
+  "status": {
+    "collisionCount": 0,
+    "currentReplicas": 1,
+    "currentRevision": "broker-amq-669bdc4b96",
+    "observedGeneration": 1,
+    "readyReplicas": 1,
+    "replicas": 1,
+    "updateRevision": "broker-amq-669bdc4b96",
+    "updatedReplicas": 1
+  }
+},
         {
             "kind": "DeploymentConfig",
             "apiVersion": "apps.openshift.io/v1",
@@ -1498,6 +1527,69 @@
                 "loadBalancer": {}
             }
         },
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "annotations": {
+      "description": "The broker's headless, non load balanced service"
+    },
+    "creationTimestamp": "2019-06-18T11:55:14Z",
+    "labels": {
+      "app": "broker",
+      "application": "broker",
+      "template": "amq-broker-73-persistence",
+      "xpaas": "1.4.16"
+    },
+    "name": "broker-amq-headless",
+    "namespace": "migration-analytics",
+  },
+  "spec": {
+    "clusterIP": "None",
+    "ports": [
+      {
+        "name": "all",
+        "port": 61616,
+        "protocol": "TCP",
+        "targetPort": 61616
+      },
+      {
+        "name": "console-jolokia",
+        "port": 8161,
+        "protocol": "TCP",
+        "targetPort": 8161
+      },
+      {
+        "name": "amqp",
+        "port": 5672,
+        "protocol": "TCP",
+        "targetPort": 5672
+      },
+      {
+        "name": "mqtt",
+        "port": 1883,
+        "protocol": "TCP",
+        "targetPort": 1883
+      },
+      {
+        "name": "stomp",
+        "port": 61613,
+        "protocol": "TCP",
+        "targetPort": 61613
+      }
+    ],
+    "publishNotReadyAddresses": true,
+    "selector": {
+      "deploymentConfig": "broker-amq"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+  },
+  "status": {
+    "loadBalancer": {
+    }
+  }
+},
         {
             "kind": "Service",
             "apiVersion": "v1",
