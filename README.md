@@ -67,6 +67,31 @@ Instructions from https://access.redhat.com/documentation/en-us/red_hat_fuse/7.3
 1. once the import has finished, click the `Build & Install` button from the upper right `Build` menu
 1. once the build has been successfully done, click on the `Deploy` button
 
+# Development
+
+## How to deploy local code to local OKD instance
+1. build an image with your local code 
+
+   `mvn -gs ./configuration/settings.xml clean package fabric8:build -DskipTests`
+1. check the image `xavier/xavier-integration:latest` has been created running 
+
+   `docker image ls xavier/xavier-integration:latest` 
+
+   (pay attention to the `CREATED` column value)
+1. you have to change the tag for this image in order to be able to push it to your local environment 
+
+   `docker tag xavier/xavier-integration:latest 172.30.1.1:5000/ma/analytics-integration:latest`
+1. the first time you push the image, you need to login to OKD's repository, so execute the command 
+
+   `docker login -p <token> 172.30.1.1:5000`
+   
+   where <token> value is the one you can get from the OKD UI using the "Copy Login Command" from the user menu 
+1. now you're ready to push your image to your local OKD instance 
+
+   `docker push 172.30.1.1:5000/ma/analytics-integration:latest`
+1. once the push finishes, the deployment of a new integration pod to run the new image will start automatically in your OKD instance
+
+
 # Manage
 
 ## PostgreSQL
